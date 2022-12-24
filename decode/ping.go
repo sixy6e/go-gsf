@@ -125,9 +125,14 @@ func scale_factors_rec(reader *bytes.Reader, idx int) {
         subid := (int64(data[0]) & 0xFF000000) >> 24
         comp_flag := (data[0] & 0x00FF0000) >> 16 == 1
 
-        scale_factor.Scale = float32(data[1])
-        scale_factor.Offset = float32(data[2])
-        scale_factor.Compression_flag = comp_flag  // TODO; implement compression decoder
+        scale_factor = ScaleFactor{
+            Scale: float32(data[1]),
+            Offset: float32(data[2]),
+            Compression_flag: comp_flag,  // TODO; implement compression decoder
+        }
+        // scale_factor.Scale = float32(data[1])
+        // scale_factor.Offset = float32(data[2])
+        // scale_factor.Compression_flag = comp_flag  // TODO; implement compression decoder
         idx += 12
 
         scale_factors[int32(subid)] = scale_factor
@@ -170,7 +175,7 @@ func SwathBathymetryPingRec(stream *os.File, rec Record) {
     // _ = binary.Read(reader, binary.BigEndian, &subrecord_hdr)
     // subrecord_id := (int(subrecord_hdr) & 0xFF000000) >> 24
     // subrecord_size := int(subrecord_hdr) & 0x00FFFFFF
-    sub_rec := Subrecord(reader, offset)
+    sub_rec := SubRecHdr(reader, offset)
     idx += 4
 
     // case switching; SCALE_FACTORS == 100
