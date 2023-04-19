@@ -37,3 +37,20 @@ func FileRec(stream *os.File, rec Record) GSFv {
 
     return file_hdr
 }
+
+// PingInfo contains some basic information regarding the ping such as
+// the number of beams, what sub-records are populated.
+// The initial reasoning behind why, is to provide a basic descriptor
+// to inform a global schema across all pings, and derive max(n_beams) to
+// inform a global [ping, beam] dimensional array structure.
+type PingInfo struct {
+    Number_Beams uint16
+    Sub_Records []SubRecordID
+    Scale_Factors bool
+}
+
+// Index, as the name implies, builds a file index of all Record types.
+// Each Record contains the record ID, record size, byte index and checksum flag.
+func Index(stream, *os.File) any {  // TODO return type(s)
+    // probably return map[RecordId]uint64, map[SubRecordId][uint64], []PingInfo
+}
