@@ -1,6 +1,9 @@
 package decode
 
-import "os"
+import (
+    "os"
+    "encoding/binary"
+)
 
 // Tell is a small helper fucntion for telling the current position within a
 // binary file opened for reading.
@@ -14,7 +17,7 @@ func Tell(stream *os.File) int64 {
 // The GSF specification mentions that a records complete length has to be
 // a multiple of 4.
 func Padding(stream *os.File) {
-    pos := tell(stream)
+    pos := Tell(stream)
     pad := pos % 4
     pad, _ = stream.Seek(pad, 1)
 
@@ -38,6 +41,56 @@ func FileRec(stream *os.File, rec Record) GSFv {
     return file_hdr
 }
 
+var rec_arr = [12]RecordID{
+    HEADER,
+    SWATH_BATHYMETRY_PING,
+    SOUND_VELOCITY_PROFILE,
+    PROCESSING_PARAMETERS,
+    SENSOR_PARAMETERS,
+    COMMENT,
+    HISTORY,
+    NAVIGATION_ERROR,
+    SWATH_BATHY_SUMMARY,
+    SINGLE_BEAM_PING,
+    HV_NAVIGATION_ERROR,
+    ATTITUDE,
+}
+
+var subrec_arr = [32]SubRecordID{
+    DEPTH,
+    ACROSS_TRACK,
+    ALONG_TRACK,
+    TRAVEL_TIME,
+    BEAM_ANGLE,
+    MEAN_CAL_AMPLITUDE,
+    MEAN_REL_AMPLITUDE,
+    ECHO_WIDTH,
+    QUALITY_FACTOR,
+    RECEIVE_HEAVE,
+    DEPTH_ERROR,
+    ACROSS_TRACK_ERROR,
+    ALONG_TRACK_ERROR,
+    NOMINAL_DEPTH,
+    QUALITY_FLAGS,
+    BEAM_FLAGS,
+    SIGNAL_TO_NOISE,
+    BEAM_ANGLE_FORWARD,
+    VERTICAL_ERROR,
+    HORIZONTAL_ERROR,
+    INTENSITY_SERIES,
+    SECTOR_NUMBER,
+    DETECTION_INFO,
+    INCIDENT_BEAM_ADJ,
+    SYSTEM_CLEANING,
+    DOPPLER_CORRECTION,
+    SONAR_VERT_UNCERTAINTY,
+    SONAR_HORZ_UNCERTAINTY,
+    DETECTION_WINDOW,
+    MEAN_ABS_COEF,
+    UNKNOWN,
+    SCALE_FACTORS,
+}
+
 // PingInfo contains some basic information regarding the ping such as
 // the number of beams, what sub-records are populated.
 // The initial reasoning behind why, is to provide a basic descriptor
@@ -49,8 +102,66 @@ type PingInfo struct {
     Scale_Factors bool
 }
 
+type FileInfo struct {
+    GSF_URI string
+    Size uint64
+    Record_Counts map[RecordID]uint64
+    SubRecord_Counts map[SubRecordID]uint64
+    Pings map[RecordID][]PingInfo
+}
+
 // Index, as the name implies, builds a file index of all Record types.
 // Each Record contains the record ID, record size, byte index and checksum flag.
-func Index(stream, *os.File) any {  // TODO return type(s)
+func Index(stream *os.File) any {  // TODO return type(s)
     // probably return map[RecordId]uint64, map[SubRecordId][uint64], []PingInfo
+
+    var (
+        rec_idx = map[RecordID][]Record
+        rec_counts = map[RecordID]uint64
+        sub_rec_counts = map[SubRecordID]uint64
+        val1 = RecordID
+        val2 = SubRecordID
+        rec = Record
+    )
+
+    one := uint64(1)
+
+    for _, val1 := range rec_arr {
+        rec_idx[val1] = nil
+        rec_counts[val1] = 0
+    }
+
+    for _, val2 = range subrec_arr {
+        sub_rec_counts[val2] = 0
+    }
+
+    // get the original starting point so we can jump back when done
+    original_pos := Tell(stream)
+
+    // filesize is used as an EOF indicator when streaming the raw bytes
+    filestat, _ := stream.Stat()
+    filesize := filestat.Size()
+    filename := filestat.Name()
+
+    // start at front of the stream
+    pos, _ := stream.Seek(0, 0)
+
+    // reading the bytestream and build record index information
+    for pos < filesize {
+        rec = RecordHdr(stream)
+
+        // increment record count
+        rec_counts[rec.Id] += one
+
+        rec_idx[rec.Id] = append(rec_idx[rec.Id], rec)
+
+        if rec.Id == SWATH_BATHYMETRY_PING {
+            // need to do some sub record decoding
+        }
+
+        // read the record and loop to the next
+        pos, _ = stream.Seek(int64(rec.Datasize), 1)
+        _ = Padding(stream)
+
+    }
 }
