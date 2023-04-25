@@ -10,8 +10,8 @@ import (
 type ping_header_base struct {
     Seconds int32
     Nano_seconds int32
-    Longitude float64
-    Latitude float64
+    Longitude int32
+    Latitude int32
     Number_beams uint16
     Centre_beam uint16
     Ping_flags int16
@@ -51,7 +51,7 @@ type PingHeader struct {
 }
 
 type SubRecord struct {
-    Id int32
+    Id SubRecordID
     Datasize uint32
     Byte_index int64
 }
@@ -97,12 +97,19 @@ var ScaleFactors = map[SubRecordID]ScaleFactor{
     MEAN_ABS_COEF: ScaleFactor{}, // 30
 }
 
-func scale_ping_hdr(reader *bytes.Reader, rec Record) PingHeader {
+// PingInfo contains some basic information regarding the ping such as
+// the number of beams, what sub-records are populated.
+// The initial reasoning behind why, is to provide a basic descriptor
+// to inform a global schema across all pings, and derive max(n_beams) to
+// inform a global [ping, beam] dimensional array structure.
+type PingInfo struct {
+    Number_Beams uint16
+    Sub_Records []SubRecordID
+    Scale_Factors bool
+}
+
+func decode_ping_hdr(reader *bytes.Reader, rec Record) PingHeader {
     var (
-        // SCALE1 float64 = 10_000_000
-        // SCALE2 float32 = 100
-        // SCALE3 float32 = 1000
-        idx int = 0
         hdr_base ping_header_base
         hdr PingHeader
     )
@@ -110,8 +117,8 @@ func scale_ping_hdr(reader *bytes.Reader, rec Record) PingHeader {
     _ = binary.Read(reader, binary.BigEndian, &hdr_base)
 
     hdr.Time = time.Unix(int64(hdr_base.Seconds), int64(hdr_base.Nano_seconds)).UTC()
-    hdr.Longitude = float64(hdr_base.Longitude) / SCALE1
-    hdr.Latitude = float64(hdr_base.Latitude) / SCALE1
+    hdr.Longitude = float64(float32(hdr_base.Longitude) / SCALE1)
+    hdr.Latitude = float64(float32(hdr_base.Latitude) / SCALE1)
     hdr.Number_beams = hdr_base.Number_beams
     hdr.Centre_beam = hdr_base.Centre_beam
     hdr.Ping_flags = hdr_base.Ping_flags
@@ -130,11 +137,14 @@ func scale_ping_hdr(reader *bytes.Reader, rec Record) PingHeader {
     return hdr
 }
 
-func SubRecHdr(reader *bytes.Reader, offset int) SubRecord {
+func SubRecHdr(reader *bytes.Reader, offset int64) SubRecord {
     var subrecord_hdr int32
+
     _ = binary.Read(reader, binary.BigEndian, &subrecord_hdr)
-    subrecord_id := (int(subrecord_hdr) & 0xFF000000) >> 24
-    subrecord_size := int(subrecord_hdr) & 0x00FFFFFF
+
+    subrecord_id := (int(subrecord_hdr) & 0xFF000000) >> 24  // TODO; define a const as int64
+    subrecord_size := int(subrecord_hdr) & 0x00FFFFFF  // TODO; define a const as int64
+
     byte_index := offset + 4
 
     subhdr := SubRecord{subrecord_id, subrecord_size, byte_index} // include a byte_index??
@@ -142,7 +152,7 @@ func SubRecHdr(reader *bytes.Reader, offset int) SubRecord {
     return subhdr
 }
 
-func scale_factors_rec(reader *bytes.Reader, idx int) {
+func scale_factors_rec(reader *bytes.Reader, idx int64) {
     var (
         i int32
         num_factors int32
@@ -150,28 +160,83 @@ func scale_factors_rec(reader *bytes.Reader, idx int) {
         // scale_factors map[int32]scale_factor
     )
     data := make([]int32, 3) // id, scale, offset
-    scale_factors := make(map[int32]ScaleFactor)
+    scale_factors := make(map[SubRecordID]ScaleFactor)
 
     _ = binary.Read(reader, binary.BigEndian, &num_factors)
     idx += 4
 
     for i = 0; i < num_factors; i++ {
         _ = binary.Read(reader, binary.BigEndian, &data)
-        subid := (int64(data[0]) & 0xFF000000) >> 24
-        comp_flag := (data[0] & 0x00FF0000) >> 16 == 1
+
+        subid := (int64(data[0]) & 0xFF000000) >> 24 // TODO; define const for 0xFF000000
+        comp_flag := (data[0] & 0x00FF0000) >> 16 == 1 // TODO; define const for 0x00FF0000
 
         scale_factor = ScaleFactor{
             Scale: float32(data[1]),
             Offset: float32(data[2]),
             Compression_flag: comp_flag,  // TODO; implement compression decoder
         }
-        // scale_factor.Scale = float32(data[1])
-        // scale_factor.Offset = float32(data[2])
-        // scale_factor.Compression_flag = comp_flag  // TODO; implement compression decoder
+
         idx += 12
 
-        scale_factors[int32(subid)] = scale_factor
+        scale_factors[SubRecordID(subid)] = scale_factor
     }
+}
+
+func ping_info(stream *os.File, rec Record) PingInfo {
+    var (
+        idx int64 = 0
+        pinfo PingInfo
+        records = make([]SubRecordID, 0, 32)
+        sf bool = false
+    )
+
+    buffer := make([]byte, rec.Datasize)
+    datasize := int64(rec.Datasize)
+
+    _, _ = stream.Seek(rec.Index, 0)
+
+    _ = binary.Read(stream, binary.BigEndian, &buffer)
+    reader := bytes.NewReader(buffer)
+
+    hdr := decode_ping_hdr(reader)
+    idx += 56 // 56 bytes read for ping header
+    offset := rec.Byte_index + idx
+
+    // read the records
+    // _ = reader.Seek(idx, 0)
+
+    // sub_rec := SubRecHdr(reader, offset)
+    // idx += 4
+
+    // read through each subrecord
+    for (datasize - idx) > 4 {
+        sub_rec := SubRecHdr(reader, offset)
+        srec_dsize := int64(sub_rec.Datasize)
+        idx += 4  // bytes read from header
+        idx += srec_dsize
+
+        records = append(records, sub_rec.Id)
+
+        // the following is probably superfluous
+        // _ = reader.Seek(idx, 0)
+
+        // prep for the next record
+        _, _ = reader.Seek(srec_dsize, 1)
+    }
+
+    // check if this ping has a scale factors record
+    for _, value := range(records) {
+        if value == SCALE_FACTORS {
+            sf = true
+        }
+    }
+
+    pinfo.Number_Beams = hdr.Number_beams
+    pinfo.Sub_Records = records[:]
+    pinfo.Scale_Factors = sf
+
+    return pinfo
 }
 
 // Contains the main data of the acquisition such as depth, across track, along track.
@@ -200,7 +265,7 @@ func SwathBathymetryPingRec(stream *os.File, rec Record) {
     _ = binary.Read(stream, binary.BigEndian, &buffer)
     reader := bytes.NewReader(buffer)
 
-    hdr := scale_ping_hdr(reader)
+    hdr := decode_ping_hdr(reader)
     idx += 56 // 56 bytes read for ping header
     offset := rec.Byte_index + int64(idx)
 
