@@ -16,6 +16,7 @@ func Tell(stream *os.File) int64 {
 // Padding is a small helper function for padding a GSF record.
 // The GSF specification mentions that a records complete length has to be
 // a multiple of 4.
+// Most likely not needed for reading. Padding should be applied when writing a record.
 func Padding(stream *os.File) {
     pos := Tell(stream)
     pad := pos % 4
@@ -91,17 +92,10 @@ var subrec_arr = [32]SubRecordID{
     SCALE_FACTORS,
 }
 
-// PingInfo contains some basic information regarding the ping such as
-// the number of beams, what sub-records are populated.
-// The initial reasoning behind why, is to provide a basic descriptor
-// to inform a global schema across all pings, and derive max(n_beams) to
-// inform a global [ping, beam] dimensional array structure.
-type PingInfo struct {
-    Number_Beams uint16
-    Sub_Records []SubRecordID
-    Scale_Factors bool
-}
-
+// FileInfo is the overarching structure containing basic info about the GSF file.
+// Items include file location, file size, counts of each record (main and subrecords),
+// as well as basic info about the pings such as number of beams and schema for each
+// ping contained within the file.
 type FileInfo struct {
     GSF_URI string
     Size uint64
