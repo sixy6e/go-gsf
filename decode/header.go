@@ -12,7 +12,7 @@ import (
 // a byte index within the file of where the data starts for the record
 // as well as an indicator as to whether or not a checksum is given for the record.
 type Record struct {
-    Id int32
+    Id RecordID
     Datasize uint32
     Byte_index int64
     Checksum_flag bool
