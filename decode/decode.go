@@ -5,17 +5,17 @@ import (
     "time"
 )
 
-type RecordID uint16
-type SubRecordID uint16
+type RecordID int32
+type SubRecordID int32
 type SensorID uint16
 
 const (
     NEXT_RECORD RecordID = 0
     BEAM_WIDTH_UNKNOWN float32 = -1.0
-    SCALE1 float64 = 10_000_000
+    SCALE1 float32 = 10_000_000
     SCALE2 float32 = 100
     SCALE3 float32 = 1000
-    SCALE4 int = 1_000_000
+    SCALE4 int64 = 1_000_000  // TODO; convert to proper named type (int32, int64 etc)
 )
 
 // Base record IDs.
@@ -79,7 +79,7 @@ const (
 // The scale factors contained within the SCALE_FACTORS subrecord do not apply here.
 // (Possibly in relation to the intensity data).
 const (
-    SEABEAM SensorID = 102 + iota
+    SEABEAM SubRecordID = 102 + iota
     EM12
     EM100
     EM950
