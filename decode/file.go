@@ -8,9 +8,9 @@ import (
 // Tell is a small helper fucntion for telling the current position within a
 // binary file opened for reading.
 func Tell(stream *os.File) int64 {
-    pos, _ := stream.Seek(0, 1)
+    pos, err := stream.Seek(0, 1)
 
-    return pos
+    return pos, err
 }
 
 // Padding is a small helper function for padding a GSF record.
@@ -116,21 +116,24 @@ func Index(stream *os.File) any {  // TODO return type(s)
         val1 = RecordID
         val2 = SubRecordID
         rec = Record
+        pinfo = PingInfo
+        pings = []PingInfo
     )
 
     one := uint64(1)
+    zero := uint64(0)
 
     for _, val1 := range rec_arr {
         rec_idx[val1] = nil
-        rec_counts[val1] = 0
+        rec_counts[val1] = zero
     }
 
     for _, val2 = range subrec_arr {
-        sub_rec_counts[val2] = 0
+        sub_rec_counts[val2] = zero
     }
 
     // get the original starting point so we can jump back when done
-    original_pos := Tell(stream)
+    original_pos, _ := Tell(stream)
 
     // filesize is used as an EOF indicator when streaming the raw bytes
     filestat, _ := stream.Stat()
@@ -142,6 +145,7 @@ func Index(stream *os.File) any {  // TODO return type(s)
 
     // reading the bytestream and build record index information
     for pos < filesize {
+        // TODO; test that pos moves after we read a header
         rec = RecordHdr(stream)
 
         // increment record count
@@ -151,11 +155,27 @@ func Index(stream *os.File) any {  // TODO return type(s)
 
         if rec.Id == SWATH_BATHYMETRY_PING {
             // need to do some sub record decoding
+            buffer := make([]byte, rec.Datasize)
+            _ = binary.Read(stream, binary.BigEndian, &buffer)
+            reader := bytes.NewReader(buffer)
+
+            pinfo = ping_info(reader, rec)
+            pings = append(pings, pinfo)
+
+            // increment sub-record count
+            for _, sid := range(pinfo.Sub_Records) {
+                sub_rec_counts[sid] += one
+            }
+
+            pos, _ = Tell(stream)
+        } else {
+            // seek over the record and loop to the next
+            pos, _ = stream.Seek(int64(rec.Datasize), 1)
         }
 
         // read the record and loop to the next
-        pos, _ = stream.Seek(int64(rec.Datasize), 1)
-        _ = Padding(stream)
+        // pos, _ = stream.Seek(int64(rec.Datasize), 1)  // careful we don't do double reads (pinfo does seeking too)
+        // _ = Padding(stream)
 
     }
 }
