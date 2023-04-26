@@ -183,7 +183,8 @@ func scale_factors_rec(reader *bytes.Reader, idx int64) {
     }
 }
 
-func ping_info(stream *os.File, rec Record) PingInfo {
+// func ping_info(stream *os.File, rec Record) PingInfo {
+func ping_info(reader *bytes.Reader, rec Record) PingInfo {
     var (
         idx int64 = 0
         pinfo PingInfo
@@ -191,13 +192,13 @@ func ping_info(stream *os.File, rec Record) PingInfo {
         sf bool = false
     )
 
-    buffer := make([]byte, rec.Datasize)
+    // buffer := make([]byte, rec.Datasize)
     datasize := int64(rec.Datasize)
 
-    _, _ = stream.Seek(rec.Index, 0)
+    // _, _ = stream.Seek(rec.Index, 0)
 
-    _ = binary.Read(stream, binary.BigEndian, &buffer)
-    reader := bytes.NewReader(buffer)
+    // _ = binary.Read(stream, binary.BigEndian, &buffer)
+    // reader := bytes.NewReader(buffer)
 
     hdr := decode_ping_hdr(reader)
     idx += 56 // 56 bytes read for ping header
