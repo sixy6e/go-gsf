@@ -106,19 +106,24 @@ type FileInfo struct {
 
 // Index, as the name implies, builds a file index of all Record types.
 // Each Record contains the record ID, record size, byte index and checksum flag.
-func Index(stream *os.File) any {  // TODO return type(s)
+func Index(stream *os.File) FileInfo {  // TODO return type(s)
     // probably return map[RecordId]uint64, map[SubRecordId][uint64], []PingInfo
 
     var (
-        rec_idx = map[RecordID][]Record
-        rec_counts = map[RecordID]uint64
-        sub_rec_counts = map[SubRecordID]uint64
-        val1 = RecordID
-        val2 = SubRecordID
-        rec = Record
-        pinfo = PingInfo
-        pings = []PingInfo
+        rec_idx map[RecordID][]Record
+        rec_counts map[RecordID]uint64
+        sub_rec_counts map[SubRecordID]uint64
+        val1 RecordID
+        val2 SubRecordID
+        rec Record
+        pinfo PingInfo
+        pings []PingInfo
+        finfo FileInfo
     )
+
+    rec_idx = make(map[RecordID][]Record)
+    rec_counts = make(map[RecordID]uint64)
+    sub_rec_counts = make(map[SubRecordID]uint64)
 
     one := uint64(1)
     zero := uint64(0)
@@ -178,4 +183,12 @@ func Index(stream *os.File) any {  // TODO return type(s)
         // _ = Padding(stream)
 
     }
+
+    finfo.GSF_URI = filename
+    finfo.Size = filesize
+    finfo.Record_Counts = rec_counts
+    finfo.SubRecord_Counts = sub_rec_counts
+    finfo.Pings = pings
+
+    return finfo
 }
