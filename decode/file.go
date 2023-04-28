@@ -106,8 +106,7 @@ type FileInfo struct {
 
 // Index, as the name implies, builds a file index of all Record types.
 // Each Record contains the record ID, record size, byte index and checksum flag.
-func Index(stream *os.File) FileInfo {  // TODO return type(s)
-    // probably return map[RecordId]uint64, map[SubRecordId][uint64], []PingInfo
+func Index(stream *os.File) FileInfo {
 
     var (
         rec_idx map[RecordID][]Record
@@ -177,10 +176,6 @@ func Index(stream *os.File) FileInfo {  // TODO return type(s)
             // seek over the record and loop to the next
             pos, _ = stream.Seek(int64(rec.Datasize), 1)
         }
-
-        // read the record and loop to the next
-        // pos, _ = stream.Seek(int64(rec.Datasize), 1)  // careful we don't do double reads (pinfo does seeking too)
-        // _ = Padding(stream)
 
     }
 
