@@ -46,6 +46,7 @@ func SoundVelocityProfileRec(stream *os.File, rec Record) SoundVelocityProfile {
         base1 svp_base1
         base2 svp_base2
         svp SoundVelocityProfile
+        i int32
     )
 
     buffer := make([]byte, rec.Datasize)
@@ -75,7 +76,7 @@ func SoundVelocityProfileRec(stream *os.File, rec Record) SoundVelocityProfile {
     svp.Longitude = float64(float32(base1.Longitude) / SCALE2)
     svp.Latitude = float64(float32(base1.Latitude) / SCALE2)
 
-    for i := 0; i < int(base1.N_points); i++ {
+    for i = 0; i < base1.N_points; i++ {
         svp.Depth[i] = float32(base2.Depth[i]) / SCALE1
         svp.Sound_velocity[i] = float32(base2.Sound_velocity[i]) / SCALE1
     }
