@@ -108,7 +108,7 @@ func ProcessingParametersRec(stream *os.File, rec Record) map[string]interface{}
         // TODO; define a cleaner & intelligent method than this brute force approach
         if strings.Contains(val, ",") == true {  // ',' implies an array of data
             svals = strings.Split(val, ",")
-            length := len(svals)
+            length := int64(len(svals))
 
             if strings.Contains(val, ".") == true {  // assumption on period being a decimal point
                 fvals := make([]float32, length)
