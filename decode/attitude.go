@@ -36,7 +36,7 @@ type Attitude struct {
 // Fields include: Timestamp, Pitch, Roll, Heave and Heading.
 func AttitudeRec(stream *os.File, rec Record) Attitude {
     var (
-        idx int = 0
+        idx int64 = 0
         base1 attitude_base1
         base2 attitude_base2
         offset time.Duration

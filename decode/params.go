@@ -44,6 +44,8 @@ func parse_reftime(date_str string) time.Time {
 // conditions or operational values.
 // Typical parameters include items uch as the navigation sensor's antenna location or the
 // reference ellipsoid for the geographic position.
+// This record could contain pretty much anything, of any type. We'll try to detect
+// as many types as possible and convert them from strings.
 func ProcessingParametersRec(stream *os.File, rec Record) map[string]interface{} {
     var (
         param_size int16
@@ -53,6 +55,8 @@ func ProcessingParametersRec(stream *os.File, rec Record) map[string]interface{}
         val string
         svals []string
         base params_base
+        i int16
+        j int64
     )
 
     // some fields contain a mix of strings that imply a boolean condition
@@ -83,7 +87,7 @@ func ProcessingParametersRec(stream *os.File, rec Record) map[string]interface{}
     // and the param value containing "=" eg "22APPLIED_ROLL_BIAS=0.03" where 22 is string length
     // rather than retaing the raw string, parse all values to proper types
     // with the intent on outputing the data as a json doc
-    for i:= 0; i < int(base.N_params); i++ {
+    for i = 0; i < base.N_params; i++ {
 
         // size of param (length of string)
         param_size = int16(binary.BigEndian.Uint16(buffer[start_idx:end_idx]))
@@ -108,7 +112,7 @@ func ProcessingParametersRec(stream *os.File, rec Record) map[string]interface{}
 
             if strings.Contains(val, ".") == true {  // assumption on period being a decimal point
                 fvals := make([]float32, length)
-                for j := 0; j < length; j++ {
+                for j = 0; j < length; j++ {
                     fval, err := strconv.ParseFloat(svals[j], 32)
                     if err != nil {
                         panic(err)  // something bad, and we want to know why
@@ -118,7 +122,7 @@ func ProcessingParametersRec(stream *os.File, rec Record) map[string]interface{}
                 }
                 params[key] = fvals
             } else {  // could be dealing with an array of unknwn or unknown
-                for j := 0; j < length; j++ {
+                for j = 0; j < length; j++ {
                     svals[j] = "unknown"
                 }
             }
