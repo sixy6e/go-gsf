@@ -2,7 +2,7 @@ package decode
 
 import (
     "os"
-    "bytes"
+    // "bytes"
     "encoding/binary"
     "time"
 )
@@ -53,14 +53,14 @@ func SwathBathySummaryRec(stream *os.File, rec Record) SwathBathySummary {
 
     // should look at storing the scale factors as consts or a struct
     summary := SwathBathySummary{
-        Start_datetime: time.Unix(int64(buffer.first_ping_sec), int64(buffer.first_ping_nano_sec)).UTC(),
-        End_datetime: time.Unix(int64(buffer.last_ping_sec), int64(buffer.last_ping_nano_sec)).UTC(),
-        Min_longitude: float64(buffer2.min_lon) / scale1,
-        Max_longitude: float64(buffer2.max_lon) / scale1,
-        Min_latitude: float64(buffer2.min_lat) / scale1,
-        Max_latitude: float64(buffer2.max_lat) / scale1,
-        Min_depth: float32(buffer2.min_depth) / scale2,
-        Max_depth: float32(buffer2.max_depth) / scale2,
+        Start_datetime: time.Unix(int64(buffer.First_ping_sec), int64(buffer.First_ping_nano_sec)).UTC(),
+        End_datetime: time.Unix(int64(buffer.Last_ping_sec), int64(buffer.Last_ping_nano_sec)).UTC(),
+        Min_longitude: float64(float32(buffer.Min_lon) / SCALE1),
+        Max_longitude: float64(float32(buffer.Max_lon) / SCALE1),
+        Min_latitude: float64(float32(buffer.Min_lat) / SCALE1),
+        Max_latitude: float64(float32(buffer.Max_lat) / SCALE1),
+        Min_depth: float32(buffer.Min_depth) / SCALE2,
+        Max_depth: float32(buffer.Max_depth) / SCALE2,
     }
 
     return summary

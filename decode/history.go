@@ -2,7 +2,7 @@ package decode
 
 import (
     "os"
-    "bytes"
+    // "bytes"
     "encoding/binary"
     "time"
 )
@@ -25,15 +25,15 @@ type History struct {
 // program being used and any command line args or relevant parameters, as well as any
 // comments to summarise the processing that occurred.
 func HistoryRec(stream *os.File, rec Record) History {
-    buffer = make([]byte, rec.Datasize)
+    buffer := make([]byte, rec.Datasize)
 
     _ , _ = stream.Read(buffer)
     // reader := bytes.NewReader(buffer)
     // _ = binary.Read(reader, binary.BigEndian, &buffer2)
 
     // timestamp
-    seconds := int64(binary.BigEndian.Uint32(blob[0:4]))
-    nano_seconds := int64(binary.BigEndian.Uint32(blob[4:8]))
+    seconds := int64(binary.BigEndian.Uint32(buffer[0:4]))
+    nano_seconds := int64(binary.BigEndian.Uint32(buffer[4:8]))
 
     // start stop index markers (first 8 bytes was for the timestamp)
     start_idx := 8
@@ -46,34 +46,34 @@ func HistoryRec(stream *os.File, rec Record) History {
     // machine name
     size := int16(binary.BigEndian.Uint16(buffer[start_idx:end_idx]))
     start_idx += 2
-    end_idx += size
+    end_idx += int(size)
     machine_name := string(buffer[start_idx:end_idx])
-    start_idx += size
+    start_idx += int(size)
     end_idx += 2
 
     // operator name
     size = int16(binary.BigEndian.Uint16(buffer[start_idx:end_idx]))
     start_idx += 2
-    end_idx += size
+    end_idx += int(size)
     operator_name := string(buffer[start_idx:end_idx])
-    start_idx += size
+    start_idx += int(size)
     end_idx += 2
 
     // command
     size = int16(binary.BigEndian.Uint16(buffer[start_idx:end_idx]))
     start_idx += 2
-    end_idx += size
-    command = string(buffer[start_idx:end_idx])
-    start_idx += size
+    end_idx += int(size)
+    command := string(buffer[start_idx:end_idx])
+    start_idx += int(size)
     end_idx += 2
 
     // comment
     size = int16(binary.BigEndian.Uint16(buffer[start_idx:end_idx]))
     start_idx += 2
-    end_idx += size
-    comment = string(buffer[start_idx:end_idx])
+    end_idx += int(size)
+    comment := string(buffer[start_idx:end_idx])
 
-    history = History{
+    history := History{
         Processing_timestamp: time.Unix(seconds, nano_seconds).UTC(),
         Machine_name: machine_name,
         Operator_name: operator_name,

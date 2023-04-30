@@ -65,7 +65,7 @@ func AttitudeRec(stream *os.File, rec Record) Attitude {
 
         // haven't looked deep into why, but 1_000_000 and nanoseconds worked
         // original C code did some funky stuff in an internal function for determining time
-        offset = time.Duration(int(base2.Time_offset) * SCALE4)
+        offset = time.Duration(int64(base2.Time_offset) * SCALE4)
         attitude.Timestamp[i] = acq_time.Add(time.Nanosecond * offset)
         attitude.Pitch[i] = float32(base2.Pitch) / SCALE2
         attitude.Roll[i] = float32(base2.Roll) / SCALE2

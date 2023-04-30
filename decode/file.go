@@ -3,11 +3,12 @@ package decode
 import (
     "os"
     "encoding/binary"
+    "bytes"
 )
 
 // Tell is a small helper fucntion for telling the current position within a
 // binary file opened for reading.
-func Tell(stream *os.File) int64 {
+func Tell(stream *os.File) (int64, error) {
     pos, err := stream.Seek(0, 1)
 
     return pos, err
@@ -18,7 +19,7 @@ func Tell(stream *os.File) int64 {
 // a multiple of 4.
 // Most likely not needed for reading. Padding should be applied when writing a record.
 func Padding(stream *os.File) {
-    pos := Tell(stream)
+    pos, _ := Tell(stream)
     pad := pos % 4
     pad, _ = stream.Seek(pad, 1)
 
@@ -98,10 +99,11 @@ var subrec_arr = [32]SubRecordID{
 // ping contained within the file.
 type FileInfo struct {
     GSF_URI string
-    Size uint64
+    Size int64
     Record_Counts map[RecordID]uint64
     SubRecord_Counts map[SubRecordID]uint64
-    Pings map[RecordID][]PingInfo
+    Record_Index map[RecordID][]Record
+    Ping_Info []PingInfo
 }
 
 // Index, as the name implies, builds a file index of all Record types.
@@ -127,7 +129,7 @@ func Index(stream *os.File) FileInfo {
     one := uint64(1)
     zero := uint64(0)
 
-    for _, val1 := range rec_arr {
+    for _, val1 = range rec_arr {
         rec_idx[val1] = nil
         rec_counts[val1] = zero
     }
@@ -179,11 +181,15 @@ func Index(stream *os.File) FileInfo {
 
     }
 
+    // reset file posistion
+    _, _ = stream.Seek(original_pos, 0)
+
     finfo.GSF_URI = filename
     finfo.Size = filesize
     finfo.Record_Counts = rec_counts
     finfo.SubRecord_Counts = sub_rec_counts
-    finfo.Pings = pings
+    finfo.Record_Index = rec_idx
+    finfo.Ping_Info = pings
 
     return finfo
 }

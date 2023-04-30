@@ -116,7 +116,7 @@ func decode_ping_hdr(reader *bytes.Reader, rec Record) PingHeader {
 
     _ = binary.Read(reader, binary.BigEndian, &hdr_base)
 
-    hdr.Time = time.Unix(int64(hdr_base.Seconds), int64(hdr_base.Nano_seconds)).UTC()
+    hdr.Timestamp = time.Unix(int64(hdr_base.Seconds), int64(hdr_base.Nano_seconds)).UTC()
     hdr.Longitude = float64(float32(hdr_base.Longitude) / SCALE1)
     hdr.Latitude = float64(float32(hdr_base.Latitude) / SCALE1)
     hdr.Number_beams = hdr_base.Number_beams
@@ -147,7 +147,7 @@ func SubRecHdr(reader *bytes.Reader, offset int64) SubRecord {
 
     byte_index := offset + 4
 
-    subhdr := SubRecord{subrecord_id, subrecord_size, byte_index} // include a byte_index??
+    subhdr := SubRecord{SubRecordID(subrecord_id), uint32(subrecord_size), byte_index} // include a byte_index??
 
     return subhdr
 }
@@ -200,7 +200,7 @@ func ping_info(reader *bytes.Reader, rec Record) PingInfo {
     // _ = binary.Read(stream, binary.BigEndian, &buffer)
     // reader := bytes.NewReader(buffer)
 
-    hdr := decode_ping_hdr(reader)
+    hdr := decode_ping_hdr(reader, rec)
     idx += 56 // 56 bytes read for ping header
     offset := rec.Byte_index + idx
 
@@ -255,9 +255,9 @@ func ping_info(reader *bytes.Reader, rec Record) PingInfo {
 // Another instance was a duplicate ping. Same timestamp, location, depth, but zero values
 // for supporting attributes/sub-records/fields (heading, course, +others). Again, this
 // appeared to have never been encountered before (or never looked).
-func SwathBathymetryPingRec(stream *os.File, rec Record) {
+func SwathBathymetryPingRec(stream *os.File, rec Record) PingHeader {
     var (
-        idx int = 0
+        idx int64 = 0
         // subrecord_hdr int32
     )
 
@@ -266,13 +266,13 @@ func SwathBathymetryPingRec(stream *os.File, rec Record) {
     _ = binary.Read(stream, binary.BigEndian, &buffer)
     reader := bytes.NewReader(buffer)
 
-    hdr := decode_ping_hdr(reader)
+    hdr := decode_ping_hdr(reader, rec)
     idx += 56 // 56 bytes read for ping header
-    offset := rec.Byte_index + int64(idx)
+    offset := rec.Byte_index + idx
 
     // first subrecord
     //reader := bytes.NewReader(buffer[56:])
-    _ = reader.Seek(idx, 0)
+    _, _ = reader.Seek(idx, 0)
     // _ = binary.Read(reader, binary.BigEndian, &subrecord_hdr)
     // subrecord_id := (int(subrecord_hdr) & 0xFF000000) >> 24
     // subrecord_size := int(subrecord_hdr) & 0x00FFFFFF
@@ -284,4 +284,6 @@ func SwathBathymetryPingRec(stream *os.File, rec Record) {
     if sub_rec.Id == SCALE_FACTORS {
         // read and structure the scale factors
     }
+
+    return hdr
 }

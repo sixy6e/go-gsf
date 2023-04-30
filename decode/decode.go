@@ -2,7 +2,6 @@
 package decode
 
 import (
-    "time"
 )
 
 type RecordID int32

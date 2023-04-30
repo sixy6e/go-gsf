@@ -2,9 +2,8 @@ package decode
 
 import (
     "os"
-    "bytes"
+    //"bytes"
     "encoding/binary"
-    "time"
 )
 
 // Record contains information about a given record stored within the GSF file.
@@ -27,10 +26,10 @@ func RecordHdr(stream *os.File) Record {
     blob := [2]uint32{}
     _ = binary.Read(stream, binary.BigEndian, &blob)
     data_size := blob[0]
-    record_id := int32(blob[1])
+    record_id := RecordID(blob[1])
     checksum_flag := int64(record_id) & 0x80000000 == 1
 
-    pos := Tell(stream)
+    pos, _ := Tell(stream)
 
     rec_hdr := Record{
         Id: record_id,

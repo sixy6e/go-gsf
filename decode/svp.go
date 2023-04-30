@@ -60,24 +60,24 @@ func SoundVelocityProfileRec(stream *os.File, rec Record) SoundVelocityProfile {
     // A previous implementation created arrays for all vars (lon, lat etc)
     // it might be better to create a single point where depth/sound velocity
     // are single elements containing an array of data
-    base2.depth = make([]int32, base1.n_points)
-    base2.sound_velocity = make([]int32, base1.n_points)
+    base2.Depth = make([]int32, base1.N_points)
+    base2.Sound_velocity = make([]int32, base1.N_points)
 
-    reader := bytes.NewReader(buffer[idx:])
+    reader = bytes.NewReader(buffer[idx:])
     _ = binary.Read(reader, binary.BigEndian, &base2)
 
     // it's not quite clear from the spec as to whether UTC is enforced
     // high potential that someone has stored local time
-    svp.Observation_timestamp = time.Unix(int64(base1.obs_seconds), int64(base1.obs_nano_seconds)).UTC()
-    svp.Applied_timestamp = time.Unix(int64(base1.app_seconds), int64(base1.app_nano_seconds)).UTC()
+    svp.Observation_timestamp = time.Unix(int64(base1.Obs_seconds), int64(base1.Obs_nano_seconds)).UTC()
+    svp.Applied_timestamp = time.Unix(int64(base1.App_seconds), int64(base1.App_nano_seconds)).UTC()
 
     // all the provided sample files have 0.0 for the lon and lat; WTH‽
-    svp.Longitude = float64(base1.longitude) / scale2
-    svp.Latitude = float64(base1.latitude) / scale2
+    svp.Longitude = float64(float32(base1.Longitude) / SCALE2)
+    svp.Latitude = float64(float32(base1.Latitude) / SCALE2)
 
     for i := 0; i < int(base1.N_points); i++ {
-        svp.Depth[i] = float32(base2.depth[i]) / scale1
-        svp.Sound_velocity[i] = float32(base2.sound_velocity[i]) / scale1
+        svp.Depth[i] = float32(base2.Depth[i]) / SCALE1
+        svp.Sound_velocity[i] = float32(base2.Sound_velocity[i]) / SCALE1
     }
 
     return svp

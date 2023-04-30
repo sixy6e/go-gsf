@@ -5,12 +5,38 @@ import (
     "bytes"
     "encoding/binary"
     "time"
+    "strings"
+    "strconv"
+
+    "github.com/soniakeys/meeus/v3/julian"
 )
 
 type params_base struct {
     Seconds int32
     Nano_seconds int32
     N_params int16
+}
+
+func parse_reftime(date_str string) time.Time {
+    // format is (according to spec) yyyy/ddd hh:mm:ss (eg 1970/001 00:00:00)
+    split := strings.Split(date_str, " ")
+    split2 := strings.Split(split[0], "/")
+
+    year, _ := strconv.Atoi(split2[0])
+    doy, _ := strconv.Atoi(split2[1])
+    month, day := julian.DayOfYearToCalendar(doy, julian.LeapYearGregorian(year))
+
+    // hour, min, sec
+    split3 := strings.Split(split[1], ":")
+    hms := make([]int, len(split3))
+
+    for i, val := range split3 {
+        hms[i], _ = strconv.Atoi(val)
+    }
+
+    date := time.Date(year, time.Month(month), day, hms[0], hms[1], hms[2], 0, time.UTC)
+
+    return date
 }
 
 // ProcessingParametersRec decodes the PROCESSING_PARAMETERS record.
@@ -24,8 +50,6 @@ func ProcessingParametersRec(stream *os.File, rec Record) map[string]interface{}
         param string
         split []string
         key string
-        key string
-        val string
         val string
         svals []string
         base params_base
