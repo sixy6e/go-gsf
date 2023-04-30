@@ -48,7 +48,7 @@ func HistoryRec(stream *os.File, rec Record) History {
     start_idx += 2
     end_idx += size
     machine_name := string(buffer[start_idx:end_idx])
-    start_idx += size64
+    start_idx += size
     end_idx += 2
 
     // operator name
@@ -56,7 +56,7 @@ func HistoryRec(stream *os.File, rec Record) History {
     start_idx += 2
     end_idx += size
     operator_name := string(buffer[start_idx:end_idx])
-    start_idx += size64
+    start_idx += size
     end_idx += 2
 
     // command
@@ -64,7 +64,7 @@ func HistoryRec(stream *os.File, rec Record) History {
     start_idx += 2
     end_idx += size
     command := string(buffer[start_idx:end_idx])
-    start_idx += size64
+    start_idx += size
     end_idx += 2
 
     // comment
