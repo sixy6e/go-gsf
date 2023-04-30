@@ -44,37 +44,33 @@ func HistoryRec(stream *os.File, rec Record) History {
     // TODO find a better method of deconstructing this blob
 
     // machine name
-    size := int16(binary.BigEndian.Uint16(buffer[start_idx:end_idx]))  // TODO; test int64
-    size64 := int64(size)
+    size := int64(binary.BigEndian.Uint16(buffer[start_idx:end_idx]))
     start_idx += 2
-    end_idx += size64
+    end_idx += size
     machine_name := string(buffer[start_idx:end_idx])
     start_idx += size64
     end_idx += 2
 
     // operator name
-    size = int16(binary.BigEndian.Uint16(buffer[start_idx:end_idx]))
-    size64 = int64(size)
+    size = int64(binary.BigEndian.Uint16(buffer[start_idx:end_idx]))
     start_idx += 2
-    end_idx += size64
+    end_idx += size
     operator_name := string(buffer[start_idx:end_idx])
     start_idx += size64
     end_idx += 2
 
     // command
-    size = int16(binary.BigEndian.Uint16(buffer[start_idx:end_idx]))
-    size64 = int64(size)
+    size = int64(binary.BigEndian.Uint16(buffer[start_idx:end_idx]))
     start_idx += 2
-    end_idx += size64
+    end_idx += size
     command := string(buffer[start_idx:end_idx])
     start_idx += size64
     end_idx += 2
 
     // comment
-    size = int16(binary.BigEndian.Uint16(buffer[start_idx:end_idx]))
-    size64 = int64(size)
+    size = int64(binary.BigEndian.Uint16(buffer[start_idx:end_idx]))
     start_idx += 2
-    end_idx += size64
+    end_idx += size
     comment := string(buffer[start_idx:end_idx])
 
     history := History{
