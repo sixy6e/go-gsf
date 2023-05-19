@@ -1,7 +1,7 @@
 package decode
 
 import (
-    "os"
+    // "os"
     // "bytes"
     "encoding/binary"
     "time"
@@ -24,10 +24,10 @@ type History struct {
 // Captured information; time the step occurred, operator name, computer name
 // program being used and any command line args or relevant parameters, as well as any
 // comments to summarise the processing that occurred.
-func HistoryRec(stream *os.File, rec Record) History {
+func HistoryRec(buffer []byte, rec Record) History {
     buffer := make([]byte, rec.Datasize)
 
-    _ , _ = stream.Read(buffer)
+    // _ , _ = stream.Read(buffer)
     // reader := bytes.NewReader(buffer)
     // _ = binary.Read(reader, binary.BigEndian, &buffer2)
 

@@ -1,7 +1,7 @@
 package decode
 
 import (
-    "os"
+    // "os"
     "bytes"
     "encoding/binary"
     "time"
@@ -41,7 +41,7 @@ type SoundVelocityProfile struct {
 // Note: The provided samples appear to not store the position. It has been described that
 // the position could be retrieved from the closest matching timestamp with that of a
 // ping timestamp (within some acceptable tolerance).
-func SoundVelocityProfileRec(stream *os.File, rec Record) SoundVelocityProfile {
+func SoundVelocityProfileRec(buffer []byte, rec Record) SoundVelocityProfile {
     var (
         base1 svp_base1
         base2 svp_base2
@@ -49,8 +49,8 @@ func SoundVelocityProfileRec(stream *os.File, rec Record) SoundVelocityProfile {
         i int32
     )
 
-    buffer := make([]byte, rec.Datasize)
-    _ , _ = stream.Read(buffer)
+    // buffer := make([]byte, rec.Datasize)
+    // _ , _ = stream.Read(buffer)
     reader := bytes.NewReader(buffer)
 
     _ = binary.Read(reader, binary.BigEndian, &base1)

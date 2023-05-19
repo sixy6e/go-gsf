@@ -130,7 +130,7 @@ const (
     R2SONIC_2022
     R2SONIC_2024
     R2SONIC_2020
-    SR_NOT_DEFINED
+    SR_NOT_DEFINED  // the spec makes no mention of ID 154
     RESON_TSERIES
     KMALL  // 156
 )

@@ -4,11 +4,13 @@ import (
     "os"
     "encoding/binary"
     "bytes"
+
+    tiledb "github.com/TileDB-Inc/TileDB-Go"
 )
 
 // Tell is a small helper fucntion for telling the current position within a
 // binary file opened for reading.
-func Tell(stream *os.File) (int64, error) {
+func Tell(stream *tiledb.VFSfh) (int64, error) {
     pos, err := stream.Seek(0, 1)
 
     return pos, err
@@ -18,7 +20,7 @@ func Tell(stream *os.File) (int64, error) {
 // The GSF specification mentions that a records complete length has to be
 // a multiple of 4.
 // Most likely not needed for reading. Padding should be applied when writing a record.
-func Padding(stream *os.File) {
+func Padding(stream *tiledb.VFSfh) {
     pos, _ := Tell(stream)
     pad := pos % 4
     pad, _ = stream.Seek(pad, 1)
@@ -33,10 +35,10 @@ type GSFv struct {
 
 // FileRec decodes the HEADER record from a GSF file.
 // It contains the version of GSF used to create the file.
-func FileRec(stream *os.File, rec Record) GSFv {
-    buffer := make([]byte, rec.Datasize)
+func FileRec(buffer []byte, rec Record) GSFv {
+    // buffer := make([]byte, rec.Datasize)
 
-    _ = binary.Read(stream, binary.BigEndian, &buffer)
+    // _ = binary.Read(stream, binary.BigEndian, &buffer)
 
     file_hdr := GSFv{Version: string(buffer)}
 
@@ -108,7 +110,7 @@ type FileInfo struct {
 
 // Index, as the name implies, builds a file index of all Record types.
 // Each Record contains the record ID, record size, byte index and checksum flag.
-func Index(stream *os.File) FileInfo {
+func Index(gsf_uri string, config_uri string) FileInfo {
 
     var (
         rec_idx map[RecordID][]Record
@@ -121,6 +123,20 @@ func Index(stream *os.File) FileInfo {
         pings []PingInfo
         finfo FileInfo
     )
+
+    config, err := tiledb.LoadConfig(config_uri)
+    // checkError(err)  // TODO; define checkError
+    defer config.Free()
+
+    ctx, err := tiledb.NewContext(config)
+    defer ctx.Free()
+
+    vfs, err := tiledb.NewVFS(ctx, config)
+    defer vfs.Free()
+
+    stream, err := vfs.Open(gsf_uri, tiledb.TILEDB_VFS_READ)
+    defer stream.Close()
+    defer stream.Free()
 
     rec_idx = make(map[RecordID][]Record)
     rec_counts = make(map[RecordID]uint64)
@@ -142,9 +158,9 @@ func Index(stream *os.File) FileInfo {
     original_pos, _ := Tell(stream)
 
     // filesize is used as an EOF indicator when streaming the raw bytes
-    filestat, _ := stream.Stat()
-    filesize := filestat.Size()
-    filename := filestat.Name()
+    // filestat, _ := stream.Stat()
+    filesize, _ := vfs.FileSize(uri)
+    // filename := filestat.Name()
 
     // start at front of the stream
     pos, _ := stream.Seek(0, 0)
@@ -184,7 +200,7 @@ func Index(stream *os.File) FileInfo {
     // reset file posistion
     _, _ = stream.Seek(original_pos, 0)
 
-    finfo.GSF_URI = filename
+    finfo.GSF_URI = gsf_uri
     finfo.Size = filesize
     finfo.Record_Counts = rec_counts
     finfo.SubRecord_Counts = sub_rec_counts

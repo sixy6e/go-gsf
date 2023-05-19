@@ -1,7 +1,7 @@
 package decode
 
 import (
-    "os"
+    // "os"
     // "bytes"
     "encoding/binary"
     "time"
@@ -38,8 +38,8 @@ type SwathBathySummary struct {
 // SwathBathySummaryRec decodes the SWATH_BATHY_SUMMARY record.
 // It contains the geometrical and temporal extent of the swath data contained
 // within the GSF file.
-func SwathBathySummaryRec(stream *os.File, rec Record) SwathBathySummary {
-    var buffer summary_base
+func SwathBathySummaryRec(buffer []byte, rec Record) SwathBathySummary {
+    var buffer2 summary_base
 
     // for s3 reads we might need to look at reading the entire record into a buffer
     // then convert to a reader to pass through the binary.Read
@@ -49,18 +49,20 @@ func SwathBathySummaryRec(stream *os.File, rec Record) SwathBathySummary {
     // buffer2 := struct{...}
     // _ = binary.Read(reader, binary.BigEndian, &buffer2)
 
-    _ = binary.Read(stream, binary.BigEndian, &buffer)
+    // TODO; look for alternate way of processing; potentially json.unmarshall???
+    reader := bytes.NewReader(buffer)
+    _ = binary.Read(reader, binary.BigEndian, &buffer2)
 
     // should look at storing the scale factors as consts or a struct
     summary := SwathBathySummary{
-        Start_datetime: time.Unix(int64(buffer.First_ping_sec), int64(buffer.First_ping_nano_sec)).UTC(),
-        End_datetime: time.Unix(int64(buffer.Last_ping_sec), int64(buffer.Last_ping_nano_sec)).UTC(),
-        Min_longitude: float64(float32(buffer.Min_lon) / SCALE1),
-        Max_longitude: float64(float32(buffer.Max_lon) / SCALE1),
-        Min_latitude: float64(float32(buffer.Min_lat) / SCALE1),
-        Max_latitude: float64(float32(buffer.Max_lat) / SCALE1),
-        Min_depth: float32(buffer.Min_depth) / SCALE2,
-        Max_depth: float32(buffer.Max_depth) / SCALE2,
+        Start_datetime: time.Unix(int64(buffer2.First_ping_sec), int64(buffer2.First_ping_nano_sec)).UTC(),
+        End_datetime: time.Unix(int64(buffer2.Last_ping_sec), int64(buffer2.Last_ping_nano_sec)).UTC(),
+        Min_longitude: float64(float32(buffer2.Min_lon) / SCALE1),
+        Max_longitude: float64(float32(buffer2.Max_lon) / SCALE1),
+        Min_latitude: float64(float32(buffer2.Min_lat) / SCALE1),
+        Max_latitude: float64(float32(buffer2.Max_lat) / SCALE1),
+        Min_depth: float32(buffer2.Min_depth) / SCALE2,
+        Max_depth: float32(buffer2.Max_depth) / SCALE2,
     }
 
     return summary

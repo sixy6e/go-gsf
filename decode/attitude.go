@@ -1,7 +1,7 @@
 package decode
 
 import (
-    "os"
+    // "os"
     "bytes"
     "encoding/binary"
     "time"
@@ -34,7 +34,7 @@ type Attitude struct {
 // AttitudeRec decodes an Attitude Record which contains the measurements
 // as reported by the vessel attitude sensor.
 // Fields include: Timestamp, Pitch, Roll, Heave and Heading.
-func AttitudeRec(stream *os.File, rec Record) Attitude {
+func AttitudeRec(buffer []byte, rec Record) Attitude {
     var (
         idx int64 = 0
         base1 attitude_base1
@@ -42,12 +42,12 @@ func AttitudeRec(stream *os.File, rec Record) Attitude {
         offset time.Duration
     )
 
-    buffer := make([]byte, rec.Datasize)
-    _ , _ = stream.Read(buffer)
+    // buffer := make([]byte, rec.Datasize)
+    // _ , _ = stream.Read(buffer)
     reader := bytes.NewReader(buffer)
 
     _ = binary.Read(reader, binary.BigEndian, &base1)
-    idx += 10
+    idx += 10  // TODO; remove
 
     acq_time := time.Unix(int64(base1.Seconds), int64(base1.Nano_seconds)).UTC()
 
@@ -72,7 +72,7 @@ func AttitudeRec(stream *os.File, rec Record) Attitude {
         attitude.Heave[i] = float32(base2.Heave) / SCALE2
         attitude.Heading[i] = float32(base2.Heading) / SCALE2
 
-        idx += 10
+        idx += 10  // TODO; remove
     }
 
     return attitude

@@ -255,15 +255,15 @@ func ping_info(reader *bytes.Reader, rec Record) PingInfo {
 // Another instance was a duplicate ping. Same timestamp, location, depth, but zero values
 // for supporting attributes/sub-records/fields (heading, course, +others). Again, this
 // appeared to have never been encountered before (or never looked).
-func SwathBathymetryPingRec(stream *os.File, rec Record) PingHeader {
+func SwathBathymetryPingRec(buffer []byte, rec Record) PingHeader {
     var (
         idx int64 = 0
         // subrecord_hdr int32
     )
 
-    buffer := make([]byte, rec.Datasize)
+    // buffer := make([]byte, rec.Datasize)
 
-    _ = binary.Read(stream, binary.BigEndian, &buffer)
+    // _ = binary.Read(stream, binary.BigEndian, &buffer)
     reader := bytes.NewReader(buffer)
 
     hdr := decode_ping_hdr(reader, rec)

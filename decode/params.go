@@ -1,7 +1,7 @@
 package decode
 
 import (
-    "os"
+    // "os"
     "bytes"
     "encoding/binary"
     "time"
@@ -46,7 +46,7 @@ func parse_reftime(date_str string) time.Time {
 // reference ellipsoid for the geographic position.
 // This record could contain pretty much anything, of any type. We'll try to detect
 // as many types as possible and convert them from strings.
-func ProcessingParametersRec(stream *os.File, rec Record) map[string]interface{} {
+func ProcessingParametersRec(buffer []byte, rec Record) map[string]interface{} {
     var (
         param_size int16
         param string
@@ -75,9 +75,9 @@ func ProcessingParametersRec(stream *os.File, rec Record) map[string]interface{}
 
     params := make(map[string]interface{})
 
-    buffer := make([]byte, rec.Datasize)
+    // buffer := make([]byte, rec.Datasize)
 
-    _ = binary.Read(stream, binary.BigEndian, &buffer)
+    // _ = binary.Read(stream, binary.BigEndian, &buffer)
     reader := bytes.NewReader(buffer)
     _ = binary.Read(reader, binary.BigEndian, &base)
 
