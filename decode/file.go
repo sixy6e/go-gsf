@@ -1,9 +1,10 @@
 package decode
 
 import (
-    "os"
+    // "os"
     "encoding/binary"
     "bytes"
+    "fmt"
 
     tiledb "github.com/TileDB-Inc/TileDB-Go"
 )
@@ -101,7 +102,7 @@ var subrec_arr = [32]SubRecordID{
 // ping contained within the file.
 type FileInfo struct {
     GSF_URI string
-    Size int64
+    Size uint64
     Record_Counts map[RecordID]uint64
     SubRecord_Counts map[SubRecordID]uint64
     Record_Index map[RecordID][]Record
@@ -124,17 +125,40 @@ func Index(gsf_uri string, config_uri string) FileInfo {
         finfo FileInfo
     )
 
-    config, err := tiledb.LoadConfig(config_uri)
-    // checkError(err)  // TODO; define checkError
+    var config *tiledb.Config
+    var err error
+
+    // get a generic config if no path provided
+    if config_uri == "" {
+        config, err = tiledb.NewConfig()
+        if err != nil {
+            panic(err)
+        }
+    } else {
+        config, err = tiledb.LoadConfig(config_uri)
+        if err != nil {
+            panic(err)
+        }
+    }
+
     defer config.Free()
 
     ctx, err := tiledb.NewContext(config)
+    if err != nil {
+        panic(err)
+    }
     defer ctx.Free()
 
-    vfs, err := tiledb.NewVFS(ctx, config)
+    vfs, err_ := tiledb.NewVFS(ctx, config)
+    if err != nil {
+        panic(err)
+    }
     defer vfs.Free()
 
     stream, err := vfs.Open(gsf_uri, tiledb.TILEDB_VFS_READ)
+    if err != nil {
+        panic(err)
+    }
     defer stream.Close()
     defer stream.Free()
 
@@ -159,14 +183,14 @@ func Index(gsf_uri string, config_uri string) FileInfo {
 
     // filesize is used as an EOF indicator when streaming the raw bytes
     // filestat, _ := stream.Stat()
-    filesize, _ := vfs.FileSize(uri)
+    filesize, _ := vfs.FileSize(gsf_uri)
     // filename := filestat.Name()
 
     // start at front of the stream
     pos, _ := stream.Seek(0, 0)
 
     // reading the bytestream and build record index information
-    for pos < filesize {
+    for uint64(pos) < filesize {
         // TODO; test that pos moves after we read a header
         rec = RecordHdr(stream)
 
