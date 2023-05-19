@@ -2,7 +2,7 @@ package decode
 
 import (
     // "os"
-    // "bytes"
+    "bytes"
     "encoding/binary"
     "time"
 )

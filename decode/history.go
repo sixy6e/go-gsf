@@ -25,7 +25,7 @@ type History struct {
 // program being used and any command line args or relevant parameters, as well as any
 // comments to summarise the processing that occurred.
 func HistoryRec(buffer []byte, rec Record) History {
-    buffer := make([]byte, rec.Datasize)
+    // buffer := make([]byte, rec.Datasize)
 
     // _ , _ = stream.Read(buffer)
     // reader := bytes.NewReader(buffer)

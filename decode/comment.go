@@ -1,7 +1,7 @@
 package decode
 
 import (
-    "os"
+    // "os"
     "bytes"
     "encoding/binary"
     "time"
