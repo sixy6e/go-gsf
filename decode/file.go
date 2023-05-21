@@ -4,7 +4,7 @@ import (
     // "os"
     "encoding/binary"
     "bytes"
-    "fmt"
+    // "fmt"
 
     tiledb "github.com/TileDB-Inc/TileDB-Go"
 )
@@ -123,10 +123,9 @@ func Index(gsf_uri string, config_uri string) FileInfo {
         pinfo PingInfo
         pings []PingInfo
         finfo FileInfo
+        config *tiledb.Config
+        err error
     )
-
-    var config *tiledb.Config
-    var err error
 
     // get a generic config if no path provided
     if config_uri == "" {
@@ -149,7 +148,7 @@ func Index(gsf_uri string, config_uri string) FileInfo {
     }
     defer ctx.Free()
 
-    vfs, err_ := tiledb.NewVFS(ctx, config)
+    vfs, err := tiledb.NewVFS(ctx, config)
     if err != nil {
         panic(err)
     }
