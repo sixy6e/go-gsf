@@ -159,7 +159,7 @@ func Index(gsf_uri string, config_uri string) FileInfo {
         panic(err)
     }
     defer stream.Close()
-    defer stream.Free()
+    // defer stream.Free()
 
     rec_idx = make(map[RecordID][]Record)
     rec_counts = make(map[RecordID]uint64)
