@@ -6,6 +6,7 @@ import (
     "bytes"
     // "fmt"
 
+    "github.com/samber/lo"
     tiledb "github.com/TileDB-Inc/TileDB-Go"
 )
 
@@ -103,6 +104,8 @@ var subrec_arr = [32]SubRecordID{
 type FileInfo struct {
     GSF_URI string
     Size uint64
+    Min_Max_Beams []uint16
+    Consistent_Beams bool
     Record_Counts map[RecordID]uint64
     SubRecord_Counts map[SubRecordID]uint64
     Record_Index map[RecordID][]Record
@@ -125,6 +128,7 @@ func Index(gsf_uri string, config_uri string) FileInfo {
         finfo FileInfo
         config *tiledb.Config
         err error
+        nbeams []uint16
     )
 
     // get a generic config if no path provided
@@ -164,6 +168,7 @@ func Index(gsf_uri string, config_uri string) FileInfo {
     rec_idx = make(map[RecordID][]Record)
     rec_counts = make(map[RecordID]uint64)
     sub_rec_counts = make(map[SubRecordID]uint64)
+    // nbeams = make([]uint64, 0)  // could be faster to declare after
 
     one := uint64(1)
     zero := uint64(0)
@@ -206,6 +211,7 @@ func Index(gsf_uri string, config_uri string) FileInfo {
 
             pinfo = ping_info(reader, rec)
             pings = append(pings, pinfo)
+            // nbeams = append(nbeams, ping.Number_Beams)
 
             // increment sub-record count
             for _, sid := range(pinfo.Sub_Records) {
@@ -223,8 +229,23 @@ func Index(gsf_uri string, config_uri string) FileInfo {
     // reset file posistion
     _, _ = stream.Seek(original_pos, 0)
 
+    // there have been instances where the number of beams was inconsistent between pings
+    // the general idea is to know whether we're dealing with a consistent number of beams
+    nbeams = make([]uint16, len(pings))
+    for i, ping := range(pings) {
+        nbeams[i] = ping.Number_Beams
+    }
+
+    // domain for number of beams
+    max := lo.Max(nbeams)
+    min := lo.Min(nbeams)
+    min_max_beams := []uint16{min, max}
+    consistent_beams := min == max
+
     finfo.GSF_URI = gsf_uri
     finfo.Size = filesize
+    finfo.Min_Max_Beams = min_max_beams
+    finfo.Consistent_Beams = consistent_beams
     finfo.Record_Counts = rec_counts
     finfo.SubRecord_Counts = sub_rec_counts
     finfo.Record_Index = rec_idx
