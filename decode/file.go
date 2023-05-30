@@ -123,8 +123,8 @@ func Index(gsf_uri string, config_uri string) FileInfo {
         rec_idx map[RecordID][]Record
         rec_counts map[RecordID]uint64
         sub_rec_counts map[SubRecordID]uint64
-        val1 RecordID
-        val2 SubRecordID
+        // val1 RecordID  // used for zeroing initial state
+        // val2 SubRecordID  // used for zeroing initial state
         rec Record
         pinfo PingInfo
         pings []PingInfo
@@ -175,16 +175,20 @@ func Index(gsf_uri string, config_uri string) FileInfo {
     // nbeams = make([]uint64, 0)  // could be faster to declare after
 
     one := uint64(1)
-    zero := uint64(0)
+    // zero := uint64(0)  // used for zeroing initial state
 
-    for _, val1 = range rec_arr {
-        rec_idx[val1] = nil
-        rec_counts[val1] = zero
-    }
+    // potentially superfluous; only required if there is desire to show records that
+    // don't exist within the file, i.e. records with count=0
+    // for _, val1 = range rec_arr {
+    //     rec_idx[val1] = nil
+    //     rec_counts[val1] = zero
+    // }
 
-    for _, val2 = range subrec_arr {
-        sub_rec_counts[val2] = zero
-    }
+    // potentially superfluous; only required if there is desire to show records that
+    // don't exist within the file, i.e. records with count=0
+    // for _, val2 = range subrec_arr {
+    //     sub_rec_counts[val2] = zero
+    // }
 
     // get the original starting point so we can jump back when done
     original_pos, _ := Tell(stream)
