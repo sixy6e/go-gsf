@@ -103,6 +103,7 @@ var ScaleFactors = map[SubRecordID]ScaleFactor{
 // to inform a global schema across all pings, and derive max(n_beams) to
 // inform a global [ping, beam] dimensional array structure.
 type PingInfo struct {
+    Timestamp time.Time
     Number_Beams uint16
     Sub_Records []SubRecordID
     Scale_Factors bool
@@ -233,6 +234,7 @@ func ping_info(reader *bytes.Reader, rec Record) PingInfo {
         }
     }
 
+    pinfo.Timestamp = hdr.Timestamp
     pinfo.Number_Beams = hdr.Number_beams
     pinfo.Sub_Records = records[:]
     pinfo.Scale_Factors = sf

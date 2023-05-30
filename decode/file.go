@@ -4,6 +4,7 @@ import (
     // "os"
     "encoding/binary"
     "bytes"
+    "time"
     // "fmt"
 
     "github.com/samber/lo"
@@ -106,6 +107,8 @@ type FileInfo struct {
     Size uint64
     Min_Max_Beams []uint16
     Consistent_Beams bool
+    Duplicate_Pings bool
+    Duplicates []time.Time
     Record_Counts map[RecordID]uint64
     SubRecord_Counts map[SubRecordID]uint64
     Record_Index map[RecordID][]Record
@@ -129,6 +132,7 @@ func Index(gsf_uri string, config_uri string) FileInfo {
         config *tiledb.Config
         err error
         nbeams []uint16
+        timestamps []time.Time
     )
 
     // get a generic config if no path provided
@@ -242,10 +246,20 @@ func Index(gsf_uri string, config_uri string) FileInfo {
     min_max_beams := []uint16{min, max}
     consistent_beams := min == max
 
+    // duplicate pings. one of the samples had duplicate timestamps
+    timestamps = make([]time.Time, len(pings))
+    for i, ping := range(pings) {
+        timestamps[i] = ping.Timestamp
+    }
+
+    duplicates := lo.FindDuplicates(timestamps)
+
     finfo.GSF_URI = gsf_uri
     finfo.Size = filesize
     finfo.Min_Max_Beams = min_max_beams
     finfo.Consistent_Beams = consistent_beams
+    finfo.Duplicate_Pings = len(duplicates) > 0
+    finfo.Duplicates = duplicates
     finfo.Record_Counts = rec_counts
     finfo.SubRecord_Counts = sub_rec_counts
     finfo.Record_Index = rec_idx
