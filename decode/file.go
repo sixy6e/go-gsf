@@ -5,7 +5,7 @@ import (
     "encoding/binary"
     "bytes"
     "time"
-    // "fmt"
+    "fmt"
 
     "github.com/samber/lo"
     tiledb "github.com/TileDB-Inc/TileDB-Go"
@@ -63,6 +63,7 @@ var rec_arr = [12]RecordID{
     ATTITUDE,
 }
 
+// TODO; remove, no longer needed
 var subrec_arr = [32]SubRecordID{
     DEPTH,
     ACROSS_TRACK,
@@ -98,6 +99,14 @@ var subrec_arr = [32]SubRecordID{
     SCALE_FACTORS,
 }
 
+type QualityInfo struct {
+    Min_Max_Beams []uint16
+    Consistent_Beams bool
+    Duplicate_Pings bool
+    Duplicates []time.Time
+    Consistent_Schema bool
+}
+
 // FileInfo is the overarching structure containing basic info about the GSF file.
 // Items include file location, file size, counts of each record (main and subrecords),
 // as well as basic info about the pings such as number of beams and schema for each
@@ -105,10 +114,7 @@ var subrec_arr = [32]SubRecordID{
 type FileInfo struct {
     GSF_URI string
     Size uint64
-    Min_Max_Beams []uint16
-    Consistent_Beams bool
-    Duplicate_Pings bool
-    Duplicates []time.Time
+    Quality_Info QualityInfo
     // Record_Counts map[RecordID]uint64
     Record_Counts map[string]uint64
     // SubRecord_Counts map[SubRecordID]uint64
@@ -127,8 +133,8 @@ func Index(gsf_uri string, config_uri string) FileInfo {
         rec_idx map[string][]Record
         // rec_counts map[RecordID]uint64
         rec_counts map[string]uint64
-        // sub_rec_counts map[SubRecordID]uint64
-        sub_rec_counts map[string]uint64
+        sub_rec_counts map[SubRecordID]uint64
+        sub_rec_counts_str map[string]uint64
         // val1 RecordID  // used for zeroing initial state
         // val2 SubRecordID  // used for zeroing initial state
         rec Record
@@ -139,6 +145,7 @@ func Index(gsf_uri string, config_uri string) FileInfo {
         err error
         nbeams []uint16
         timestamps []time.Time
+        qa QualityInfo
     )
 
     // get a generic config if no path provided
@@ -179,8 +186,8 @@ func Index(gsf_uri string, config_uri string) FileInfo {
     rec_idx = make(map[string][]Record)
     // rec_counts = make(map[RecordID]uint64)
     rec_counts = make(map[string]uint64)
-    // sub_rec_counts = make(map[SubRecordID]uint64)
-    sub_rec_counts = make(map[string]uint64)
+    sub_rec_counts = make(map[SubRecordID]uint64)
+    sub_rec_counts_str = make(map[string]uint64)
     // nbeams = make([]uint64, 0)  // could be faster to declare after
 
     one := uint64(1)
@@ -233,8 +240,8 @@ func Index(gsf_uri string, config_uri string) FileInfo {
 
             // increment sub-record count
             for _, sid := range(pinfo.Sub_Records) {
-                // sub_rec_counts[sid] += one
-                sub_rec_counts[SubRecordNames[sid]] += one
+                sub_rec_counts[sid] += one
+                // sub_rec_counts[SubRecordNames[sid]] += one
             }
 
             pos, _ = Tell(stream)
@@ -269,14 +276,27 @@ func Index(gsf_uri string, config_uri string) FileInfo {
 
     duplicates := lo.FindDuplicates(timestamps)
 
+    // consistent schema; we've had cases where the schema is inconsistent between pings
+    vals := make([]uint64, 0)
+    for key, val := range sub_rec_counts {
+        sub_rec_counts_str[SubRecordNames[key]] = val
+        if key != 100 {  // scale factors are not required to be stored in every ping :(
+            vals = append(vals, val)
+        }
+    }
+    set := lo.Union(vals)
+
+    qa.Min_Max_Beams = min_max_beams
+    qa.Consistent_Beams = consistent_beams
+    qa.Duplicate_Pings = len(duplicates) > 0
+    qa.Duplicates = duplicates
+    qa.Consistent_Schema = len(set) == 1
+
     finfo.GSF_URI = gsf_uri
     finfo.Size = filesize
-    finfo.Min_Max_Beams = min_max_beams
-    finfo.Consistent_Beams = consistent_beams
-    finfo.Duplicate_Pings = len(duplicates) > 0
-    finfo.Duplicates = duplicates
+    finfo.Quality_Info = qa
     finfo.Record_Counts = rec_counts
-    finfo.SubRecord_Counts = sub_rec_counts
+    finfo.SubRecord_Counts = sub_rec_counts_str
     finfo.Record_Index = rec_idx
     finfo.Ping_Info = pings
 
