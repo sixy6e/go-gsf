@@ -109,9 +109,12 @@ type FileInfo struct {
     Consistent_Beams bool
     Duplicate_Pings bool
     Duplicates []time.Time
-    Record_Counts map[RecordID]uint64
-    SubRecord_Counts map[SubRecordID]uint64
-    Record_Index map[RecordID][]Record
+    // Record_Counts map[RecordID]uint64
+    Record_Counts map[string]uint64
+    // SubRecord_Counts map[SubRecordID]uint64
+    SubRecord_Counts map[string]uint64
+    // Record_Index map[RecordID][]Record
+    Record_Index map[string][]Record
     Ping_Info []PingInfo
 }
 
@@ -120,9 +123,12 @@ type FileInfo struct {
 func Index(gsf_uri string, config_uri string) FileInfo {
 
     var (
-        rec_idx map[RecordID][]Record
-        rec_counts map[RecordID]uint64
-        sub_rec_counts map[SubRecordID]uint64
+        // rec_idx map[RecordID][]Record
+        rec_idx map[string][]Record
+        // rec_counts map[RecordID]uint64
+        rec_counts map[string]uint64
+        // sub_rec_counts map[SubRecordID]uint64
+        sub_rec_counts map[string]uint64
         // val1 RecordID  // used for zeroing initial state
         // val2 SubRecordID  // used for zeroing initial state
         rec Record
@@ -169,9 +175,12 @@ func Index(gsf_uri string, config_uri string) FileInfo {
     defer stream.Close()
     // defer stream.Free()
 
-    rec_idx = make(map[RecordID][]Record)
-    rec_counts = make(map[RecordID]uint64)
-    sub_rec_counts = make(map[SubRecordID]uint64)
+    // rec_idx = make(map[RecordID][]Record)
+    rec_idx = make(map[string][]Record)
+    // rec_counts = make(map[RecordID]uint64)
+    rec_counts = make(map[string]uint64)
+    // sub_rec_counts = make(map[SubRecordID]uint64)
+    sub_rec_counts = make(map[string]uint64)
     // nbeams = make([]uint64, 0)  // could be faster to declare after
 
     one := uint64(1)
@@ -207,9 +216,10 @@ func Index(gsf_uri string, config_uri string) FileInfo {
         rec = RecordHdr(stream)
 
         // increment record count
-        rec_counts[rec.Id] += one
+        // rec_counts[rec.Id] += one
+        rec_counts[RecordNames[rec.Id]] += one
 
-        rec_idx[rec.Id] = append(rec_idx[rec.Id], rec)
+        rec_idx[RecordNames[rec.Id]] = append(rec_idx[RecordNames[rec.Id]], rec)
 
         if rec.Id == SWATH_BATHYMETRY_PING {
             // need to do some sub record decoding
@@ -223,7 +233,8 @@ func Index(gsf_uri string, config_uri string) FileInfo {
 
             // increment sub-record count
             for _, sid := range(pinfo.Sub_Records) {
-                sub_rec_counts[sid] += one
+                // sub_rec_counts[sid] += one
+                sub_rec_counts[SubRecordNames[sid]] += one
             }
 
             pos, _ = Tell(stream)
