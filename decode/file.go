@@ -5,7 +5,7 @@ import (
     "encoding/binary"
     "bytes"
     "time"
-    "fmt"
+    // "fmt"
 
     "github.com/samber/lo"
     tiledb "github.com/TileDB-Inc/TileDB-Go"
