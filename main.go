@@ -12,8 +12,8 @@ import (
     "gsf/encode"
 )
 
-func create_index(gsf_uri string, config_uri string, out_uri string) error {
-    fmt.Println(gsf_uri, config_uri, out_uri)
+// func create_index(gsf_uri string, config_uri string, out_uri string) error {
+func create_index(gsf_uri string, config_uri string) error {
     file_index := decode.Index(gsf_uri, config_uri)
 
     jsn, err := json.MarshalIndent(file_index, "", "    ")
@@ -22,6 +22,8 @@ func create_index(gsf_uri string, config_uri string, out_uri string) error {
         return err
     }
 
+    // TODO; if we write the file to a different structure, we need a different extension
+    out_uri := uri + "-index.json"
     _, err = encode.WriteJson(out_uri, config_uri, jsn)
     if err != nil {
         // panic(err)
@@ -29,6 +31,18 @@ func create_index(gsf_uri string, config_uri string, out_uri string) error {
     }
 
     return nil
+}
+
+func create_index_list(uri, string, config_uri string) error {
+    items := FindGsf(uri, config_uri)
+    // out_uris := make([]string, len(items))
+
+    // TODO; if we write the file to a different structure, we need a different extension
+    // for i, name := range(items) {
+    //     out_uris[i] = name + "-index.json"
+    // }
+
+
 }
 
 func main() {
@@ -45,13 +59,14 @@ func main() {
                         Name: "config-uri",
                         Usage: "URI or pathname to a TileDB config file.",
                     },
-                    &cli.StringFlag{
-                        Name: "out-uri",
-                        Usage: "URI or pathname to write the output file to.",
-                    },
+                    // &cli.StringFlag{
+                    //     Name: "out-uri",
+                    //     Usage: "URI or pathname to write the output file to.",
+                    // },
                 },
                 Action: func(cCtx *cli.Context) error {
-                    err := create_index(cCtx.String("gsf-uri"), cCtx.String("config-uri"), cCtx.String("out-uri"))
+                    // err := create_index(cCtx.String("gsf-uri"), cCtx.String("config-uri"), cCtx.String("out-uri"))
+                    err := create_index(cCtx.String("gsf-uri"), cCtx.String("config-uri"))
                     return err
                 },
             },
