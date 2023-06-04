@@ -5,7 +5,7 @@ import (
     "encoding/binary"
     "bytes"
     "time"
-    // "fmt"
+    "fmt"
 
     "github.com/samber/lo"
     tiledb "github.com/TileDB-Inc/TileDB-Go"
@@ -99,6 +99,12 @@ var subrec_arr = [32]SubRecordID{
     SCALE_FACTORS,
 }
 
+// Should contain the whole CRS not just horizontal and vertical datums
+type Crs struct {
+    Horizontal_Datum string
+    Vertical_Datum string
+}
+
 type QualityInfo struct {
     Min_Max_Beams []uint16
     Consistent_Beams bool
@@ -115,6 +121,7 @@ type FileInfo struct {
     GSF_URI string
     Size uint64
     Quality_Info QualityInfo
+    CRS Crs
     // Record_Counts map[RecordID]uint64
     Record_Counts map[string]uint64
     // SubRecord_Counts map[SubRecordID]uint64
@@ -146,6 +153,7 @@ func Index(gsf_uri string, config_uri string) FileInfo {
         nbeams []uint16
         timestamps []time.Time
         qa QualityInfo
+        crs Crs
     )
 
     // get a generic config if no path provided
@@ -245,6 +253,21 @@ func Index(gsf_uri string, config_uri string) FileInfo {
             }
 
             pos, _ = Tell(stream)
+        } else if rec.Id == PROCESSING_PARAMETERS {
+            // should only be one of these records in the gsf file
+            buffer := make([]byte, rec.Datasize)
+            _ = binary.Read(stream, binary.BigEndian, &buffer)
+            params := ProcessingParametersRec(buffer, rec)
+
+            // TODO; change params rec to be a defined struct to avoid this type assertion
+            hd, ok := params["geoid"].(string)
+            if ok {
+                crs.Horizontal_Datum = fmt.Sprint(hd)
+            }
+            vd, ok := params["tidal_datum"].(string)
+            if ok {
+                crs.Vertical_Datum = fmt.Sprint(vd)
+            }
         } else {
             // seek over the record and loop to the next
             pos, _ = stream.Seek(int64(rec.Datasize), 1)
@@ -295,6 +318,7 @@ func Index(gsf_uri string, config_uri string) FileInfo {
     finfo.GSF_URI = gsf_uri
     finfo.Size = filesize
     finfo.Quality_Info = qa
+    finfo.CRS = crs
     finfo.Record_Counts = rec_counts
     finfo.SubRecord_Counts = sub_rec_counts_str
     finfo.Record_Index = rec_idx
