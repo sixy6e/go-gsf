@@ -17,7 +17,7 @@ func trawl(vfs *tiledb.VFS, pattern string, uri string, items []string) []string
 
     // check files for the matching pattern
     for _, file := range(files) {
-        match, err = filepath.Match(pattern, filepath.Base(file))
+        match, err := filepath.Match(pattern, filepath.Base(file))
         if err != nil {
             panic(err)
         }
@@ -29,7 +29,7 @@ func trawl(vfs *tiledb.VFS, pattern string, uri string, items []string) []string
 
     // recurse over every directory
     for _, dir := range(dirs) {
-        items = trawl(vfs, dir, items)
+        items = trawl(vfs, pattern, dir, items)
     }
 
     return items
@@ -39,7 +39,14 @@ func trawl(vfs *tiledb.VFS, pattern string, uri string, items []string) []string
 // The function uses the TileDB Go bindings to seamlessly search either local
 // filesystems or obeject stores such as AWS-S3. A TileDB config is required
 // for searching object stores with permission constraints.
-func FindGsf(uri, string, config_uri string) []string {
+func FindGsf(uri string, config_uri string) []string {
+    var (
+        config *tiledb.Config
+        err error
+        items []string
+        pattern string
+    )
+
     // get a generic config if no path provided
     if config_uri == "" {
         config, err = tiledb.NewConfig()
@@ -67,8 +74,8 @@ func FindGsf(uri, string, config_uri string) []string {
     }
     defer vfs.Free()
 
-    items := make([]string, 0)
-    pattern := "*.gsf"
+    items = make([]string, 0)
+    pattern = "*.gsf"
 
     items = trawl(vfs, pattern, uri, items)
 
