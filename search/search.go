@@ -2,6 +2,7 @@ package search
 
 import (
     "path/filepath"
+    "github.com/samber/lo"
     tiledb "github.com/TileDB-Inc/TileDB-Go"
 )
 
@@ -26,6 +27,8 @@ func trawl(vfs *tiledb.VFS, pattern string, uri string, items []string) []string
             items = append(items, file)
         }
     }
+
+    dirs = lo.Without(dirs, uri)  // avoiding a potential infinite loop
 
     // recurse over every directory
     for _, dir := range(dirs) {
