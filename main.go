@@ -19,6 +19,7 @@ import (
 
 // func create_index(gsf_uri string, config_uri string, out_uri string) error {
 func create_index(gsf_uri string, config_uri string) error {
+    log.Println("Processing GSF:", gsf_uri)
     file_index := decode.Index(gsf_uri, config_uri)
 
     jsn, err := json.MarshalIndent(file_index, "", "    ")
@@ -35,12 +36,16 @@ func create_index(gsf_uri string, config_uri string) error {
         return err
     }
 
+    log.Println("Finished GSF:", gsf_uri)
+
     return nil
 }
 
 func create_index_list(uri string, config_uri string) error {
+    log.Println("Searching uri:", uri)
     items := search.FindGsf(uri, config_uri)
     // out_uris := make([]string, len(items))
+    log.Println("Number of GSFs to process:", len(items))
 
     // TODO; if we write the file to a different structure, we need a different extension
     // for i, name := range(items) {
