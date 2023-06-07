@@ -36,6 +36,7 @@ func WriteJson(file_uri string, config_uri string, data []byte) (int, error) {
     }
     defer vfs.Free()
 
+    // the vfs api auto checks for a file's existence and removes it if we are wanting to write
     stream, err := vfs.Open(file_uri, tiledb.TILEDB_VFS_WRITE)
     if err != nil {
         panic(err)
