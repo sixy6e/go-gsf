@@ -21,16 +21,16 @@ type Stream interface {
 
 // function to handle whether we build an in-memory byte stream or leave
 // is as stream handled by *tiledb.VFSfh
-func GenericStream(stream *tiledb.VFSfh, size uint64, inmem bool) Stream {
+func GenericStream(stream *tiledb.VFSfh, size uint64, inmem bool) (Stream, error) {
     if inmem {
         buffer := make([]byte, size)
         err := binary.Read(stream, binary.BigEndian, &buffer)
         if err != nil {
-            panic(err)
+            return nil, err
         }
         reader := bytes.NewReader(buffer)
-        return reader
+        return reader, nil
     } else {
-        return stream
+        return stream, nil
     }
 }
