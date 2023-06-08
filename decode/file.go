@@ -13,7 +13,7 @@ import (
 
 // Tell is a small helper fucntion for telling the current position within a
 // binary file opened for reading.
-func Tell(stream *tiledb.VFSfh) (int64, error) {
+func Tell(stream Stream) (int64, error) {
     pos, err := stream.Seek(0, 1)
 
     return pos, err
@@ -23,7 +23,7 @@ func Tell(stream *tiledb.VFSfh) (int64, error) {
 // The GSF specification mentions that a records complete length has to be
 // a multiple of 4.
 // Most likely not needed for reading. Padding should be applied when writing a record.
-func Padding(stream *tiledb.VFSfh) {
+func Padding(stream Stream) {
     pos, _ := Tell(stream)
     pad := pos % 4
     pad, _ = stream.Seek(pad, 1)
@@ -183,11 +183,11 @@ func Index(gsf_uri string, config_uri string) FileInfo {
     }
     defer vfs.Free()
 
-    stream, err := vfs.Open(gsf_uri, tiledb.TILEDB_VFS_READ)
+    handler, err := vfs.Open(gsf_uri, tiledb.TILEDB_VFS_READ)
     if err != nil {
         panic(err)
     }
-    defer stream.Close()
+    defer handler.Close()
     // defer stream.Free()
 
     // rec_idx = make(map[RecordID][]Record)
@@ -214,13 +214,16 @@ func Index(gsf_uri string, config_uri string) FileInfo {
     //     sub_rec_counts[val2] = zero
     // }
 
-    // get the original starting point so we can jump back when done
-    original_pos, _ := Tell(stream)
-
     // filesize is used as an EOF indicator when streaming the raw bytes
     // filestat, _ := stream.Stat()
     filesize, _ := vfs.FileSize(gsf_uri)
     // filename := filestat.Name()
+
+    // create a generic stream
+    stream, err := GenericStream(handler, filesize, false)
+
+    // get the original starting point so we can jump back when done
+    original_pos, _ := Tell(stream)
 
     // start at front of the stream
     pos, _ := stream.Seek(0, 0)
