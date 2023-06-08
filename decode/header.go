@@ -5,7 +5,7 @@ import (
     //"bytes"
     "encoding/binary"
 
-    tiledb "github.com/TileDB-Inc/TileDB-Go"
+    // tiledb "github.com/TileDB-Inc/TileDB-Go"
 )
 
 // Record contains information about a given record stored within the GSF file.
@@ -23,7 +23,7 @@ type Record struct {
 // RecordHdr decodes the header part of any given record.
 // Each record has a small header that defines the type of record, the size
 // of the data within the record, and whether the record contains a checksum
-func RecordHdr(stream *tiledb.VFSfh) Record {
+func RecordHdr(stream Stream) Record {
     
     blob := [2]uint32{}
     _ = binary.Read(stream, binary.BigEndian, &blob)
