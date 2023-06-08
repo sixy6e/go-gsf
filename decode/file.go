@@ -133,7 +133,7 @@ type FileInfo struct {
 
 // Index, as the name implies, builds a file index of all Record types.
 // Each Record contains the record ID, record size, byte index and checksum flag.
-func Index(gsf_uri string, config_uri string) FileInfo {
+func Index(gsf_uri string, config_uri string, in_memory bool) FileInfo {
 
     var (
         // rec_idx map[RecordID][]Record
@@ -220,7 +220,7 @@ func Index(gsf_uri string, config_uri string) FileInfo {
     // filename := filestat.Name()
 
     // create a generic stream
-    stream, err := GenericStream(handler, filesize, false)
+    stream, err := GenericStream(handler, filesize, in_memory)
 
     // get the original starting point so we can jump back when done
     original_pos, _ := Tell(stream)

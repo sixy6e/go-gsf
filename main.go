@@ -18,9 +18,9 @@ import (
 )
 
 // func create_index(gsf_uri string, config_uri string, out_uri string) error {
-func create_index(gsf_uri string, config_uri string) error {
+func create_index(gsf_uri string, config_uri string, in_memory bool) error {
     log.Println("Processing GSF:", gsf_uri)
-    file_index := decode.Index(gsf_uri, config_uri)
+    file_index := decode.Index(gsf_uri, config_uri, in_memory)
 
     jsn, err := json.MarshalIndent(file_index, "", "    ")
     if err != nil {
@@ -41,7 +41,7 @@ func create_index(gsf_uri string, config_uri string) error {
     return nil
 }
 
-func create_index_list(uri string, config_uri string) error {
+func create_index_list(uri string, config_uri string, in_memory bool) error {
     log.Println("Searching uri:", uri)
     items := search.FindGsf(uri, config_uri)
     // out_uris := make([]string, len(items))
@@ -64,7 +64,7 @@ func create_index_list(uri string, config_uri string) error {
     for _, name := range(items) {
         item_uri := name
         pool.Submit(func() {
-            _ = create_index(item_uri, config_uri)
+            _ = create_index(item_uri, config_uri, in_memory)
             // if err != nil {
             //     return err
             // }
@@ -88,6 +88,10 @@ func main() {
                         Name: "config-uri",
                         Usage: "URI or pathname to a TileDB config file.",
                     },
+                    &cli.BoolFlag{
+                        Name: "in-memory",
+                        Usage: "Read the entire contents of a GSF file into memory before processing.",
+                    },
                     // &cli.StringFlag{
                     //     Name: "out-uri",
                     //     Usage: "URI or pathname to write the output file to.",
@@ -95,7 +99,7 @@ func main() {
                 },
                 Action: func(cCtx *cli.Context) error {
                     // err := create_index(cCtx.String("gsf-uri"), cCtx.String("config-uri"), cCtx.String("out-uri"))
-                    err := create_index(cCtx.String("gsf-uri"), cCtx.String("config-uri"))
+                    err := create_index(cCtx.String("gsf-uri"), cCtx.String("config-uri"), cCtx.Bool("in-memory"))
                     return err
                 },
             },
@@ -110,6 +114,10 @@ func main() {
                         Name: "config-uri",
                         Usage: "URI or pathname to a TileDB config file.",
                     },
+                    &cli.BoolFlag{
+                        Name: "in-memory",
+                        Usage: "Read the entire contents of a GSF file into memory before processing.",
+                    },
                     // &cli.StringFlag{
                     //     Name: "out-uri",
                     //     Usage: "URI or pathname to write the output file to.",
@@ -117,7 +125,7 @@ func main() {
                 },
                 Action: func(cCtx *cli.Context) error {
                     // err := create_index(cCtx.String("gsf-uri"), cCtx.String("config-uri"), cCtx.String("out-uri"))
-                    err := create_index_list(cCtx.String("uri"), cCtx.String("config-uri"))
+                    err := create_index_list(cCtx.String("uri"), cCtx.String("config-uri"), cCtx.Bool("in-memory"))
                     return err
                 },
             },
