@@ -1,5 +1,7 @@
 github.com/TileDB-Inc/TileDB-Go v0.21.1 h1:15cmaJKM1xeyrz5HTAhZK8z6o+GgX3tLvx0Ob95HTHY=
 github.com/TileDB-Inc/TileDB-Go v0.21.1/go.mod h1:HfdsUdPqQrevjQG79fi0v4liSaeQITIYhny3N1REzG8=
+github.com/TileDB-Inc/TileDB-Go v0.21.4 h1:+SIpzBd7f/kt6SxM2lTDDMHqodh4JYgryzVlfyTnEZQ=
+github.com/TileDB-Inc/TileDB-Go v0.21.4/go.mod h1:HfdsUdPqQrevjQG79fi0v4liSaeQITIYhny3N1REzG8=
 github.com/alitto/pond v1.8.3 h1:ydIqygCLVPqIX/USe5EaV/aSRXTRXDEI9JwuDdu+/xs=
 github.com/alitto/pond v1.8.3/go.mod h1:CmvIIGd5jKLasGI3D87qDkQxjzChdKMmnXMg3fG6M6Q=
 github.com/cpuguy83/go-md2man/v2 v2.0.2 h1:p1EgwI/C7NhT0JmVkwCD2ZBK8j4aeHQX2pMHHBfMQ6w=
