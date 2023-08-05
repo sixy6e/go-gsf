@@ -4,10 +4,10 @@ import (
     // "os"
     "encoding/binary"
     "bytes"
-    "time"
+    // "time"
     "fmt"
 
-    "github.com/samber/lo"
+    // "github.com/samber/lo"
     tiledb "github.com/TileDB-Inc/TileDB-Go"
 )
 
@@ -105,13 +105,13 @@ type Crs struct {
     Vertical_Datum string
 }
 
-type QualityInfo struct {
-    Min_Max_Beams []uint16
-    Consistent_Beams bool
-    Duplicate_Pings bool
-    Duplicates []time.Time
-    Consistent_Schema bool
-}
+// type QualityInfo struct {
+//     Min_Max_Beams []uint16
+//     Consistent_Beams bool
+//     Duplicate_Pings bool
+//     Duplicates []time.Time
+//     Consistent_Schema bool
+// }
 
 // FileInfo is the overarching structure containing basic info about the GSF file.
 // Items include file location, file size, counts of each record (main and subrecords),
@@ -150,9 +150,9 @@ func Index(gsf_uri string, config_uri string, in_memory bool) FileInfo {
         finfo FileInfo
         config *tiledb.Config
         err error
-        nbeams []uint16
-        timestamps []time.Time
-        qa QualityInfo
+        // nbeams []uint16
+        // timestamps []time.Time
+        // qa QualityInfo
         crs Crs
     )
 
@@ -283,49 +283,51 @@ func Index(gsf_uri string, config_uri string, in_memory bool) FileInfo {
 
     // there have been instances where the number of beams was inconsistent between pings
     // the general idea is to know whether we're dealing with a consistent number of beams
-    nbeams = make([]uint16, len(pings))
-    for i, ping := range(pings) {
-        nbeams[i] = ping.Number_Beams
-    }
+    // nbeams = make([]uint16, len(pings))
+    // for i, ping := range(pings) {
+    //     nbeams[i] = ping.Number_Beams
+    // }
 
     // domain for number of beams
-    max := lo.Max(nbeams)
-    min := lo.Min(nbeams)
-    min_max_beams := []uint16{min, max}
-    consistent_beams := min == max
+    // max := lo.Max(nbeams)
+    // min := lo.Min(nbeams)
+    // min_max_beams := []uint16{min, max}
+    // consistent_beams := min == max
 
     // duplicate pings. one of the samples had duplicate timestamps
-    timestamps = make([]time.Time, len(pings))
-    for i, ping := range(pings) {
-        timestamps[i] = ping.Timestamp
-    }
+    // timestamps = make([]time.Time, len(pings))
+    // for i, ping := range(pings) {
+    //     timestamps[i] = ping.Timestamp
+    // }
 
-    duplicates := lo.FindDuplicates(timestamps)
+    // duplicates := lo.FindDuplicates(timestamps)
 
     // consistent schema; we've had cases where the schema is inconsistent between pings
-    vals := make([]uint64, 0)
-    for key, val := range sub_rec_counts {
-        sub_rec_counts_str[SubRecordNames[key]] = val
-        if key != 100 {  // scale factors are not required to be stored in every ping :(
-            vals = append(vals, val)
-        }
-    }
-    set := lo.Union(vals)
+    // vals := make([]uint64, 0)
+    // for key, val := range sub_rec_counts {
+    //     sub_rec_counts_str[SubRecordNames[key]] = val
+    //     if key != 100 {  // scale factors are not required to be stored in every ping :(
+    //         vals = append(vals, val)
+    //     }
+    // }
+    // set := lo.Union(vals)
 
-    qa.Min_Max_Beams = min_max_beams
-    qa.Consistent_Beams = consistent_beams
-    qa.Duplicate_Pings = len(duplicates) > 0
-    qa.Duplicates = duplicates
-    qa.Consistent_Schema = len(set) == 1
+    // qa.Min_Max_Beams = min_max_beams
+    // qa.Consistent_Beams = consistent_beams
+    // qa.Duplicate_Pings = len(duplicates) > 0
+    // qa.Duplicates = duplicates
+    // qa.Consistent_Schema = len(set) == 1
 
     finfo.GSF_URI = gsf_uri
     finfo.Size = filesize
-    finfo.Quality_Info = qa
+    // finfo.Quality_Info = qa
     finfo.CRS = crs
     finfo.Record_Counts = rec_counts
     finfo.SubRecord_Counts = sub_rec_counts_str
     finfo.Record_Index = rec_idx
     finfo.Ping_Info = pings
+
+    finfo.QInfo()
 
     return finfo
 }
