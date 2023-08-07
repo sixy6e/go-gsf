@@ -8,6 +8,7 @@ import (
 type QualityInfo struct {
     Min_Max_Beams []uint16
     Consistent_Beams bool
+    Coincident_Pings bool
     Duplicate_Pings bool
     Duplicates []time.Time
     Consistent_Schema bool
@@ -18,10 +19,13 @@ func (fi *FileInfo) QInfo() {
         nbeams []uint16
         timestamps []time.Time
         qa QualityInfo
+        // sub_rec_counts_str map[string]uint64
     )
 
+    coincident_pings := false
     dup_pings := false
     npings := len(fi.Ping_Info)
+    // sub_rec_counts_str = make(map[string]uint64)
 
     // there have been instances where the number of beams was inconsistent between pings
     // the general idea is to know whether we're dealing with a consistent number of beams
@@ -80,11 +84,23 @@ func (fi *FileInfo) QInfo() {
     // qa.Duplicates = duplicates
     qa.Consistent_Schema = len(set) == 1
 
-    if dup_pings == true {
+    if dup_pings {
         qa.Duplicates = duplicates
     } else {
         qa.Duplicates = make([]time.Time, 0)
+
+        // we may have a dual sensor configuration (dual swath, or dual head)
+        if len(duplicates) > 0 {
+            // qa.Coincident_Pings = true
+            coincident_pings = true
+        }
     }
+
+    // we may have a dual sensor configuration (dual swath, or dual head)
+    // if len(duplicates) > 0 && dup_pings == false {
+    //     qa.Coincident_Pings = true
+    // }
+    qa.Coincident_Pings = coincident_pings
 
     fi.Quality_Info = qa
 }
