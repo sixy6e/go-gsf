@@ -123,6 +123,7 @@ type FileInfo struct {
     Sensor_ID int32
     Sensor_Name string
     CRS Crs
+    SubRecord_Schema []string
     Quality_Info QualityInfo
     // Record_Counts map[RecordID]uint64
     Record_Counts map[string]uint64
@@ -308,6 +309,7 @@ func Index(gsf_uri string, config_uri string, in_memory bool) FileInfo {
 
     // consistent schema; we've had cases where the schema is inconsistent between pings
     // vals := make([]uint64, 0)
+    sr_schema := make([]string, 0)
     for key, val := range sub_rec_counts {
         sub_rec_counts_str[SubRecordNames[key]] = val
     //     if key != 100 {  // scale factors are not required to be stored in every ping :(
@@ -316,6 +318,8 @@ func Index(gsf_uri string, config_uri string, in_memory bool) FileInfo {
         if key > 100 {
             sensor_id = int32(key)
             sensor_name = SubRecordNames[key]
+        } else if key < 100 {
+            sr_schema = append(sr_schema, SubRecordNames[key])
         }
     }
     // set := lo.Union(vals)
@@ -332,6 +336,7 @@ func Index(gsf_uri string, config_uri string, in_memory bool) FileInfo {
     finfo.Sensor_Name = sensor_name
     // finfo.Quality_Info = qa
     finfo.CRS = crs
+    finfo.SubRecord_Schema = sr_schema
     finfo.Record_Counts = rec_counts
     finfo.SubRecord_Counts = sub_rec_counts_str
     finfo.Record_Index = rec_idx
