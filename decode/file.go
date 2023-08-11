@@ -113,6 +113,11 @@ type Crs struct {
 //     Consistent_Schema bool
 // }
 
+type PingGroup struct {
+    Start uint64
+    Stop uint64
+}
+
 // FileInfo is the overarching structure containing basic info about the GSF file.
 // Items include file location, file size, counts of each record (main and subrecords),
 // as well as basic info about the pings such as number of beams and schema for each
@@ -129,9 +134,43 @@ type FileInfo struct {
     Record_Counts map[string]uint64
     // SubRecord_Counts map[SubRecordID]uint64
     SubRecord_Counts map[string]uint64
+    Ping_Groups []PingGroup
     // Record_Index map[RecordID][]Record
     Record_Index map[string][]Record
     Ping_Info []PingInfo
+}
+
+// PingGroups combines pings together based on their presence or absence of
+// scale factors. It is a forward linear search, and if a given ping is missing
+// scale factors, then it included as part of the ping group where the previous
+// set of scale factors were found.
+// For example; [0, 10] indicates that the ping group contains pings 0 up to and
+// including ping 9. It is a [start, stop) index based on the linear ordering
+// of pings found in the GSF file.
+func (fi *FileInfo) PGroups() {
+    var (
+        start int
+        stop int
+        ping_group PingGroup
+        groups []PingGroup
+    )
+
+    groups = make([]PingGroup, 0)
+
+    for i, ping := range(fi.Ping_Info) {
+        if ping.Scale_Factors {
+            if i > 0 {
+                // new group
+                ping_group = PingGroup{uint64(start), uint64(stop)}
+                groups = append(groups, ping_group)
+            }
+            start = i
+        } else {
+            stop = i
+        }
+    }
+
+    fi.Ping_Groups = groups
 }
 
 // Index, as the name implies, builds a file index of all Record types.
@@ -342,6 +381,7 @@ func Index(gsf_uri string, config_uri string, in_memory bool) FileInfo {
     finfo.Record_Index = rec_idx
     finfo.Ping_Info = pings
 
+    finfo.PGroups()
     finfo.QInfo()
 
     return finfo
