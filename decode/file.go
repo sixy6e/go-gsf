@@ -150,7 +150,7 @@ type FileInfo struct {
 func (fi *FileInfo) PGroups() {
     var (
         start int
-        stop int
+        // stop int
         ping_group PingGroup
         groups []PingGroup
     )
@@ -161,13 +161,14 @@ func (fi *FileInfo) PGroups() {
         if ping.Scale_Factors {
             if i > 0 {
                 // new group
-                ping_group = PingGroup{uint64(start), uint64(stop)}
+                ping_group = PingGroup{uint64(start), uint64(i)}
                 groups = append(groups, ping_group)
             }
             start = i
-        } else {
-            stop = i
         }
+        // } else {
+        //     stop = i
+        // }
     }
 
     fi.Ping_Groups = groups
