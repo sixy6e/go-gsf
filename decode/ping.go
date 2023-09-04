@@ -153,9 +153,7 @@ func SubRecHdr(reader *bytes.Reader, offset int64) SubRecord {
     return subhdr
 }
 
-func scale_factors_rec(reader *bytes.Reader, idx *int64) {
-    // TODO; incrementing the byte index by pointer is a bit of overkill
-    // for simplicity just pass the number of bytes read back to the caller
+func scale_factors_rec(reader *bytes.Reader) (bytes int64) {
     var (
         i int32
         num_factors int32
@@ -166,7 +164,7 @@ func scale_factors_rec(reader *bytes.Reader, idx *int64) {
     // scale_factors := make(map[SubRecordID]ScaleFactor)
 
     _ = binary.Read(reader, binary.BigEndian, &num_factors)
-    *idx += 4
+    bytes = 4
 
     for i = 0; i < num_factors; i++ {
         _ = binary.Read(reader, binary.BigEndian, &data)
@@ -180,11 +178,13 @@ func scale_factors_rec(reader *bytes.Reader, idx *int64) {
             Compression_flag: comp_flag,  // TODO; implement compression decoder
         }
 
-        *idx += 12
+        bytes += 12
 
         // scale_factors[SubRecordID(subid)] = scale_factor
         ScaleFactors[SubRecordID(subid)] = scale_factor
     }
+
+    return bytes
 }
 
 // func ping_info(stream *os.File, rec Record) PingInfo {
@@ -288,7 +288,7 @@ func SwathBathymetryPingRec(buffer []byte, rec Record) PingHeader {
     // if scale factor else get scale factor
     if sub_rec.Id == SCALE_FACTORS {
         // read and structure the scale factors
-        scale_factors_rec(reader, &idx)
+        idx += scale_factors_rec(reader)
     }
 
     return hdr
