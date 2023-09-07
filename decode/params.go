@@ -11,12 +11,6 @@ import (
     "github.com/soniakeys/meeus/v3/julian"
 )
 
-type params_base struct {
-    Seconds int32
-    Nano_seconds int32
-    N_params int16
-}
-
 func parse_reftime(date_str string) time.Time {
     // format is (according to spec) yyyy/ddd hh:mm:ss (eg 1970/001 00:00:00)
     split := strings.Split(date_str, " ")
@@ -46,7 +40,7 @@ func parse_reftime(date_str string) time.Time {
 // reference ellipsoid for the geographic position.
 // This record could contain pretty much anything, of any type. We'll try to detect
 // as many types as possible and convert them from strings.
-func ProcessingParametersRec(buffer []byte, rec Record) map[string]interface{} {
+func ProcessingParametersRec(buffer []byte) map[string]interface{} {
     var (
         param_size int16
         param string
@@ -54,7 +48,11 @@ func ProcessingParametersRec(buffer []byte, rec Record) map[string]interface{} {
         key string
         val string
         svals []string
-        base params_base
+        base struct {
+            Seconds int32
+            Nano_seconds int32
+            N_params int16
+        }
         i int16
         j int64
     )
@@ -75,9 +73,6 @@ func ProcessingParametersRec(buffer []byte, rec Record) map[string]interface{} {
 
     params := make(map[string]interface{})
 
-    // buffer := make([]byte, rec.Datasize)
-
-    // _ = binary.Read(stream, binary.BigEndian, &buffer)
     reader := bytes.NewReader(buffer)
     _ = binary.Read(reader, binary.BigEndian, &base)
 

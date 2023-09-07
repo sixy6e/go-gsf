@@ -7,21 +7,6 @@ import (
     "time"
 )
 
-type svp_base1 struct {
-    Obs_seconds int32
-    Obs_nano_seconds int32
-    App_seconds int32
-    App_nano_seconds int32
-    Longitude int32
-    Latitude int32
-    N_points int32
-}
-
-type svp_base2 struct {
-    Depth []int32
-    Sound_velocity []int32
-}
-
 // SoundVelocityProfile contains the values of sound velocoty used in estimating
 // individual sounding locations.
 // It consists of; the time the prodile was observed, the time it was introduced into the
@@ -36,26 +21,38 @@ type SoundVelocityProfile struct {
     Sound_velocity []float32
 }
 
-// SoundVelocityProfileRec decodes a SOUND_VELOCITY_PROFILE Record.
+// NewSoundVelocityProfile is a constructor for SoundVelocityProfile by decoding
+// a SOUND_VELOCITY_PROFILE Record.
 // It contains the values of sound velocity used in estimating individual sounding locations.
 // Note: The provided samples appear to not store the position. It has been described that
 // the position could be retrieved from the closest matching timestamp with that of a
 // ping timestamp (within some acceptable tolerance).
-func SoundVelocityProfileRec(buffer []byte, rec Record) SoundVelocityProfile {
+func NewSoundVelocityProfile(buffer []byte) *SoundVelocityProfile {
     var (
         base1 svp_base1
         base2 svp_base2
+        base1 struct {
+            Obs_seconds int32
+            Obs_nano_seconds int32
+            App_seconds int32
+            App_nano_seconds int32
+            Longitude int32
+            Latitude int32
+            N_points int32
+        }
+        base2 struct {
+            Depth []int32
+            Sound_velocity []int32
+        }
         svp SoundVelocityProfile
         i int32
     )
 
-    // buffer := make([]byte, rec.Datasize)
-    // _ , _ = stream.Read(buffer)
     reader := bytes.NewReader(buffer)
 
     _ = binary.Read(reader, binary.BigEndian, &base1)
 
-    // 8 * 4bytes have now been read
+    // 7 * 4bytes have now been read
     idx := 28
 
     // A previous implementation created arrays for all vars (lon, lat etc)
@@ -81,5 +78,5 @@ func SoundVelocityProfileRec(buffer []byte, rec Record) SoundVelocityProfile {
         svp.Sound_velocity[i] = float32(base2.Sound_velocity[i]) / SCALE1
     }
 
-    return svp
+    return new(svp)
 }

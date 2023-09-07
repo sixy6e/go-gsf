@@ -19,18 +19,13 @@ type History struct {
     Value string
 }
 
-// HistoryRec decodes the HISTORY record which contains any documentation or processing
+// NewHistory is a constructor for History by decoding the HISTORY record which
+// contains any documentation or processing
 // which has been applied to the data.
 // Captured information; time the step occurred, operator name, computer name
 // program being used and any command line args or relevant parameters, as well as any
 // comments to summarise the processing that occurred.
-func HistoryRec(buffer []byte, rec Record) History {
-    // buffer := make([]byte, rec.Datasize)
-
-    // _ , _ = stream.Read(buffer)
-    // reader := bytes.NewReader(buffer)
-    // _ = binary.Read(reader, binary.BigEndian, &buffer2)
-
+func NewHistory(buffer []byte) *History {
     // timestamp
     seconds := int64(binary.BigEndian.Uint32(buffer[0:4]))
     nano_seconds := int64(binary.BigEndian.Uint32(buffer[4:8]))
@@ -81,5 +76,5 @@ func HistoryRec(buffer []byte, rec Record) History {
         Value: comment,
     }
 
-    return history
+    return new(history)
 }

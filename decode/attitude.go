@@ -7,20 +7,6 @@ import (
     "time"
 )
 
-type attitude_base1 struct {
-    Seconds int32
-    Nano_seconds int32
-    Measurements int16
-}
-
-type attitude_base2 struct {
-    Time_offset int32
-    Pitch int32
-    Roll int32
-    Heave int32
-    Heading int32
-}
-
 // Attitude contains the measurements as reported by the vessel attitude sensor.
 // Fields include: Timestamp, Pitch, Roll, Heave and Heading.
 type Attitude struct {
@@ -31,23 +17,32 @@ type Attitude struct {
     Heading []float32
 }
 
-// AttitudeRec decodes an Attitude Record which contains the measurements
+// NewAttitude is a constructor for Attitude by decoding an ATTITUDE Record
+// which contains the measurements
 // as reported by the vessel attitude sensor.
 // Fields include: Timestamp, Pitch, Roll, Heave and Heading.
-func AttitudeRec(buffer []byte, rec Record) Attitude {
+func NewAttitude(buffer []byte) *Attitude {
     var (
         idx int64 = 0
-        base1 attitude_base1
-        base2 attitude_base2
+        base1 struct {
+            Seconds int32
+            Nano_seconds int32
+            Measurements int16
+        }
+        base2 struct {
+            Time_offset int32
+            Pitch int32
+            Roll int32
+            Heave int32
+            Heading int32
+        }
         offset time.Duration
     )
 
-    // buffer := make([]byte, rec.Datasize)
-    // _ , _ = stream.Read(buffer)
     reader := bytes.NewReader(buffer)
 
     _ = binary.Read(reader, binary.BigEndian, &base1)
-    idx += 10  // TODO; remove
+    idx += 10  // TODO; remove, if superfluous
 
     acq_time := time.Unix(int64(base1.Seconds), int64(base1.Nano_seconds)).UTC()
 
@@ -71,9 +66,7 @@ func AttitudeRec(buffer []byte, rec Record) Attitude {
         attitude.Roll[i] = float32(base2.Roll) / SCALE2
         attitude.Heave[i] = float32(base2.Heave) / SCALE2
         attitude.Heading[i] = float32(base2.Heading) / SCALE2
-
-        idx += 10  // TODO; remove
     }
 
-    return attitude
+    return new(attitude)
 }
