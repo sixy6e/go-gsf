@@ -21,13 +21,13 @@ type SoundVelocityProfile struct {
     Sound_velocity []float32
 }
 
-// NewSoundVelocityProfile is a constructor for SoundVelocityProfile by decoding
+// DecodeSoundVelocityProfile is a constructor for SoundVelocityProfile by decoding
 // a SOUND_VELOCITY_PROFILE Record.
 // It contains the values of sound velocity used in estimating individual sounding locations.
 // Note: The provided samples appear to not store the position. It has been described that
 // the position could be retrieved from the closest matching timestamp with that of a
 // ping timestamp (within some acceptable tolerance).
-func NewSoundVelocityProfile(buffer []byte) *SoundVelocityProfile {
+func DecodeSoundVelocityProfile(buffer []byte) SoundVelocityProfile {
     var (
         base1 svp_base1
         base2 svp_base2
@@ -48,7 +48,7 @@ func NewSoundVelocityProfile(buffer []byte) *SoundVelocityProfile {
         i int32
     )
 
-    reader := bytes.NewReader(buffer)
+    reader := bytes.DecodeReader(buffer)
 
     _ = binary.Read(reader, binary.BigEndian, &base1)
 
@@ -61,7 +61,7 @@ func NewSoundVelocityProfile(buffer []byte) *SoundVelocityProfile {
     base2.Depth = make([]int32, base1.N_points)
     base2.Sound_velocity = make([]int32, base1.N_points)
 
-    reader = bytes.NewReader(buffer[idx:])
+    reader = bytes.DecodeReader(buffer[idx:])
     _ = binary.Read(reader, binary.BigEndian, &base2)
 
     // it's not quite clear from the spec as to whether UTC is enforced
@@ -78,5 +78,5 @@ func NewSoundVelocityProfile(buffer []byte) *SoundVelocityProfile {
         svp.Sound_velocity[i] = float32(base2.Sound_velocity[i]) / SCALE1
     }
 
-    return new(svp)
+    return svp
 }

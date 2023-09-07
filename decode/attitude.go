@@ -17,11 +17,11 @@ type Attitude struct {
     Heading []float32
 }
 
-// NewAttitude is a constructor for Attitude by decoding an ATTITUDE Record
+// DecodeAttitude is a constructor for Attitude by decoding an ATTITUDE Record
 // which contains the measurements
 // as reported by the vessel attitude sensor.
 // Fields include: Timestamp, Pitch, Roll, Heave and Heading.
-func NewAttitude(buffer []byte) *Attitude {
+func DecodeAttitude(buffer []byte) Attitude {
     var (
         idx int64 = 0
         base1 struct {
@@ -68,5 +68,5 @@ func NewAttitude(buffer []byte) *Attitude {
         attitude.Heading[i] = float32(base2.Heading) / SCALE2
     }
 
-    return new(attitude)
+    return attitude
 }

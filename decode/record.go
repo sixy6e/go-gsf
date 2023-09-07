@@ -19,11 +19,11 @@ type RecordHdr struct {
     Checksum_flag bool
 }
 
-// NewRecordHdr acts as the constructor for RecordHdr by decoding the header of
+// DecodeRecordHdr acts as the constructor for RecordHdr by decoding the header of
 // a records bytestream.
 // Each record has a small header that defines the type of record, the size
 // of the data within the record, and whether the record contains a checksum
-func NewRecordHdr(stream Stream) *RecordHdr {
+func DecodeRecordHdr(stream Stream) RecordHdr {
 
     blob := [2]uint32{}
     _ = binary.Read(stream, binary.BigEndian, &blob)
@@ -40,5 +40,5 @@ func NewRecordHdr(stream Stream) *RecordHdr {
         Checksum_flag: checksum_flag,
     }
 
-    return new(rec_hdr)
+    return rec_hdr
 }

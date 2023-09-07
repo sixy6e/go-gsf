@@ -19,13 +19,13 @@ type History struct {
     Value string
 }
 
-// NewHistory is a constructor for History by decoding the HISTORY record which
+// DecodeHistory is a constructor for History by decoding the HISTORY record which
 // contains any documentation or processing
 // which has been applied to the data.
 // Captured information; time the step occurred, operator name, computer name
 // program being used and any command line args or relevant parameters, as well as any
 // comments to summarise the processing that occurred.
-func NewHistory(buffer []byte) *History {
+func DecodeHistory(buffer []byte) History {
     // timestamp
     seconds := int64(binary.BigEndian.Uint32(buffer[0:4]))
     nano_seconds := int64(binary.BigEndian.Uint32(buffer[4:8]))
@@ -76,5 +76,5 @@ func NewHistory(buffer []byte) *History {
         Value: comment,
     }
 
-    return new(history)
+    return history
 }

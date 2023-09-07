@@ -22,11 +22,11 @@ type SwathBathySummary struct {
     Max_depth float32
 }
 
-// NewSwathBathySummary acts as the constructor for SwathBathySummary by decoding
+// DecodeSwathBathySummary acts as the constructor for SwathBathySummary by decoding
 // the SWATH_BATHY_SUMMARY record.
 // It contains the geometrical and temporal extent of the swath data contained
 // within the GSF file.
-func NewSwathBathySummary(buffer []byte) *SwathBathySummary {
+func DecodeSwathBathySummary(buffer []byte) SwathBathySummary {
     var buffer2 struct {
         First_ping_sec int32
         First_ping_nano_sec int32
@@ -40,7 +40,7 @@ func NewSwathBathySummary(buffer []byte) *SwathBathySummary {
         Max_depth int32
     }
 
-    reader := bytes.NewReader(buffer)
+    reader := bytes.DecodeReader(buffer)
     _ = binary.Read(reader, binary.BigEndian, &buffer2)
 
     // should look at storing the scale factors as consts or a struct
@@ -55,5 +55,5 @@ func NewSwathBathySummary(buffer []byte) *SwathBathySummary {
         Max_depth: float32(buffer2.Max_depth) / SCALE2,
     }
 
-    return new(summary)
+    return summary
 }

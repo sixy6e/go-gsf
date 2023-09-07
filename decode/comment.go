@@ -13,9 +13,9 @@ type Comment struct {
     Value string
 }
 
-// NewComment is a constructor for Comment by decoding the COMMENT record which
+// DecodeComment is a constructor for Comment by decoding the COMMENT record which
 // is for capturing anything of interest, events etc.
-func NewComment(buffer []byte, rec Record) *Comment {
+func DecodeComment(buffer []byte) Comment {
     var buffer2 struct {
         Seconds int32
         Nano_seconds int32
@@ -30,5 +30,5 @@ func NewComment(buffer []byte, rec Record) *Comment {
         Value: string(buffer[12:]),
     }
 
-    return new(data)
+    return data
 }
