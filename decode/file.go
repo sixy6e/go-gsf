@@ -7,7 +7,6 @@ import (
     // "time"
     "fmt"
 
-    // "github.com/samber/lo"
     tiledb "github.com/TileDB-Inc/TileDB-Go"
 )
 
@@ -31,87 +30,11 @@ func Padding(stream Stream) {
     return 
 }
 
-// GSFv contains the version of GSF used to construct the GSF file.
-type GSFv struct {
-    Version string
-}
-
-// FileRec decodes the HEADER record from a GSF file.
-// It contains the version of GSF used to create the file.
-func FileRec(buffer []byte, rec Record) GSFv {
-    // buffer := make([]byte, rec.Datasize)
-
-    // _ = binary.Read(stream, binary.BigEndian, &buffer)
-
-    file_hdr := GSFv{Version: string(buffer)}
-
-    return file_hdr
-}
-
-var rec_arr = [12]RecordID{
-    HEADER,
-    SWATH_BATHYMETRY_PING,
-    SOUND_VELOCITY_PROFILE,
-    PROCESSING_PARAMETERS,
-    SENSOR_PARAMETERS,
-    COMMENT,
-    HISTORY,
-    NAVIGATION_ERROR,
-    SWATH_BATHY_SUMMARY,
-    SINGLE_BEAM_PING,
-    HV_NAVIGATION_ERROR,
-    ATTITUDE,
-}
-
-// TODO; remove, no longer needed
-var subrec_arr = [32]SubRecordID{
-    DEPTH,
-    ACROSS_TRACK,
-    ALONG_TRACK,
-    TRAVEL_TIME,
-    BEAM_ANGLE,
-    MEAN_CAL_AMPLITUDE,
-    MEAN_REL_AMPLITUDE,
-    ECHO_WIDTH,
-    QUALITY_FACTOR,
-    RECEIVE_HEAVE,
-    DEPTH_ERROR,
-    ACROSS_TRACK_ERROR,
-    ALONG_TRACK_ERROR,
-    NOMINAL_DEPTH,
-    QUALITY_FLAGS,
-    BEAM_FLAGS,
-    SIGNAL_TO_NOISE,
-    BEAM_ANGLE_FORWARD,
-    VERTICAL_ERROR,
-    HORIZONTAL_ERROR,
-    INTENSITY_SERIES,
-    SECTOR_NUMBER,
-    DETECTION_INFO,
-    INCIDENT_BEAM_ADJ,
-    SYSTEM_CLEANING,
-    DOPPLER_CORRECTION,
-    SONAR_VERT_UNCERTAINTY,
-    SONAR_HORZ_UNCERTAINTY,
-    DETECTION_WINDOW,
-    MEAN_ABS_COEF,
-    UNKNOWN,
-    SCALE_FACTORS,
-}
-
 // Should contain the whole CRS not just horizontal and vertical datums
 type Crs struct {
     Horizontal_Datum string
     Vertical_Datum string
 }
-
-// type QualityInfo struct {
-//     Min_Max_Beams []uint16
-//     Consistent_Beams bool
-//     Duplicate_Pings bool
-//     Duplicates []time.Time
-//     Consistent_Schema bool
-// }
 
 type PingGroup struct {
     Start uint64
@@ -130,13 +53,10 @@ type FileInfo struct {
     CRS Crs
     SubRecord_Schema []string
     Quality_Info QualityInfo
-    // Record_Counts map[RecordID]uint64
     Record_Counts map[string]uint64
-    // SubRecord_Counts map[SubRecordID]uint64
     SubRecord_Counts map[string]uint64
     Ping_Groups []PingGroup
-    // Record_Index map[RecordID][]Record
-    Record_Index map[string][]Record
+    Record_Index map[string][]RecordHdr
     Ping_Info []PingInfo
 }
 
@@ -150,7 +70,6 @@ type FileInfo struct {
 func (fi *FileInfo) PGroups() {
     var (
         start int
-        // stop int
         ping_group PingGroup
         groups []PingGroup
     )
@@ -166,9 +85,6 @@ func (fi *FileInfo) PGroups() {
             }
             start = i
         }
-        // } else {
-        //     stop = i
-        // }
     }
 
     fi.Ping_Groups = groups
@@ -179,25 +95,18 @@ func (fi *FileInfo) PGroups() {
 func Index(gsf_uri string, config_uri string, in_memory bool) FileInfo {
 
     var (
-        // rec_idx map[RecordID][]Record
-        rec_idx map[string][]Record
-        // rec_counts map[RecordID]uint64
+        rec_idx map[string][]RecordHdr
         rec_counts map[string]uint64
         sub_rec_counts map[SubRecordID]uint64
         sub_rec_counts_str map[string]uint64
         sensor_id int32 
         sensor_name string
-        // val1 RecordID  // used for zeroing initial state
-        // val2 SubRecordID  // used for zeroing initial state
         rec Record
         pinfo PingInfo
         pings []PingInfo
         finfo FileInfo
         config *tiledb.Config
         err error
-        // nbeams []uint16
-        // timestamps []time.Time
-        // qa QualityInfo
         crs Crs
     )
 
@@ -235,34 +144,15 @@ func Index(gsf_uri string, config_uri string, in_memory bool) FileInfo {
     defer handler.Close()
     // defer stream.Free()
 
-    // rec_idx = make(map[RecordID][]Record)
     rec_idx = make(map[string][]Record)
-    // rec_counts = make(map[RecordID]uint64)
     rec_counts = make(map[string]uint64)
     sub_rec_counts = make(map[SubRecordID]uint64)
     sub_rec_counts_str = make(map[string]uint64)
-    // nbeams = make([]uint64, 0)  // could be faster to declare after
 
     one := uint64(1)
-    // zero := uint64(0)  // used for zeroing initial state
-
-    // potentially superfluous; only required if there is desire to show records that
-    // don't exist within the file, i.e. records with count=0
-    // for _, val1 = range rec_arr {
-    //     rec_idx[val1] = nil
-    //     rec_counts[val1] = zero
-    // }
-
-    // potentially superfluous; only required if there is desire to show records that
-    // don't exist within the file, i.e. records with count=0
-    // for _, val2 = range subrec_arr {
-    //     sub_rec_counts[val2] = zero
-    // }
 
     // filesize is used as an EOF indicator when streaming the raw bytes
-    // filestat, _ := stream.Stat()
     filesize, _ := vfs.FileSize(gsf_uri)
-    // filename := filestat.Name()
 
     // create a generic stream
     stream, err := GenericStream(handler, filesize, in_memory)
@@ -279,11 +169,11 @@ func Index(gsf_uri string, config_uri string, in_memory bool) FileInfo {
         rec = RecordHdr(stream)
 
         // increment record count
-        // rec_counts[rec.Id] += one
         rec_counts[RecordNames[rec.Id]] += one
 
         rec_idx[RecordNames[rec.Id]] = append(rec_idx[RecordNames[rec.Id]], rec)
 
+        // TODO; convert to case switch
         if rec.Id == SWATH_BATHYMETRY_PING {
             // need to do some sub record decoding
             buffer := make([]byte, rec.Datasize)
@@ -292,12 +182,10 @@ func Index(gsf_uri string, config_uri string, in_memory bool) FileInfo {
 
             pinfo = ping_info(reader, rec)
             pings = append(pings, pinfo)
-            // nbeams = append(nbeams, ping.Number_Beams)
 
             // increment sub-record count
             for _, sid := range(pinfo.Sub_Records) {
                 sub_rec_counts[sid] += one
-                // sub_rec_counts[SubRecordNames[sid]] += one
             }
 
             pos, _ = Tell(stream)
@@ -326,35 +214,10 @@ func Index(gsf_uri string, config_uri string, in_memory bool) FileInfo {
     // reset file posistion
     _, _ = stream.Seek(original_pos, 0)
 
-    // there have been instances where the number of beams was inconsistent between pings
-    // the general idea is to know whether we're dealing with a consistent number of beams
-    // nbeams = make([]uint16, len(pings))
-    // for i, ping := range(pings) {
-    //     nbeams[i] = ping.Number_Beams
-    // }
-
-    // domain for number of beams
-    // max := lo.Max(nbeams)
-    // min := lo.Min(nbeams)
-    // min_max_beams := []uint16{min, max}
-    // consistent_beams := min == max
-
-    // duplicate pings. one of the samples had duplicate timestamps
-    // timestamps = make([]time.Time, len(pings))
-    // for i, ping := range(pings) {
-    //     timestamps[i] = ping.Timestamp
-    // }
-
-    // duplicates := lo.FindDuplicates(timestamps)
-
     // consistent schema; we've had cases where the schema is inconsistent between pings
-    // vals := make([]uint64, 0)
     sr_schema := make([]string, 0)
     for key, val := range sub_rec_counts {
         sub_rec_counts_str[SubRecordNames[key]] = val
-    //     if key != 100 {  // scale factors are not required to be stored in every ping :(
-    //         vals = append(vals, val)
-    //     }
         if key > 100 {
             sensor_id = int32(key)
             sensor_name = SubRecordNames[key]
@@ -362,19 +225,11 @@ func Index(gsf_uri string, config_uri string, in_memory bool) FileInfo {
             sr_schema = append(sr_schema, SubRecordNames[key])
         }
     }
-    // set := lo.Union(vals)
-
-    // qa.Min_Max_Beams = min_max_beams
-    // qa.Consistent_Beams = consistent_beams
-    // qa.Duplicate_Pings = len(duplicates) > 0
-    // qa.Duplicates = duplicates
-    // qa.Consistent_Schema = len(set) == 1
 
     finfo.GSF_URI = gsf_uri
     finfo.Size = filesize
     finfo.Sensor_ID = sensor_id
     finfo.Sensor_Name = sensor_name
-    // finfo.Quality_Info = qa
     finfo.CRS = crs
     finfo.SubRecord_Schema = sr_schema
     finfo.Record_Counts = rec_counts
