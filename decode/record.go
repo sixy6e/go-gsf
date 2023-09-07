@@ -8,23 +8,23 @@ import (
     // tiledb "github.com/TileDB-Inc/TileDB-Go"
 )
 
-// Record contains information about a given record stored within the GSF file.
+// RecordHdr contains information about a given record stored within the GSF file.
 // It contains the record identifier, the size of the data within the record,
 // a byte index within the file of where the data starts for the record
 // as well as an indicator as to whether or not a checksum is given for the record.
-type Record struct {
+type RecordHdr struct {
     Id RecordID
     Datasize uint32
     Byte_index int64
     Checksum_flag bool
-    // Record_index uint64
 }
 
-// RecordHdr decodes the header part of any given record.
+// NewRecordHdr acts as the constructor for RecordHdr by decoding the header of
+// a records bytestream.
 // Each record has a small header that defines the type of record, the size
 // of the data within the record, and whether the record contains a checksum
-func RecordHdr(stream Stream) Record {
-    
+func NewRecordHdr(stream Stream) *RecordHdr {
+
     blob := [2]uint32{}
     _ = binary.Read(stream, binary.BigEndian, &blob)
     data_size := blob[0]
@@ -33,12 +33,12 @@ func RecordHdr(stream Stream) Record {
 
     pos, _ := Tell(stream)
 
-    rec_hdr := Record{
+    rec_hdr := RecordHdr{
         Id: record_id,
         Datasize: data_size,
         Byte_index: pos,
         Checksum_flag: checksum_flag,
     }
 
-    return rec_hdr
+    return new(rec_hdr)
 }
