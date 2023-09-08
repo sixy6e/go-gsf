@@ -7,29 +7,6 @@ import (
     "time"
 )
 
-type ping_header_base struct {
-    Seconds int32
-    Nano_seconds int32
-    Longitude int32
-    Latitude int32
-    Number_beams uint16
-    Centre_beam uint16
-    Ping_flags int16
-    Reserved int16
-    Tide_corrector int16
-    Depth_corrector int32
-    Heading uint16
-    Pitch int16
-    Roll int16
-    Heave int16
-    Course uint16
-    Speed uint16
-    Height int32
-    Separation int32
-    GPS_tide_corrector int32
-    Spare int16
-}
-
 type PingHeader struct {
     Timestamp time.Time
     Longitude float64
@@ -57,6 +34,7 @@ type SubRecord struct {
 }
 
 type ScaleFactor struct {
+    Id SubRecordID
     Scale float32  // TODO float32?
     Offset float32
     Compression_flag bool  // if true, then the associated array is compressed
@@ -109,9 +87,30 @@ type PingInfo struct {
     Scale_Factors bool
 }
 
-func decode_ping_hdr(reader *bytes.Reader, rec Record) PingHeader {
+func decode_ping_hdr(reader *bytes.Reader) PingHeader {
     var (
-        hdr_base ping_header_base
+        hdr_base struct {
+            Seconds int32
+            Nano_seconds int32
+            Longitude int32
+            Latitude int32
+            Number_beams uint16
+            Centre_beam uint16
+            Ping_flags int16
+            Reserved int16
+            Tide_corrector int16
+            Depth_corrector int32
+            Heading uint16
+            Pitch int16
+            Roll int16
+            Heave int16
+            Course uint16
+            Speed uint16
+            Height int32
+            Separation int32
+            GPS_tide_corrector int32
+            Spare int16
+        }
         hdr PingHeader
     )
 
@@ -171,8 +170,10 @@ func scale_factors_rec(reader *bytes.Reader) (bytes int64) {
 
         subid := (int64(data[0]) & 0xFF000000) >> 24 // TODO; define const for 0xFF000000
         comp_flag := (data[0] & 0x00FF0000) >> 16 == 1 // TODO; define const for 0x00FF0000
+        cnvrt_subid := SubRecordID(subid)
 
         scale_factor = ScaleFactor{
+            Id: cnvrt_subid,
             Scale: float32(data[1]),
             Offset: float32(data[2]),
             Compression_flag: comp_flag,  // TODO; implement compression decoder
@@ -181,14 +182,14 @@ func scale_factors_rec(reader *bytes.Reader) (bytes int64) {
         bytes += 12
 
         // scale_factors[SubRecordID(subid)] = scale_factor
-        ScaleFactors[SubRecordID(subid)] = scale_factor
+        ScaleFactors[cnvrt_subid] = scale_factor
     }
 
     return bytes
 }
 
 // func ping_info(stream *os.File, rec Record) PingInfo {
-func ping_info(reader *bytes.Reader, rec Record) PingInfo {
+func ping_info(reader *bytes.Reader, rec RecordHdr) PingInfo {
     var (
         idx int64 = 0
         pinfo PingInfo
@@ -204,7 +205,7 @@ func ping_info(reader *bytes.Reader, rec Record) PingInfo {
     // _ = binary.Read(stream, binary.BigEndian, &buffer)
     // reader := bytes.NewReader(buffer)
 
-    hdr := decode_ping_hdr(reader, rec)
+    hdr := decode_ping_hdr(reader)
     idx += 56 // 56 bytes read for ping header
     offset := rec.Byte_index + idx
 
@@ -260,7 +261,7 @@ func ping_info(reader *bytes.Reader, rec Record) PingInfo {
 // Another instance was a duplicate ping. Same timestamp, location, depth, but zero values
 // for supporting attributes/sub-records/fields (heading, course, +others). Again, this
 // appeared to have never been encountered before (or never looked).
-func SwathBathymetryPingRec(buffer []byte, rec Record) PingHeader {
+func SwathBathymetryPingRec(buffer []byte, rec RecordHdr) PingHeader {
     var (
         idx int64 = 0
         // subrecord_hdr int32
@@ -271,7 +272,7 @@ func SwathBathymetryPingRec(buffer []byte, rec Record) PingHeader {
     // _ = binary.Read(stream, binary.BigEndian, &buffer)
     reader := bytes.NewReader(buffer)
 
-    hdr := decode_ping_hdr(reader, rec)
+    hdr := decode_ping_hdr(reader)
     idx += 56 // 56 bytes read for ping header
     offset := rec.Byte_index + idx
 
