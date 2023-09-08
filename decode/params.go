@@ -33,14 +33,14 @@ func parse_reftime(date_str string) time.Time {
     return date
 }
 
-// ProcessingParametersRec decodes the PROCESSING_PARAMETERS record.
+// DecodeProcessingParameters decodes the PROCESSING_PARAMETERS record.
 // It contains important scalar or vector values that describe the overall survey
 // conditions or operational values.
 // Typical parameters include items uch as the navigation sensor's antenna location or the
 // reference ellipsoid for the geographic position.
 // This record could contain pretty much anything, of any type. We'll try to detect
 // as many types as possible and convert them from strings.
-func ProcessingParametersRec(buffer []byte) map[string]interface{} {
+func DecodeProcessingParameters(buffer []byte) map[string]interface{} {
     var (
         param_size int16
         param string
