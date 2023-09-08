@@ -20,7 +20,9 @@ import (
 // func create_index(gsf_uri string, config_uri string, out_uri string) error {
 func create_index(gsf_uri string, config_uri string, in_memory bool) error {
     log.Println("Processing GSF:", gsf_uri)
-    file_index := decode.Index(gsf_uri, config_uri, in_memory)
+    src := decode.OpenGSF(gsf_uri, config_uri, in_memory)
+    defer src.Close()
+    file_index := src.Index()
 
     jsn, err := json.MarshalIndent(file_index, "", "    ")
     if err != nil {
