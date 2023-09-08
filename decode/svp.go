@@ -29,8 +29,6 @@ type SoundVelocityProfile struct {
 // ping timestamp (within some acceptable tolerance).
 func DecodeSoundVelocityProfile(buffer []byte) SoundVelocityProfile {
     var (
-        base1 svp_base1
-        base2 svp_base2
         base1 struct {
             Obs_seconds int32
             Obs_nano_seconds int32
@@ -48,7 +46,7 @@ func DecodeSoundVelocityProfile(buffer []byte) SoundVelocityProfile {
         i int32
     )
 
-    reader := bytes.DecodeReader(buffer)
+    reader := bytes.NewReader(buffer)
 
     _ = binary.Read(reader, binary.BigEndian, &base1)
 
@@ -61,7 +59,7 @@ func DecodeSoundVelocityProfile(buffer []byte) SoundVelocityProfile {
     base2.Depth = make([]int32, base1.N_points)
     base2.Sound_velocity = make([]int32, base1.N_points)
 
-    reader = bytes.DecodeReader(buffer[idx:])
+    reader = bytes.NewReader(buffer[idx:])
     _ = binary.Read(reader, binary.BigEndian, &base2)
 
     // it's not quite clear from the spec as to whether UTC is enforced
