@@ -78,3 +78,20 @@ func DecodeHistory(buffer []byte) History {
 
     return history
 }
+
+// HistoryRecords decodes all HISTORY records.
+func (g *GsfFile) HistoryRecords(fi *FileInfo) (history []History) {
+    var (
+        buffer []byte
+    )
+    history = make([]History, fi.Record_Counts["HISTORY"])
+
+    for _, rec := range(fi.Record_Index["HISTORY"]) {
+        buffer = make([]byte, rec.Datasize)
+        _ = binary.Read(g.Stream, binary.BigEndian, &buffer)
+        hist := DecodeHistory(buffer)
+        history = append(history, hist)
+    }
+
+    return history
+}

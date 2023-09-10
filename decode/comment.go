@@ -32,3 +32,20 @@ func DecodeComment(buffer []byte) Comment {
 
     return data
 }
+
+// CommentRecords decodes all COMMENT records.
+func (g *GsfFile) CommentRecords(fi *FileInfo) (comments []Comment) {
+    var (
+        buffer []byte
+    )
+    comments = make([]Comment, fi.Record_Counts["COMMENT"])
+
+    for _, rec := range(fi.Record_Index["COMMENT"]) {
+        buffer = make([]byte, rec.Datasize)
+        _ = binary.Read(g.Stream, binary.BigEndian, &buffer)
+        comment := DecodeComment(buffer)
+        comments = append(comments, comment)
+    }
+
+    return comments
+}
