@@ -85,6 +85,7 @@ type PingInfo struct {
     Number_Beams uint16
     Sub_Records []SubRecordID
     Scale_Factors bool
+    scale_factors map[SubRecordID]ScaleFactor
 }
 
 func decode_ping_hdr(reader *bytes.Reader) PingHeader {
@@ -152,7 +153,7 @@ func SubRecHdr(reader *bytes.Reader, offset int64) SubRecord {
     return subhdr
 }
 
-func scale_factors_rec(reader *bytes.Reader) (bytes int64) {
+func scale_factors_rec(reader *bytes.Reader) (scale_factors map[SubRecordID]ScaleFactor, nbytes int64) {
     var (
         i int32
         num_factors int32
@@ -160,10 +161,11 @@ func scale_factors_rec(reader *bytes.Reader) (bytes int64) {
         // scale_factors map[int32]scale_factor
     )
     data := make([]int32, 3) // id, scale, offset
+    scale_factors = map[SubRecordID]ScaleFactor{}
     // scale_factors := make(map[SubRecordID]ScaleFactor)
 
     _ = binary.Read(reader, binary.BigEndian, &num_factors)
-    bytes = 4
+    nbytes = 4
 
     for i = 0; i < num_factors; i++ {
         _ = binary.Read(reader, binary.BigEndian, &data)
@@ -179,69 +181,58 @@ func scale_factors_rec(reader *bytes.Reader) (bytes int64) {
             Compression_flag: comp_flag,  // TODO; implement compression decoder
         }
 
-        bytes += 12
+        nbytes += 12
 
         // scale_factors[SubRecordID(subid)] = scale_factor
-        ScaleFactors[cnvrt_subid] = scale_factor
+        scale_factors[cnvrt_subid] = scale_factor
     }
 
-    return bytes
+    return scale_factors, nbytes
 }
 
-// func ping_info(stream *os.File, rec Record) PingInfo {
 func ping_info(reader *bytes.Reader, rec RecordHdr) PingInfo {
     var (
         idx int64 = 0
         pinfo PingInfo
         records = make([]SubRecordID, 0, 32)
         sf bool = false
+        scl_fac map[SubRecordID]ScaleFactor
+        nbytes int64
     )
 
-    // buffer := make([]byte, rec.Datasize)
     datasize := int64(rec.Datasize)
-
-    // _, _ = stream.Seek(rec.Index, 0)
-
-    // _ = binary.Read(stream, binary.BigEndian, &buffer)
-    // reader := bytes.NewReader(buffer)
 
     hdr := decode_ping_hdr(reader)
     idx += 56 // 56 bytes read for ping header
     offset := rec.Byte_index + idx
-
-    // read the records
-    // _ = reader.Seek(idx, 0)
-
-    // sub_rec := SubRecHdr(reader, offset)
-    // idx += 4
 
     // read through each subrecord
     for (datasize - idx) > 4 {
         sub_rec := SubRecHdr(reader, offset)
         srec_dsize := int64(sub_rec.Datasize)
         idx += 4  // bytes read from header
-        idx += srec_dsize
+
+        if sub_rec.Id == SCALE_FACTORS {
+            sf = true
+            scl_fac, nbytes = scale_factors_rec(reader)
+            idx += nbytes
+        } else {
+            // prep for the next record
+            _, _ = reader.Seek(srec_dsize, 1)
+            idx += srec_dsize
+        }
 
         records = append(records, sub_rec.Id)
-
-        // the following is probably superfluous
-        // _ = reader.Seek(idx, 0)
-
-        // prep for the next record
-        _, _ = reader.Seek(srec_dsize, 1)
-    }
-
-    // check if this ping has a scale factors record
-    for _, value := range(records) {
-        if value == SCALE_FACTORS {
-            sf = true
-        }
     }
 
     pinfo.Timestamp = hdr.Timestamp
     pinfo.Number_Beams = hdr.Number_beams
     pinfo.Sub_Records = records[:]
     pinfo.Scale_Factors = sf
+
+    if sf {
+        pinfo.scale_factors = scl_fac
+    }
 
     return pinfo
 }
@@ -264,11 +255,12 @@ func ping_info(reader *bytes.Reader, rec RecordHdr) PingInfo {
 func SwathBathymetryPingRec(buffer []byte, rec RecordHdr) PingHeader {
     var (
         idx int64 = 0
+        // sf map[SubRecordID]ScaleFactor
+        nbytes int64
         // subrecord_hdr int32
     )
 
     // buffer := make([]byte, rec.Datasize)
-
     // _ = binary.Read(stream, binary.BigEndian, &buffer)
     reader := bytes.NewReader(buffer)
 
@@ -289,7 +281,9 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr) PingHeader {
     // if scale factor else get scale factor
     if sub_rec.Id == SCALE_FACTORS {
         // read and structure the scale factors
-        idx += scale_factors_rec(reader)
+        // however, we'll rely on the scale factors from PingInfo.scale_factors
+        _, nbytes = scale_factors_rec(reader)
+        idx += nbytes
     }
 
     return hdr

@@ -37,6 +37,7 @@ type Crs struct {
 type PingGroup struct {
     Start uint64
     Stop uint64
+    Scale_Factors map[SubRecordID]ScaleFactor
 }
 
 type GsfFile struct {
@@ -155,6 +156,7 @@ func (fi *FileInfo) PGroups() {
         start int
         ping_group PingGroup
         groups []PingGroup
+        sf map[SubRecordID]ScaleFactor
     )
 
     groups = make([]PingGroup, 0)
@@ -163,10 +165,15 @@ func (fi *FileInfo) PGroups() {
         if ping.Scale_Factors {
             if i > 0 {
                 // new group
-                ping_group = PingGroup{uint64(start), uint64(i)}
+                ping_group = PingGroup{uint64(start), uint64(i), sf}
                 groups = append(groups, ping_group)
             }
+            // update with latest dependency
             start = i
+            sf = fi.Ping_Info[start].scale_factors
+        } else {
+            // set scale factors based on the last read scale factors
+            fi.Ping_Info[i].scale_factors = sf
         }
     }
 
