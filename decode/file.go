@@ -115,6 +115,22 @@ func (g *GsfFile) Close() {
     g.config.Free()
 }
 
+// RecBuf reads the bytes from an opened GsfFile specified by the RecordHdr.
+func (g *GsfFile) RecBuf(r RecordHdr) (buffer []byte) {
+    var err error
+
+    buffer = make([]byte, r.Datasize)
+    _, err = g.Stream.Seek(r.Byte_index, 0)
+
+    if err != nil {
+        panic(err)
+    }
+
+    _ = binary.Read(g.Stream, binary.BigEndian, &buffer)
+
+    return buffer
+}
+
 type GsfDetails struct {
     GSF_URI string
     GSF_Version string
