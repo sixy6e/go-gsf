@@ -40,41 +40,6 @@ type ScaleFactor struct {
     Compression_flag bool  // if true, then the associated array is compressed
 }
 
-// ScaleFactors acts as a global for modification during a sequential decode
-// single core process.
-var ScaleFactors = map[SubRecordID]ScaleFactor{
-    DEPTH: ScaleFactor{},  // 1
-    ACROSS_TRACK: ScaleFactor{},
-    ALONG_TRACK: ScaleFactor{},
-    TRAVEL_TIME: ScaleFactor{},
-    BEAM_ANGLE: ScaleFactor{},
-    MEAN_CAL_AMPLITUDE: ScaleFactor{},
-    MEAN_REL_AMPLITUDE: ScaleFactor{},
-    ECHO_WIDTH: ScaleFactor{},
-    QUALITY_FACTOR: ScaleFactor{},
-    RECEIVE_HEAVE: ScaleFactor{},
-    DEPTH_ERROR: ScaleFactor{},  // obselete
-    ACROSS_TRACK_ERROR: ScaleFactor{}, // obselete
-    ALONG_TRACK_ERROR: ScaleFactor{}, // obselete
-    NOMINAL_DEPTH: ScaleFactor{},
-    QUALITY_FLAGS: ScaleFactor{},
-    BEAM_FLAGS: ScaleFactor{},
-    SIGNAL_TO_NOISE: ScaleFactor{},
-    BEAM_ANGLE_FORWARD: ScaleFactor{},
-    VERTICAL_ERROR: ScaleFactor{},  // replaces depth error
-    HORIZONTAL_ERROR: ScaleFactor{}, // replaces across track error
-    INTENSITY_SERIES: ScaleFactor{},
-    SECTOR_NUMBER: ScaleFactor{},
-    DETECTION_INFO: ScaleFactor{},
-    INCIDENT_BEAM_ADJ: ScaleFactor{},
-    SYSTEM_CLEANING: ScaleFactor{},
-    DOPPLER_CORRECTION: ScaleFactor{},
-    SONAR_VERT_UNCERTAINTY: ScaleFactor{},
-    SONAR_HORZ_UNCERTAINTY: ScaleFactor{},
-    DETECTION_WINDOW: ScaleFactor{},
-    MEAN_ABS_COEF: ScaleFactor{}, // 30
-}
-
 // PingInfo contains some basic information regarding the ping such as
 // the number of beams, what sub-records are populated.
 // The initial reasoning behind why, is to provide a basic descriptor
