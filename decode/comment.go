@@ -40,12 +40,17 @@ func (g *GsfFile) CommentRecords(fi *FileInfo) (comments []Comment) {
     )
     comments = make([]Comment, fi.Record_Counts["COMMENT"])
 
+    // get the original starting point so we can jump back when done
+    original_pos, _ := Tell(g.Stream)
+
     for _, rec := range(fi.Record_Index["COMMENT"]) {
-        buffer = make([]byte, rec.Datasize)
-        _ = binary.Read(g.Stream, binary.BigEndian, &buffer)
+        buffer = g.RecBuf(rec)
         comment := DecodeComment(buffer)
         comments = append(comments, comment)
     }
+
+    // reset file position
+    _, _ = g.Stream.Seek(original_pos, 0)
 
     return comments
 }

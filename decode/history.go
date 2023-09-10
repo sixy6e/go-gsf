@@ -86,12 +86,17 @@ func (g *GsfFile) HistoryRecords(fi *FileInfo) (history []History) {
     )
     history = make([]History, fi.Record_Counts["HISTORY"])
 
+    // get the original starting point so we can jump back when done
+    original_pos, _ := Tell(g.Stream)
+
     for _, rec := range(fi.Record_Index["HISTORY"]) {
-        buffer = make([]byte, rec.Datasize)
-        _ = binary.Read(g.Stream, binary.BigEndian, &buffer)
+        buffer = g.RecBuf(rec)
         hist := DecodeHistory(buffer)
         history = append(history, hist)
     }
+
+    // reset file position
+    _, _ = g.Stream.Seek(original_pos, 0)
 
     return history
 }
