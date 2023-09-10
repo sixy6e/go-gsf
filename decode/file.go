@@ -139,6 +139,7 @@ type FileInfo struct {
     Record_Counts map[string]uint64
     SubRecord_Counts map[string]uint64
     Swath_Summary SwathBathySummary
+    Processing_Parameters map[string]interface{}
     Ping_Groups []PingGroup
     Record_Index map[string][]RecordHdr
     Ping_Info []PingInfo
@@ -200,6 +201,7 @@ func (g *GsfFile) Index() FileInfo {
         reader *bytes.Reader
         version Header
         swath_sum SwathBathySummary
+        params map[string]interface{}
     )
 
     rec_idx = make(map[string][]RecordHdr)
@@ -246,7 +248,7 @@ func (g *GsfFile) Index() FileInfo {
                 buffer = make([]byte, rec.Datasize)
                 _ = binary.Read(g.Stream, binary.BigEndian, &buffer)
 
-                params := DecodeProcessingParameters(buffer)
+                params = DecodeProcessingParameters(buffer)
 
                 // TODO; change params rec to be a defined struct to avoid this type assertion
                 hd, ok := params["geoid"].(string)
@@ -299,6 +301,7 @@ func (g *GsfFile) Index() FileInfo {
     finfo.Record_Index = rec_idx
     finfo.Ping_Info = pings
     finfo.Swath_Summary = swath_sum
+    finfo.Processing_Parameters = params
 
     finfo.PGroups()
     finfo.QInfo()
