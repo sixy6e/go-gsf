@@ -2,9 +2,9 @@ package main
 
 import (
     "log"
-    "encoding/json"
+    // "encoding/json"
     "os"
-    //"fmt"
+    // "fmt"
     "runtime"
     "os/signal"
     "context"
@@ -22,17 +22,35 @@ func create_index(gsf_uri string, config_uri string, in_memory bool) error {
     log.Println("Processing GSF:", gsf_uri)
     src := decode.OpenGSF(gsf_uri, config_uri, in_memory)
     defer src.Close()
-    file_index := src.Index()
+    file_info := src.Info()
+    proc_info := src.ProcInfo(&file_info)
 
-    jsn, err := json.MarshalIndent(file_index, "", "    ")
+    // b := src.RecBuf(file_info.Index.Record_Index["PROCESSING_PARAMETERS"][0])
+    // fmt.Println(string(b), "\n")
+
+    // jsn, err := json.MarshalIndent(file_index, "", "    ")
+    // if err != nil {
+    //     // panic(err)
+    //     return err
+    // }
+
+    // TODO; if we write the file to a different structure, we need a different extension
+    out_uri := gsf_uri + "-metadata.json"
+    _, err := encode.WriteJson(out_uri, config_uri, file_info.Metadata)
     if err != nil {
         // panic(err)
         return err
     }
 
-    // TODO; if we write the file to a different structure, we need a different extension
-    out_uri := gsf_uri + "-index.json"
-    _, err = encode.WriteJson(out_uri, config_uri, jsn)
+    out_uri = gsf_uri + "-proc-info.json"
+    _, err = encode.WriteJson(out_uri, config_uri, proc_info)
+    if err != nil {
+        // panic(err)
+        return err
+    }
+
+    out_uri = gsf_uri + "-index.json"
+    _, err = encode.WriteJson(out_uri, config_uri, file_info.Index)
     if err != nil {
         // panic(err)
         return err
