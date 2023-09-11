@@ -5,6 +5,7 @@ import (
     // "bytes"
     "encoding/binary"
     "time"
+    "strings"
 )
 
 // History type contains the documentation or processing that has been applied to the data.
@@ -42,7 +43,7 @@ func DecodeHistory(buffer []byte) History {
     size := int64(binary.BigEndian.Uint16(buffer[start_idx:end_idx]))
     start_idx += 2
     end_idx += size
-    machine_name := string(buffer[start_idx:end_idx])
+    machine_name := strings.Trim(string(buffer[start_idx:end_idx]), "\x00")
     start_idx += size
     end_idx += 2
 
@@ -50,7 +51,7 @@ func DecodeHistory(buffer []byte) History {
     size = int64(binary.BigEndian.Uint16(buffer[start_idx:end_idx]))
     start_idx += 2
     end_idx += size
-    operator_name := string(buffer[start_idx:end_idx])
+    operator_name := strings.Trim(string(buffer[start_idx:end_idx]), "\x00")
     start_idx += size
     end_idx += 2
 
@@ -58,7 +59,7 @@ func DecodeHistory(buffer []byte) History {
     size = int64(binary.BigEndian.Uint16(buffer[start_idx:end_idx]))
     start_idx += 2
     end_idx += size
-    command := string(buffer[start_idx:end_idx])
+    command := strings.Trim(string(buffer[start_idx:end_idx]), "\x00")
     start_idx += size
     end_idx += 2
 
@@ -66,7 +67,7 @@ func DecodeHistory(buffer []byte) History {
     size = int64(binary.BigEndian.Uint16(buffer[start_idx:end_idx]))
     start_idx += 2
     end_idx += size
-    comment := string(buffer[start_idx:end_idx])
+    comment := strings.Trim(string(buffer[start_idx:end_idx]), "\x00")
 
     history := History{
         Processing_timestamp: time.Unix(seconds, nano_seconds).UTC(),
