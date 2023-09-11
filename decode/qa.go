@@ -102,5 +102,5 @@ func (fi *FileInfo) QInfo() {
     // }
     qa.Coincident_Pings = coincident_pings
 
-    fi.Quality_Info = qa
+    fi.Metadata.Quality_Info = qa
 }
