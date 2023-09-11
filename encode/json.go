@@ -1,10 +1,11 @@
 package encode
 
 import (
+    "encoding/json"
     tiledb "github.com/TileDB-Inc/TileDB-Go"
 )
 
-func WriteJson(file_uri string, config_uri string, data []byte) (int, error) {
+func WriteJson(file_uri string, config_uri string, data any) (int, error) {
 
     var config *tiledb.Config
     var err error
@@ -44,7 +45,13 @@ func WriteJson(file_uri string, config_uri string, data []byte) (int, error) {
     defer stream.Close()
     // defer stream.Free()
 
-    bytes_written, err := stream.Write(data)
+    jsn, err := json.MarshalIndent(data, "", "    ")
+    if err != nil {
+        // panic(err)
+        return 0, err
+    }
+
+    bytes_written, err := stream.Write(jsn)
 
     if err != nil {
         return 0, err
