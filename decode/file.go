@@ -131,6 +131,16 @@ func (g *GsfFile) RecBuf(r RecordHdr) (buffer []byte) {
     return buffer
 }
 
+func (g *GsfFile) ProcInfo(fi *FileInfo) (proc_info ProcessingInfo) {
+    proc_info.Histories = g.HistoryRecords(fi)
+    proc_info.Comments = g.CommentRecords(fi)
+
+    buffer := g.RecBuf(fi.Index.Record_Index["PROCESSING_PARAMETERS"][0])
+    proc_info.Processing_Parameters = DecodeProcessingParameters(buffer)
+
+    return proc_info
+}
+
 type GsfDetails struct {
     GSF_URI string
     GSF_Version string
@@ -141,12 +151,8 @@ type SensorInfo struct {
     Sensor_ID int32
     Sensor_Name string
 }
-    
-// FileInfo is the overarching structure containing basic info about the GSF file.
-// Items include file location, file size, counts of each record (main and subrecords),
-// as well as basic info about the pings such as number of beams and schema for each
-// ping contained within the file.
-type FileInfo struct {
+
+type Metadata struct {
     GSF_Details GsfDetails
     Sensor_Info SensorInfo
     CRS Crs
@@ -155,9 +161,27 @@ type FileInfo struct {
     Record_Counts map[string]uint64
     SubRecord_Counts map[string]uint64
     Swath_Summary SwathBathySummary
-    Processing_Parameters map[string]interface{}
+}
+
+type Index struct {
     Ping_Groups []PingGroup
     Record_Index map[string][]RecordHdr
+}
+
+type ProcessingInfo struct {
+    Histories []History
+    Comments []Comment
+    Processing_Parameters map[string]interface{}
+}
+    
+// FileInfo is the overarching structure containing basic info about the GSF file.
+// Items include file location, file size, counts of each record (main and subrecords),
+// as well as basic info about the pings such as number of beams and schema for each
+// ping contained within the file.
+type FileInfo struct {
+    Metadata
+    Index
+    // Processing_Parameters map[string]interface{}
     Ping_Info []PingInfo
 }
 
@@ -194,12 +218,12 @@ func (fi *FileInfo) PGroups() {
         }
     }
 
-    fi.Ping_Groups = groups
+    fi.Index.Ping_Groups = groups
 }
 
-// Index, as the name implies, builds a file index of all Record types.
-// Each Record contains the record ID, record size, byte index and checksum flag.
-func (g *GsfFile) Index() FileInfo {
+// Info builds a file index of all Record types as well generic information
+// and metadata such as CRS, sensor, schema, record counts, and basic QA.
+func (g *GsfFile) Info() FileInfo {
     var (
         rec_idx map[string][]RecordHdr
         rec_counts map[string]uint64
@@ -308,16 +332,18 @@ func (g *GsfFile) Index() FileInfo {
         }
     }
 
-    finfo.GSF_Details = GsfDetails{GSF_URI: g.Uri, GSF_Version: version.Version, Size: g.filesize}
-    finfo.Sensor_Info = SensorInfo{Sensor_ID: sensor_id, Sensor_Name: sensor_name}
-    finfo.CRS = crs
-    finfo.SubRecord_Schema = sr_schema
-    finfo.Record_Counts = rec_counts
-    finfo.SubRecord_Counts = sub_rec_counts_str
-    finfo.Record_Index = rec_idx
+    finfo.Metadata.GSF_Details = GsfDetails{GSF_URI: g.Uri, GSF_Version: version.Version, Size: g.filesize}
+    finfo.Metadata.Sensor_Info = SensorInfo{Sensor_ID: sensor_id, Sensor_Name: sensor_name}
+    finfo.Metadata.CRS = crs
+    finfo.Metadata.SubRecord_Schema = sr_schema
+    finfo.Metadata.Record_Counts = rec_counts
+    finfo.Metadata.SubRecord_Counts = sub_rec_counts_str
+    finfo.Metadata.Swath_Summary = swath_sum
+
+    finfo.Index.Record_Index = rec_idx
+
     finfo.Ping_Info = pings
-    finfo.Swath_Summary = swath_sum
-    finfo.Processing_Parameters = params
+    // finfo.Processing_Parameters = params
 
     finfo.PGroups()
     finfo.QInfo()
