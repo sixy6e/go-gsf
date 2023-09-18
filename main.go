@@ -18,21 +18,12 @@ import (
 )
 
 // func create_index(gsf_uri string, config_uri string, out_uri string) error {
-func create_index(gsf_uri string, config_uri string, in_memory bool) error {
+func create_metadata(gsf_uri string, config_uri string, in_memory bool) error {
     log.Println("Processing GSF:", gsf_uri)
     src := decode.OpenGSF(gsf_uri, config_uri, in_memory)
     defer src.Close()
     file_info := src.Info()
     proc_info := src.ProcInfo(&file_info)
-
-    // b := src.RecBuf(file_info.Index.Record_Index["PROCESSING_PARAMETERS"][0])
-    // fmt.Println(string(b), "\n")
-
-    // jsn, err := json.MarshalIndent(file_index, "", "    ")
-    // if err != nil {
-    //     // panic(err)
-    //     return err
-    // }
 
     // TODO; if we write the file to a different structure, we need a different extension
     out_uri := gsf_uri + "-metadata.json"
@@ -61,7 +52,7 @@ func create_index(gsf_uri string, config_uri string, in_memory bool) error {
     return nil
 }
 
-func create_index_list(uri string, config_uri string, in_memory bool) error {
+func create_metadata_list(uri string, config_uri string, in_memory bool) error {
     log.Println("Searching uri:", uri)
     items := search.FindGsf(uri, config_uri)
     // out_uris := make([]string, len(items))
@@ -84,7 +75,7 @@ func create_index_list(uri string, config_uri string, in_memory bool) error {
     for _, name := range(items) {
         item_uri := name
         pool.Submit(func() {
-            _ = create_index(item_uri, config_uri, in_memory)
+            _ = create_metadata(item_uri, config_uri, in_memory)
             // if err != nil {
             //     return err
             // }
@@ -98,7 +89,7 @@ func main() {
     app := &cli.App{
         Commands: []*cli.Command{
             &cli.Command{
-                Name: "index",
+                Name: "metadata",
                 Flags: []cli.Flag{
                     &cli.StringFlag{
                         Name: "gsf-uri",
@@ -119,12 +110,12 @@ func main() {
                 },
                 Action: func(cCtx *cli.Context) error {
                     // err := create_index(cCtx.String("gsf-uri"), cCtx.String("config-uri"), cCtx.String("out-uri"))
-                    err := create_index(cCtx.String("gsf-uri"), cCtx.String("config-uri"), cCtx.Bool("in-memory"))
+                    err := create_metadata(cCtx.String("gsf-uri"), cCtx.String("config-uri"), cCtx.Bool("in-memory"))
                     return err
                 },
             },
             &cli.Command{
-                Name: "index-trawl",
+                Name: "metadata-trawl",
                 Flags: []cli.Flag{
                     &cli.StringFlag{
                         Name: "uri",
@@ -145,7 +136,7 @@ func main() {
                 },
                 Action: func(cCtx *cli.Context) error {
                     // err := create_index(cCtx.String("gsf-uri"), cCtx.String("config-uri"), cCtx.String("out-uri"))
-                    err := create_index_list(cCtx.String("uri"), cCtx.String("config-uri"), cCtx.Bool("in-memory"))
+                    err := create_metadata_list(cCtx.String("uri"), cCtx.String("config-uri"), cCtx.Bool("in-memory"))
                     return err
                 },
             },

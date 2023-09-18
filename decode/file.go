@@ -141,6 +141,16 @@ func (g *GsfFile) ProcInfo(fi *FileInfo) (proc_info ProcessingInfo) {
     return proc_info
 }
 
+// func (g *GsfFile) AttInfo(fi *FileInfo) (Attitude, Attitude) {
+//     buffer := g.RecBuf(fi.Index.Record_Index["ATTITUDE"][0])
+//     at1 := DecodeAttitude(buffer)
+//     last := fi.Metadata.Record_Counts["ATTITUDE"] - 1
+//     buffer = g.RecBuf(fi.Index.Record_Index["ATTITUDE"][last])
+//     at2 := DecodeAttitude(buffer)
+// 
+//     return at1, at2
+// }
+
 type GsfDetails struct {
     GSF_URI string
     GSF_Version string
@@ -160,6 +170,7 @@ type Metadata struct {
     Quality_Info QualityInfo
     Record_Counts map[string]uint64
     SubRecord_Counts map[string]uint64
+    Measurement_Counts map[string]uint64
     Swath_Summary SwathBathySummary
 }
 
@@ -242,12 +253,16 @@ func (g *GsfFile) Info() FileInfo {
         version Header
         swath_sum SwathBathySummary
         params map[string]interface{}
+        meas_counts map[string]uint64
+        // att_measurements uint64
+        // att_time []time.Time
     )
 
     rec_idx = make(map[string][]RecordHdr)
     rec_counts = make(map[string]uint64)
     sub_rec_counts = make(map[SubRecordID]uint64)
     sub_rec_counts_str = make(map[string]uint64)
+    meas_counts = make(map[string]uint64)
 
     one := uint64(1)
 
@@ -282,6 +297,9 @@ func (g *GsfFile) Info() FileInfo {
                     sub_rec_counts[sid] += one
                 }
 
+                // increment total point (measurement/observation) count
+                meas_counts[RecordNames[rec.Id]] += uint64(pinfo.Number_Beams)
+
                 pos, _ = Tell(g.Stream)
             case PROCESSING_PARAMETERS:
                 // should only be one of these records in the gsf file
@@ -310,6 +328,20 @@ func (g *GsfFile) Info() FileInfo {
                 _ = binary.Read(g.Stream, binary.BigEndian, &buffer)
 
                 version = DecodeHeader(buffer)
+            case ATTITUDE:
+                // at this stage, only interested in the total observation count
+                buffer = make([]byte, rec.Datasize)
+                _ = binary.Read(g.Stream, binary.BigEndian, &buffer)
+                reader = bytes.NewReader(buffer)
+                att_hdr := attitude_header(reader)
+                meas_counts[RecordNames[rec.Id]] += att_hdr.Measurements
+            case SOUND_VELOCITY_PROFILE:
+                // at this stage, only interested in the total observation count
+                buffer = make([]byte, rec.Datasize)
+                _ = binary.Read(g.Stream, binary.BigEndian, &buffer)
+                reader = bytes.NewReader(buffer)
+                s_hdr := svp_header(reader)
+                meas_counts[RecordNames[rec.Id]] += s_hdr.N_points
             default:
                 // seek over the record and loop to the next
                 pos, _ = g.Stream.Seek(int64(rec.Datasize), 1)
@@ -338,6 +370,7 @@ func (g *GsfFile) Info() FileInfo {
     finfo.Metadata.SubRecord_Schema = sr_schema
     finfo.Metadata.Record_Counts = rec_counts
     finfo.Metadata.SubRecord_Counts = sub_rec_counts_str
+    finfo.Metadata.Measurement_Counts = meas_counts
     finfo.Metadata.Swath_Summary = swath_sum
 
     finfo.Index.Record_Index = rec_idx
