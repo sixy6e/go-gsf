@@ -1,5 +1,5 @@
 //
-package decode
+package gsf
 
 import (
 )

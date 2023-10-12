@@ -1,4 +1,4 @@
-package search
+package gsf
 
 import (
     "path/filepath"

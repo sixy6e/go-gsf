@@ -1,4 +1,4 @@
-package encode
+package gsf
 
 import (
     "encoding/json"
