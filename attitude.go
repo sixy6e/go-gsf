@@ -4,9 +4,13 @@ import (
     "bytes"
     "encoding/binary"
     "time"
+    "errors"
 
     tiledb "github.com/TileDB-Inc/TileDB-Go"
 )
+
+var ErrCreateAttitudeTdb = errors.New("Error Creating Attitude TileDB Array")
+var ErrWriteAttitudeTdb = errors.New("Error Writing Attitude TileDB Array")
 
 // The start and end datetimes, might not reflect the true start and end datetimes.
 // The records use and offset for each measurement, so the end time will surely
@@ -151,7 +155,7 @@ func attitude_tdb_array(file_uri string, ctx *tiledb.Context, nrows uint64) erro
     // array domain
     domain, err := tiledb.NewDomain(ctx)
     if err != nil {
-        panic(err)
+        return errors.Join(ErrCreateAttitudeTdb, err)
     }
     defer domain.Free()
 
@@ -159,74 +163,74 @@ func attitude_tdb_array(file_uri string, ctx *tiledb.Context, nrows uint64) erro
     // using a combination of delta filter (ascending rows) and zstandard
     dim, err := tiledb.NewDimension(ctx, "row", tiledb.TILEDB_UINT64, []uint64{0, nrows}, tile_sz)
     if err != nil {
-        panic(err)
+        return errors.Join(ErrCreateAttitudeTdb, err)
     }
     defer dim.Free()
 
     dim_filters, err := tiledb.NewFilterList(ctx)
     if err != nil {
-        panic(err)
+        return errors.Join(ErrCreateAttitudeTdb, err)
     }
     defer dim_filters.Free()
 
     // TODO; might be worth setting a window size
     dim_f1, err := tiledb.NewFilter(ctx, tiledb.TILEDB_FILTER_POSITIVE_DELTA)
     if err != nil {
-        panic(err)
+        return errors.Join(ErrCreateAttitudeTdb, err)
     }
     defer dim_f1.Free()
 
     dim_f2, err := tiledb.NewFilter(ctx, tiledb.TILEDB_FILTER_ZSTD)
     if err != nil {
-        panic(err)
+        return errors.Join(ErrCreateAttitudeTdb, err)
     }
     defer dim_f2.Free()
 
     err = dim_f2.SetOption(tiledb.TILEDB_COMPRESSION_LEVEL, int32(16))
     if err != nil {
-        panic(err)
+        return errors.Join(ErrCreateAttitudeTdb, err)
     }
 
     // attach filters to the pipeline
     err = dim_filters.AddFilter(dim_f1)
     if err != nil {
-        panic(err)
+        return errors.Join(ErrCreateAttitudeTdb, err)
     }
     err = dim_filters.AddFilter(dim_f2)
     if err != nil {
-        panic(err)
+        return errors.Join(ErrCreateAttitudeTdb, err)
     }
     err = dim.SetFilterList(dim_filters)
     if err != nil {
-        panic(err)
+        return errors.Join(ErrCreateAttitudeTdb, err)
     }
 
     err = domain.AddDimensions(dim)
     if err != nil {
-        panic(err)
+        return errors.Join(ErrCreateAttitudeTdb, err)
     }
 
     // setup schema
     schema, err := tiledb.NewArraySchema(ctx, tiledb.TILEDB_DENSE)
     if err != nil {
-        panic(err)
+        return errors.Join(ErrCreateAttitudeTdb, err)
     }
     defer schema.Free()
 
     err = schema.SetDomain(domain)
     if err != nil {
-        panic(err)
+        return errors.Join(ErrCreateAttitudeTdb, err)
     }
 
     // cell and tile ordering was an arbitrary choice
     err = schema.SetCellOrder(tiledb.TILEDB_ROW_MAJOR)
     if err != nil {
-        panic(err)
+        return errors.Join(ErrCreateAttitudeTdb, err)
     }
 
     err = schema.SetTileOrder(tiledb.TILEDB_ROW_MAJOR)
     if err != nil {
-        panic(err)
+        return errors.Join(ErrCreateAttitudeTdb, err)
     }
 
     // setup attributes; timestamp, pitch, roll, heave, heading
@@ -234,118 +238,118 @@ func attitude_tdb_array(file_uri string, ctx *tiledb.Context, nrows uint64) erro
     // Attitude records should be in ascending, but no guarantee from these GSF files.
     zstd, err := tiledb.NewFilter(ctx, tiledb.TILEDB_FILTER_ZSTD)
     if err != nil {
-        panic(err)
+        return errors.Join(ErrCreateAttitudeTdb, err)
     }
     defer zstd.Free()
 
     err = zstd.SetOption(tiledb.TILEDB_COMPRESSION_LEVEL, int32(16))
     if err != nil {
-        panic(err)
+        return errors.Join(ErrCreateAttitudeTdb, err)
     }
 
     ts, err := tiledb.NewAttribute(ctx, "timestamp", tiledb.TILEDB_DATETIME_NS)
     if err != nil {
-        panic(err)
+        return errors.Join(ErrCreateAttitudeTdb, err)
     }
     defer ts.Free()
 
     pitch, err := tiledb.NewAttribute(ctx, "pitch", tiledb.TILEDB_FLOAT32)
     if err != nil {
-        panic(err)
+        return errors.Join(ErrCreateAttitudeTdb, err)
     }
     defer pitch.Free()
 
     roll, err := tiledb.NewAttribute(ctx, "roll", tiledb.TILEDB_FLOAT32)
     if err != nil {
-        panic(err)
+        return errors.Join(ErrCreateAttitudeTdb, err)
     }
     defer roll.Free()
 
     heave, err := tiledb.NewAttribute(ctx, "heave", tiledb.TILEDB_FLOAT32)
     if err != nil {
-        panic(err)
+        return errors.Join(ErrCreateAttitudeTdb, err)
     }
     defer heave.Free()
 
     heading, err := tiledb.NewAttribute(ctx, "heading", tiledb.TILEDB_FLOAT32)
     if err != nil {
-        panic(err)
+        return errors.Join(ErrCreateAttitudeTdb, err)
     }
     defer heading.Free()
 
     attr_filts, err := tiledb.NewFilterList(ctx)
     if err != nil {
-        panic(err)
+        return errors.Join(ErrCreateAttitudeTdb, err)
     }
     defer attr_filts.Free()
 
     err = attr_filts.AddFilter(zstd)
     if err != nil {
-        panic(err)
+        return errors.Join(ErrCreateAttitudeTdb, err)
     }
 
     // attach filter pipeline to attrs
     err = ts.SetFilterList(attr_filts)
     if err != nil {
-        panic(err)
+        return errors.Join(ErrCreateAttitudeTdb, err)
     }
 
     err = pitch.SetFilterList(attr_filts)
     if err != nil {
-        panic(err)
+        return errors.Join(ErrCreateAttitudeTdb, err)
     }
 
     err = roll.SetFilterList(attr_filts)
     if err != nil {
-        panic(err)
+        return errors.Join(ErrCreateAttitudeTdb, err)
     }
 
     err = heave.SetFilterList(attr_filts)
     if err != nil {
-        panic(err)
+        return errors.Join(ErrCreateAttitudeTdb, err)
     }
 
     err = heading.SetFilterList(attr_filts)
     if err != nil {
-        panic(err)
+        return errors.Join(ErrCreateAttitudeTdb, err)
     }
 
     // attach attrs to the schema
     err = schema.AddAttributes(ts)
     if err != nil {
-        panic(err)
+        return errors.Join(ErrCreateAttitudeTdb, err)
     }
 
     err = schema.AddAttributes(pitch)
     if err != nil {
-        panic(err)
+        return errors.Join(ErrCreateAttitudeTdb, err)
     }
 
     err = schema.AddAttributes(roll)
     if err != nil {
-        panic(err)
+        return errors.Join(ErrCreateAttitudeTdb, err)
     }
 
     err = schema.AddAttributes(heave)
     if err != nil {
-        panic(err)
+        return errors.Join(ErrCreateAttitudeTdb, err)
     }
 
     err = schema.AddAttributes(heading)
     if err != nil {
-        panic(err)
+        return errors.Join(ErrCreateAttitudeTdb, err)
     }
 
     // finally, create the empty array on disk, object store, etc
     array, err := tiledb.NewArray(ctx, file_uri)
     if err != nil {
-        panic(err)
+        return errors.Join(ErrCreateAttitudeTdb, err)
     }
     defer array.Free()
 
     err = array.Create(schema)
     if err != nil {
-        panic(err)
+        return errors.Join(ErrCreateAttitudeTdb, err)
     }
 
     return nil
@@ -366,12 +370,12 @@ func (a *Attitude) ToTileDB(file_uri string, config_uri string) error {
     if config_uri == "" {
         config, err = tiledb.NewConfig()
         if err != nil {
-            panic(err)
+            return err
         }
     } else {
         config, err = tiledb.LoadConfig(config_uri)
         if err != nil {
-            panic(err)
+            return err
         }
     }
 
@@ -379,7 +383,7 @@ func (a *Attitude) ToTileDB(file_uri string, config_uri string) error {
 
     ctx, err := tiledb.NewContext(config)
     if err != nil {
-        panic(err)
+        return err
     }
     defer ctx.Free()
 
@@ -387,68 +391,68 @@ func (a *Attitude) ToTileDB(file_uri string, config_uri string) error {
 
     err = attitude_tdb_array(file_uri, ctx, nrows)
     if err != nil {
-        panic(err)
+        return err
     }
 
     // open the array for writing the attitude data
     array, err := tiledb.NewArray(ctx, file_uri)
     if err != nil {
-        panic(err)
+        return errors.Join(ErrWriteAttitudeTdb, err)
     }
     defer array.Free()
 
     err = array.Open(tiledb.TILEDB_WRITE)
     if err != nil {
-        panic(err)
+        return errors.Join(ErrWriteAttitudeTdb, err)
     }
     defer array.Close()
 
     // query construction
     query, err := tiledb.NewQuery(ctx, array)
     if err != nil {
-        panic(err)
+        return errors.Join(ErrWriteAttitudeTdb, err)
     }
     defer query.Free()
 
     err = query.SetLayout(tiledb.TILEDB_ROW_MAJOR)
     if err != nil {
-        panic(err)
+        return errors.Join(ErrWriteAttitudeTdb, err)
     }
 
     _, err = query.SetBuffer("timestamp", a.Timestamp)
     if err != nil {
-        panic(err)
+        return errors.Join(ErrWriteAttitudeTdb, err)
     }
 
     _, err = query.SetBuffer("pitch", a.Pitch)
     if err != nil {
-        panic(err)
+        return errors.Join(ErrWriteAttitudeTdb, err)
     }
 
     _, err = query.SetBuffer("roll", a.Roll)
     if err != nil {
-        panic(err)
+        return errors.Join(ErrWriteAttitudeTdb, err)
     }
 
     _, err = query.SetBuffer("heave", a.Heave)
     if err != nil {
-        panic(err)
+        return errors.Join(ErrWriteAttitudeTdb, err)
     }
 
     _, err = query.SetBuffer("heading", a.Heading)
     if err != nil {
-        panic(err)
+        return errors.Join(ErrWriteAttitudeTdb, err)
     }
 
     // write the data flush
     err = query.Submit()
     if err != nil {
-        panic(err)
+        return errors.Join(ErrWriteAttitudeTdb, err)
     }
 
     err = query.Finalize()
     if err != nil {
-        panic(err)
+        return errors.Join(ErrWriteAttitudeTdb, err)
     }
 
     return nil
