@@ -12,36 +12,34 @@ import (
     "github.com/urfave/cli/v2"
     "github.com/alitto/pond"
 
-    "gsf/decode"
-    "gsf/encode"
-    "gsf/search"
+    "github.com/sixy6e/go-gsf"
 )
 
 // func create_index(gsf_uri string, config_uri string, out_uri string) error {
 func create_metadata(gsf_uri string, config_uri string, in_memory bool) error {
     log.Println("Processing GSF:", gsf_uri)
-    src := decode.OpenGSF(gsf_uri, config_uri, in_memory)
+    src := gsf.OpenGSF(gsf_uri, config_uri, in_memory)
     defer src.Close()
     file_info := src.Info()
     proc_info := src.ProcInfo(&file_info)
 
     // TODO; if we write the file to a different structure, we need a different extension
     out_uri := gsf_uri + "-metadata.json"
-    _, err := encode.WriteJson(out_uri, config_uri, file_info.Metadata)
+    _, err := gsf.WriteJson(out_uri, config_uri, file_info.Metadata)
     if err != nil {
         // panic(err)
         return err
     }
 
     out_uri = gsf_uri + "-proc-info.json"
-    _, err = encode.WriteJson(out_uri, config_uri, proc_info)
+    _, err = gsf.WriteJson(out_uri, config_uri, proc_info)
     if err != nil {
         // panic(err)
         return err
     }
 
     out_uri = gsf_uri + "-index.json"
-    _, err = encode.WriteJson(out_uri, config_uri, file_info.Index)
+    _, err = gsf.WriteJson(out_uri, config_uri, file_info.Index)
     if err != nil {
         // panic(err)
         return err
@@ -54,7 +52,7 @@ func create_metadata(gsf_uri string, config_uri string, in_memory bool) error {
 
 func create_metadata_list(uri string, config_uri string, in_memory bool) error {
     log.Println("Searching uri:", uri)
-    items := search.FindGsf(uri, config_uri)
+    items := gsf.FindGsf(uri, config_uri)
     // out_uris := make([]string, len(items))
     log.Println("Number of GSFs to process:", len(items))
 

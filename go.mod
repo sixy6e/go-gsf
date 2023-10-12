@@ -1,4 +1,4 @@
-module gsf
+module github.com/sixy6e/go-gsf
 
 go 1.19
 
