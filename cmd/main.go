@@ -23,9 +23,17 @@ func create_metadata(gsf_uri string, config_uri string, in_memory bool) error {
     file_info := src.Info()
     proc_info := src.ProcInfo(&file_info)
 
+    out_uri := gsf_uri + "-attitude.tiledb"
+    att := src.AttitudeRecords(&file_info)
+    err := att.ToTileDB(out_uri, config_uri)
+    if err != nil {
+        // panic(err)
+        return err
+    }
+
     // TODO; if we write the file to a different structure, we need a different extension
-    out_uri := gsf_uri + "-metadata.json"
-    _, err := gsf.WriteJson(out_uri, config_uri, file_info.Metadata)
+    out_uri = gsf_uri + "-metadata.json"
+    _, err = gsf.WriteJson(out_uri, config_uri, file_info.Metadata)
     if err != nil {
         // panic(err)
         return err
