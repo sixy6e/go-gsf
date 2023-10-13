@@ -59,3 +59,13 @@ func WriteJson(file_uri string, config_uri string, data any) (int, error) {
 
     return bytes_written, nil
 }
+
+// JsonDumps constructs a json string of the supplied data.
+func JsonDumps(data any) (string, error) {
+     jsn, err := json.Marshal(data)
+     if err != nil {
+        return "", err
+     }
+
+    return string(jsn), nil
+}
