@@ -107,11 +107,11 @@ func (g *GsfFile) AttitudeRecords(fi *FileInfo) (attitude Attitude) {
         buffer []byte
     )
     n := fi.Metadata.Measurement_Counts["ATTITUDE"]
-    timestamp := make([]time.Time, n)
-    pitch := make([]float32, n)
-    roll := make([]float32, n)
-    heave := make([]float32, n)
-    heading := make([]float32, n)
+    timestamp := make([]time.Time, 0, n)
+    pitch := make([]float32, 0, n)
+    roll := make([]float32, 0, n)
+    heave := make([]float32, 0, n)
+    heading := make([]float32, 0, n)
     //attitude = make([]Attitude, fi.Record_Counts["ATTITUDE"])
 
     // get the original starting point so we can jump back when done
@@ -161,7 +161,7 @@ func attitude_tdb_array(file_uri string, ctx *tiledb.Context, nrows uint64) erro
 
     // setup dimension options
     // using a combination of delta filter (ascending rows) and zstandard
-    dim, err := tiledb.NewDimension(ctx, "row", tiledb.TILEDB_UINT64, []uint64{0, nrows}, tile_sz)
+     dim, err := tiledb.NewDimension(ctx, "__tiledb_rows", tiledb.TILEDB_UINT64, []uint64{0, nrows}, tile_sz)
     if err != nil {
         return errors.Join(ErrCreateAttitudeTdb, err)
     }
@@ -361,7 +361,7 @@ func attitude_tdb_array(file_uri string, ctx *tiledb.Context, nrows uint64) erro
 // At this stage, it is assumed that requests for attitude data will be the whole
 // thing anyway.
 // Column structure:
-// [Row (dim), Timestamp (attr), Pitch (attr), Roll (attr), Heave (attr), Heading (attr)].
+// [__tiledb_rows (dim), Timestamp (attr), Pitch (attr), Roll (attr), Heave (attr), Heading (attr)].
 func (a *Attitude) ToTileDB(file_uri string, config_uri string) error {
     var config *tiledb.Config
     var err error
@@ -388,7 +388,6 @@ func (a *Attitude) ToTileDB(file_uri string, config_uri string) error {
     defer ctx.Free()
 
     nrows := uint64(len(a.Timestamp))
-
     err = attitude_tdb_array(file_uri, ctx, nrows)
     if err != nil {
         return err
@@ -419,27 +418,45 @@ func (a *Attitude) ToTileDB(file_uri string, config_uri string) error {
         return errors.Join(ErrWriteAttitudeTdb, err)
     }
 
-    _, err = query.SetBuffer("timestamp", a.Timestamp)
+    temp_data := make([]int64, nrows)
+    for i := uint64(0); i < nrows; i++ {
+        temp_data[i] = a.Timestamp[i].UnixNano()
+    }
+    _, err = query.SetDataBuffer("timestamp", temp_data)
     if err != nil {
         return errors.Join(ErrWriteAttitudeTdb, err)
     }
 
-    _, err = query.SetBuffer("pitch", a.Pitch)
+    _, err = query.SetDataBuffer("pitch", a.Pitch)
     if err != nil {
         return errors.Join(ErrWriteAttitudeTdb, err)
     }
 
-    _, err = query.SetBuffer("roll", a.Roll)
+    _, err = query.SetDataBuffer("roll", a.Roll)
     if err != nil {
         return errors.Join(ErrWriteAttitudeTdb, err)
     }
 
-    _, err = query.SetBuffer("heave", a.Heave)
+    _, err = query.SetDataBuffer("heave", a.Heave)
     if err != nil {
         return errors.Join(ErrWriteAttitudeTdb, err)
     }
 
-    _, err = query.SetBuffer("heading", a.Heading)
+    _, err = query.SetDataBuffer("heading", a.Heading)
+    if err != nil {
+        return errors.Join(ErrWriteAttitudeTdb, err)
+    }
+
+    // define the subarray (dim coordinates that we'll write into)
+    subarr, err := array.NewSubarray()
+    if err != nil {
+        return errors.Join(ErrWriteAttitudeTdb, err)
+    }
+    defer subarr.Free()
+
+    rng := tiledb.MakeRange(uint64(0), nrows - uint64(1))
+    subarr.AddRangeByName("__tiledb_rows", rng)
+    err = query.SetSubarray(subarr)
     if err != nil {
         return errors.Join(ErrWriteAttitudeTdb, err)
     }
@@ -454,6 +471,14 @@ func (a *Attitude) ToTileDB(file_uri string, config_uri string) error {
     if err != nil {
         return errors.Join(ErrWriteAttitudeTdb, err)
     }
+
+    // attach some metadata to preserve python pandas functionality
+    md := map[string]string{"__tiledb_rows": "uint64"}
+    jsn, err := JsonDumps(md)
+    if err != nil {
+        return err
+    }
+    err = array.PutMetadata("__pandas_index_dims", jsn)
 
     return nil
 }
