@@ -180,23 +180,15 @@ func attitude_tiledb_array(file_uri string, ctx *tiledb.Context, nrows uint64) e
     }
     defer dim_f1.Free()
 
-    dim_f2, err := tiledb.NewFilter(ctx, tiledb.TILEDB_FILTER_ZSTD)
+    level := int32(16)
+    dim_f2, err := ZstdFilter(ctx, level)
     if err != nil {
-        return errors.Join(ErrCreateAttitudeTdb, err)
+        return errors.Join(ErrCreateSvpTdb, err)
     }
     defer dim_f2.Free()
 
-    err = dim_f2.SetOption(tiledb.TILEDB_COMPRESSION_LEVEL, int32(16))
-    if err != nil {
-        return errors.Join(ErrCreateAttitudeTdb, err)
-    }
-
     // attach filters to the pipeline
-    err = dim_filters.AddFilter(dim_f1)
-    if err != nil {
-        return errors.Join(ErrCreateAttitudeTdb, err)
-    }
-    err = dim_filters.AddFilter(dim_f2)
+    err = AttachFilters(dim_filters, dim_f1, dim_f2)
     if err != nil {
         return errors.Join(ErrCreateAttitudeTdb, err)
     }
@@ -236,16 +228,11 @@ func attitude_tiledb_array(file_uri string, ctx *tiledb.Context, nrows uint64) e
     // setup attributes; timestamp, pitch, roll, heave, heading
     // just using zstd for compression. timestamp could benefit from positive delta
     // Attitude records should be in ascending, but no guarantee from these GSF files.
-    zstd, err := tiledb.NewFilter(ctx, tiledb.TILEDB_FILTER_ZSTD)
+    zstd, err := ZstdFilter(ctx, level)
     if err != nil {
-        return errors.Join(ErrCreateAttitudeTdb, err)
+        return errors.Join(ErrCreateSvpTdb, err)
     }
     defer zstd.Free()
-
-    err = zstd.SetOption(tiledb.TILEDB_COMPRESSION_LEVEL, int32(16))
-    if err != nil {
-        return errors.Join(ErrCreateAttitudeTdb, err)
-    }
 
     ts, err := tiledb.NewAttribute(ctx, "timestamp", tiledb.TILEDB_DATETIME_NS)
     if err != nil {
@@ -277,6 +264,7 @@ func attitude_tiledb_array(file_uri string, ctx *tiledb.Context, nrows uint64) e
     }
     defer heading.Free()
 
+    // compression filter pipeline
     attr_filts, err := tiledb.NewFilterList(ctx)
     if err != nil {
         return errors.Join(ErrCreateAttitudeTdb, err)
@@ -289,27 +277,7 @@ func attitude_tiledb_array(file_uri string, ctx *tiledb.Context, nrows uint64) e
     }
 
     // attach filter pipeline to attrs
-    err = ts.SetFilterList(attr_filts)
-    if err != nil {
-        return errors.Join(ErrCreateAttitudeTdb, err)
-    }
-
-    err = pitch.SetFilterList(attr_filts)
-    if err != nil {
-        return errors.Join(ErrCreateAttitudeTdb, err)
-    }
-
-    err = roll.SetFilterList(attr_filts)
-    if err != nil {
-        return errors.Join(ErrCreateAttitudeTdb, err)
-    }
-
-    err = heave.SetFilterList(attr_filts)
-    if err != nil {
-        return errors.Join(ErrCreateAttitudeTdb, err)
-    }
-
-    err = heading.SetFilterList(attr_filts)
+    err = AttachFilters(attr_filts, ts, pitch, roll, heave, heading)
     if err != nil {
         return errors.Join(ErrCreateAttitudeTdb, err)
     }

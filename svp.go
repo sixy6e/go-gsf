@@ -263,23 +263,15 @@ func svp_tiledb_array(file_uri string, ctx *tiledb.Context, nrows uint64) error 
     }
     defer dim_f1.Free()
 
-    dim_f2, err := tiledb.NewFilter(ctx, tiledb.TILEDB_FILTER_ZSTD)
+    level := int32(16)
+    dim_f2, err := ZstdFilter(ctx, level)
     if err != nil {
         return errors.Join(ErrCreateSvpTdb, err)
     }
     defer dim_f2.Free()
 
-    err = dim_f2.SetOption(tiledb.TILEDB_COMPRESSION_LEVEL, int32(16))
-    if err != nil {
-        return errors.Join(ErrCreateSvpTdb, err)
-    }
-
     // attach dim filters to the pipeline
-    err = dim_filters.AddFilter(dim_f1)
-    if err != nil {
-        return errors.Join(ErrCreateSvpTdb, err)
-    }
-    err = dim_filters.AddFilter(dim_f2)
+    err = AttachFilters(dim_filters, dim_f1, dim_f2)
     if err != nil {
         return errors.Join(ErrCreateSvpTdb, err)
     }
@@ -320,16 +312,11 @@ func svp_tiledb_array(file_uri string, ctx *tiledb.Context, nrows uint64) error 
     // observation_timestamp, applied_timestamp, longitude, latitude, depth, sound_velocity
     // just using zstd for compression. timestamps could benefit from positive delta,
     // but additional work is required for evaluation
-    zstd, err := tiledb.NewFilter(ctx, tiledb.TILEDB_FILTER_ZSTD)
+    zstd, err := ZstdFilter(ctx, level)
     if err != nil {
         return errors.Join(ErrCreateSvpTdb, err)
     }
     defer zstd.Free()
-
-    err = zstd.SetOption(tiledb.TILEDB_COMPRESSION_LEVEL, int32(16))
-    if err != nil {
-        return errors.Join(ErrCreateSvpTdb, err)
-    }
 
     obs_ts, err := tiledb.NewAttribute(ctx, "observation_timestamp", tiledb.TILEDB_DATETIME_NS)
     if err != nil {
@@ -391,32 +378,7 @@ func svp_tiledb_array(file_uri string, ctx *tiledb.Context, nrows uint64) error 
     }
 
     // attach filter pipeline to attrs
-    err = obs_ts.SetFilterList(attr_filts)
-    if err != nil {
-        return errors.Join(ErrCreateSvpTdb, err)
-    }
-
-    err = app_ts.SetFilterList(attr_filts)
-    if err != nil {
-        return errors.Join(ErrCreateSvpTdb, err)
-    }
-
-    err = lon.SetFilterList(attr_filts)
-    if err != nil {
-        return errors.Join(ErrCreateSvpTdb, err)
-    }
-
-    err = lat.SetFilterList(attr_filts)
-    if err != nil {
-        return errors.Join(ErrCreateSvpTdb, err)
-    }
-
-    err = depth.SetFilterList(attr_filts)
-    if err != nil {
-        return errors.Join(ErrCreateSvpTdb, err)
-    }
-
-    err = velocity.SetFilterList(attr_filts)
+    err = AttachFilters(attr_filts, obs_ts, app_ts, lon, lat, depth, velocity)
     if err != nil {
         return errors.Join(ErrCreateSvpTdb, err)
     }
