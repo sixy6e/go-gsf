@@ -8,7 +8,23 @@ import (
 
 var ErrAddFilters = errors.New("Error Adding Filter To FilterList")
 
-// AddFilters sequentially appends compression filters to the filter pipeline list
+// ArrayOpen is a helper func for opening a tiledb array.
+func ArrayOpen(ctx *tiledb.Context, uri string, mode tiledb.QueryType) (*tiledb.Array, error) {
+    array, err := tiledb.NewArray(ctx, file_uri)
+    if err != nil {
+        return nil, err
+    }
+
+    err = array.Open(mode)
+    if err != nil {
+        array.Free()
+        return nil, err
+    }
+
+    return array, nil
+}
+
+// AddFilters sequentially appends compression filters to the filter pipeline list.
 func AddFilters(filter_list *tiledb.FilterList, filter ...*tiledb.Filter) error {
     for _, filt := range filter {
         err := filter_list.AddFilter(filt)
