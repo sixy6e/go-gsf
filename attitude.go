@@ -148,7 +148,7 @@ func (g *GsfFile) AttitudeRecords(fi *FileInfo) (attitude Attitude) {
 // with row (row_id) as the queryable dimension.
 // At this stage, it is assumed that requests for attitude data will be the whole
 // thing anyway.
-func attitude_tdb_array(file_uri string, ctx *tiledb.Context, nrows uint64) error {
+func attitude_tiledb_array(file_uri string, ctx *tiledb.Context, nrows uint64) error {
     // an arbitrary choice; maybe at a future date we evaluate a good number
     tile_sz := uint64(50000)
 
@@ -361,7 +361,7 @@ func attitude_tdb_array(file_uri string, ctx *tiledb.Context, nrows uint64) erro
 // At this stage, it is assumed that requests for attitude data will be the whole
 // thing anyway.
 // Column structure:
-// [__tiledb_rows (dim), Timestamp (attr), Pitch (attr), Roll (attr), Heave (attr), Heading (attr)].
+// [__tiledb_rows (dim), timestamp (attr), pitch (attr), roll (attr), heave (attr), heading (attr)].
 func (a *Attitude) ToTileDB(file_uri string, config_uri string) error {
     var config *tiledb.Config
     var err error
@@ -388,7 +388,7 @@ func (a *Attitude) ToTileDB(file_uri string, config_uri string) error {
     defer ctx.Free()
 
     nrows := uint64(len(a.Timestamp))
-    err = attitude_tdb_array(file_uri, ctx, nrows)
+    err = attitude_tiledb_array(file_uri, ctx, nrows)
     if err != nil {
         return err
     }
