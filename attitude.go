@@ -143,7 +143,7 @@ func (g *GsfFile) AttitudeRecords(fi *FileInfo) (attitude Attitude) {
     return attitude
 }
 
-// attitude_tdb_array establishes the schema and array on disk/object store.
+// attitude_tiledb_array establishes the schema and array on disk/object store.
 // Timestamp could be a dimension, but for the time being it'll be a dense array
 // with row (row_id) as the queryable dimension.
 // At this stage, it is assumed that requests for attitude data will be the whole
