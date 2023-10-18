@@ -10,7 +10,7 @@ var ErrAddFilters = errors.New("Error Adding Filter To FilterList")
 
 // ArrayOpen is a helper func for opening a tiledb array.
 func ArrayOpen(ctx *tiledb.Context, uri string, mode tiledb.QueryType) (*tiledb.Array, error) {
-    array, err := tiledb.NewArray(ctx, file_uri)
+    array, err := tiledb.NewArray(ctx, uri)
     if err != nil {
         return nil, err
     }
