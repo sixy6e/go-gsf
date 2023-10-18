@@ -20,36 +20,45 @@ func create_metadata(gsf_uri string, config_uri string, in_memory bool) error {
     log.Println("Processing GSF:", gsf_uri)
     src := gsf.OpenGSF(gsf_uri, config_uri, in_memory)
     defer src.Close()
+
+    log.Println("Building index; Collating metadata; Computing general QA")
     file_info := src.Info()
     proc_info := src.ProcInfo(&file_info)
 
+    log.Println("Processing Attitude")
     out_uri := gsf_uri + "-attitude.tiledb"
     att := src.AttitudeRecords(&file_info)
     err := att.ToTileDB(out_uri, config_uri)
     if err != nil {
-        // panic(err)
+        return err
+    }
+
+    log.Println("Processing SVP")
+    out_uri = gsf_uri + "-svp.tiledb"
+    svp := src.SoundVelocityProfileRecords(&file_info)
+    err = svp.ToTileDB(out_uri, config_uri)
+    if err != nil {
         return err
     }
 
     // TODO; if we write the file to a different structure, we need a different extension
+    log.Println("Writing metadata")
     out_uri = gsf_uri + "-metadata.json"
     _, err = gsf.WriteJson(out_uri, config_uri, file_info.Metadata)
     if err != nil {
-        // panic(err)
         return err
     }
 
+    log.Println("Writing proc-info")
     out_uri = gsf_uri + "-proc-info.json"
     _, err = gsf.WriteJson(out_uri, config_uri, proc_info)
     if err != nil {
-        // panic(err)
         return err
     }
 
     out_uri = gsf_uri + "-index.json"
     _, err = gsf.WriteJson(out_uri, config_uri, file_info.Index)
     if err != nil {
-        // panic(err)
         return err
     }
 
