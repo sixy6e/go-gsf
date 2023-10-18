@@ -422,32 +422,7 @@ func svp_tiledb_array(file_uri string, ctx *tiledb.Context, nrows uint64) error 
     }
 
     // attach attrs to the schema
-    err = schema.AddAttributes(obs_ts)
-    if err != nil {
-        return errors.Join(ErrCreateSvpTdb, err)
-    }
-
-    err = schema.AddAttributes(app_ts)
-    if err != nil {
-        return errors.Join(ErrCreateSvpTdb, err)
-    }
-
-    err = schema.AddAttributes(lon)
-    if err != nil {
-        return errors.Join(ErrCreateSvpTdb, err)
-    }
-
-    err = schema.AddAttributes(lat)
-    if err != nil {
-        return errors.Join(ErrCreateSvpTdb, err)
-    }
-
-    err = schema.AddAttributes(depth)
-    if err != nil {
-        return errors.Join(ErrCreateSvpTdb, err)
-    }
-
-    err = schema.AddAttributes(velocity)
+    err = schema.AddAttributes(obs_ts, app_ts, lon, lat, depth, velocity)
     if err != nil {
         return errors.Join(ErrCreateSvpTdb, err)
     }

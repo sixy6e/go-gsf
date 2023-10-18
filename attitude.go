@@ -315,27 +315,7 @@ func attitude_tiledb_array(file_uri string, ctx *tiledb.Context, nrows uint64) e
     }
 
     // attach attrs to the schema
-    err = schema.AddAttributes(ts)
-    if err != nil {
-        return errors.Join(ErrCreateAttitudeTdb, err)
-    }
-
-    err = schema.AddAttributes(pitch)
-    if err != nil {
-        return errors.Join(ErrCreateAttitudeTdb, err)
-    }
-
-    err = schema.AddAttributes(roll)
-    if err != nil {
-        return errors.Join(ErrCreateAttitudeTdb, err)
-    }
-
-    err = schema.AddAttributes(heave)
-    if err != nil {
-        return errors.Join(ErrCreateAttitudeTdb, err)
-    }
-
-    err = schema.AddAttributes(heading)
+    err = schema.AddAttributes(ts, pitch, roll, heave, heading)
     if err != nil {
         return errors.Join(ErrCreateAttitudeTdb, err)
     }
