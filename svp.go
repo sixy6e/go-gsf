@@ -452,16 +452,11 @@ func (s *SoundVelocityProfile) ToTileDB(file_uri string, config_uri string) erro
     }
 
     // open the array for writing the attitude data
-    array, err := tiledb.NewArray(ctx, file_uri)
+    array, err := ArrayOpen(ctx, file_uri, tiledb.TILEDB_WRITE)
     if err != nil {
-        return errors.Join(ErrWriteSvpTdb, err)
+        return errors.Join(ErrWriteAttitudeTdb, err)
     }
     defer array.Free()
-
-    err = array.Open(tiledb.TILEDB_WRITE)
-    if err != nil {
-        return errors.Join(ErrWriteSvpTdb, err)
-    }
     defer array.Close()
 
     // query construction
