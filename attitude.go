@@ -161,7 +161,7 @@ func attitude_tiledb_array(file_uri string, ctx *tiledb.Context, nrows uint64) e
 
     // setup dimension options
     // using a combination of delta filter (ascending rows) and zstandard
-     dim, err := tiledb.NewDimension(ctx, "__tiledb_rows", tiledb.TILEDB_UINT64, []uint64{0, nrows - uint64(1)}, tile_sz)
+    dim, err := tiledb.NewDimension(ctx, "__tiledb_rows", tiledb.TILEDB_UINT64, []uint64{0, nrows - uint64(1)}, tile_sz)
     if err != nil {
         return errors.Join(ErrCreateAttitudeTdb, err)
     }
