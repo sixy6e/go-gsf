@@ -188,7 +188,7 @@ func attitude_tiledb_array(file_uri string, ctx *tiledb.Context, nrows uint64) e
     defer dim_f2.Free()
 
     // attach filters to the pipeline
-    err = AttachFilters(dim_filters, dim_f1, dim_f2)
+    err = AddFilters(dim_filters, dim_f1, dim_f2)
     if err != nil {
         return errors.Join(ErrCreateAttitudeTdb, err)
     }
