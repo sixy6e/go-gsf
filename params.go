@@ -36,7 +36,7 @@ func parse_reftime(date_str string) time.Time {
 // DecodeProcessingParameters decodes the PROCESSING_PARAMETERS record.
 // It contains important scalar or vector values that describe the overall survey
 // conditions or operational values.
-// Typical parameters include items uch as the navigation sensor's antenna location or the
+// Typical parameters include items such as the navigation sensor's antenna location or the
 // reference ellipsoid for the geographic position.
 // This record could contain pretty much anything, of any type. We'll try to detect
 // as many types as possible and convert them from strings.
@@ -80,8 +80,8 @@ func DecodeProcessingParameters(buffer []byte) map[string]interface{} {
 
     // params are deciphered by an int16 indicating the length of the string param value
     // and the param value containing "=" eg "22APPLIED_ROLL_BIAS=0.03" where 22 is string length
-    // rather than retaing the raw string, parse all values to proper types
-    // with the intent on outputing the data as a json doc
+    // rather than retaining the raw string, parse all values to proper types
+    // with the intent on outputing the data as a JSON doc
     for i = 0; i < base.N_params; i++ {
 
         // size of param (length of string)

@@ -31,7 +31,7 @@ func (fi *FileInfo) QInfo() {
     // the general idea is to know whether we're dealing with a consistent number of beams
     nbeams = make([]uint16, npings)
 
-    // duplicate pings. one of the samples we were given had duplicate timestamps
+    // duplicate pings. One of the samples we were given had duplicate timestamps
     // UPDATE; the sensor configuration could be dual-head or dual-swath
     // dual-swath: two sensors slightly offset that ping at the time can produce
     // something that looks like duplicate pings with the same timestamp.

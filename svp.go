@@ -14,9 +14,9 @@ import (
 var ErrCreateSvpTdb = errors.New("Error Creating SVP TileDB Array")
 var ErrWriteSvpTdb = errors.New("Error Writing SVP TileDB Array")
 
-// SoundVelocityProfile contains the values of sound velocoty used in estimating
+// SoundVelocityProfile contains the values of sound velocity used in estimating
 // individual sounding locations.
-// It consists of; the time the prodile was observed, the time it was introduced into the
+// It consists of; the time the profile was observed, the time it was introduced into the
 // sounding location procedure, the position of the observation, the number of points in
 // the profile, and the individual points expressed as depth and sound velocity.
 // While most of the sample files only contained a single SVP Record, in order to
@@ -148,7 +148,7 @@ func DecodeSoundVelocityProfile(buffer []byte) SoundVelocityProfile {
     return svp
 }
 
-// SvpRecords decodes all SOUND_VELOCITY_PROFILE records.
+// SoundVelocityProfileRecords decodes all SOUND_VELOCITY_PROFILE records.
 func (g *GsfFile) SoundVelocityProfileRecords(fi *FileInfo) (svp SoundVelocityProfile) {
     var (
         buffer []byte

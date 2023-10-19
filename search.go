@@ -40,7 +40,7 @@ func trawl(vfs *tiledb.VFS, pattern string, uri string, items []string) []string
 
 // A specific function to recursively search for *.gsf files under a given URI.
 // The function uses the TileDB Go bindings to seamlessly search either local
-// filesystems or obeject stores such as AWS-S3. A TileDB config is required
+// filesystems or object stores such as AWS-S3. A TileDB config is required
 // for searching object stores with permission constraints.
 func FindGsf(uri string, config_uri string) []string {
     var (

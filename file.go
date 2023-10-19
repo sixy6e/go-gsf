@@ -8,7 +8,7 @@ import (
     tiledb "github.com/TileDB-Inc/TileDB-Go"
 )
 
-// Tell is a small helper fucntion for telling the current position within a
+// Tell is a small helper function for telling the current position within a
 // binary file opened for reading.
 func Tell(stream Stream) (int64, error) {
     pos, err := stream.Seek(0, 1)
@@ -198,7 +198,7 @@ type FileInfo struct {
 
 // PingGroups combines pings together based on their presence or absence of
 // scale factors. It is a forward linear search, and if a given ping is missing
-// scale factors, then it included as part of the ping group where the previous
+// scale factors, then it is included as part of the ping group where the previous
 // set of scale factors were found.
 // For example; [0, 10] indicates that the ping group contains pings 0 up to and
 // including ping 9. It is a [start, stop) index based on the linear ordering
@@ -272,7 +272,7 @@ func (g *GsfFile) Info() FileInfo {
     // start at front of the stream
     pos, _ := g.Stream.Seek(0, 0)
 
-    // reading the bytestream and build record index information
+    // reading the byte stream and build record index information
     for uint64(pos) < g.filesize {
         // TODO; test that pos moves after we read a header
         rec = DecodeRecordHdr(g.Stream)
@@ -349,7 +349,7 @@ func (g *GsfFile) Info() FileInfo {
 
     }
 
-    // reset file posistion
+    // reset file position
     _, _ = g.Stream.Seek(original_pos, 0)
 
     // consistent schema; we've had cases where the schema is inconsistent between pings

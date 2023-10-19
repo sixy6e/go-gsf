@@ -42,7 +42,7 @@ func DecodeSwathBathySummary(reader *bytes.Reader) SwathBathySummary {
 
     _ = binary.Read(reader, binary.BigEndian, &buffer)
 
-    // should look at storing the scale factors as consts or a struct
+    // should look at storing the scale factors as const's or a struct
     summary := SwathBathySummary{
         Start_datetime: time.Unix(int64(buffer.First_ping_sec), int64(buffer.First_ping_nano_sec)).UTC(),
         End_datetime: time.Unix(int64(buffer.Last_ping_sec), int64(buffer.Last_ping_nano_sec)).UTC(),

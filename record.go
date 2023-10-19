@@ -20,7 +20,7 @@ type RecordHdr struct {
 }
 
 // DecodeRecordHdr acts as the constructor for RecordHdr by decoding the header of
-// a records bytestream.
+// a records byte stream.
 // Each record has a small header that defines the type of record, the size
 // of the data within the record, and whether the record contains a checksum
 func DecodeRecordHdr(stream Stream) RecordHdr {

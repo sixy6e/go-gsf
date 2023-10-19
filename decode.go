@@ -26,7 +26,7 @@ const (
     SENSOR_PARAMETERS
     COMMENT
     HISTORY
-    NAVIGATION_ERROR  // obselete
+    NAVIGATION_ERROR  // obsolete
     SWATH_BATHY_SUMMARY
     SINGLE_BEAM_PING
     HV_NAVIGATION_ERROR  // replaces navigation error
@@ -45,9 +45,9 @@ const (
     ECHO_WIDTH
     QUALITY_FACTOR
     RECEIVE_HEAVE
-    DEPTH_ERROR  // obselete
-    ACROSS_TRACK_ERROR // obselete
-    ALONG_TRACK_ERROR // obselete
+    DEPTH_ERROR  // obsolete
+    ACROSS_TRACK_ERROR // obsolete
+    ALONG_TRACK_ERROR // obsolete
     NOMINAL_DEPTH
     QUALITY_FLAGS
     BEAM_FLAGS
@@ -84,11 +84,11 @@ const (
     EM950
     EM121A
     EM121
-    SASS  // obselete
+    SASS  // obsolete
     SEAMAP
     SEABAT
     EM1000
-    TYPEIII_SEABEAM  // obselete
+    TYPEIII_SEABEAM  // obsolete
     SB_AMP
     SEABAT_II
     SEABAT_8101
@@ -202,9 +202,9 @@ var SubRecordNames = map[SubRecordID]string{
     ECHO_WIDTH: "ECHO_WIDTH",
     QUALITY_FACTOR: "QUALITY_FACTOR",
     RECEIVE_HEAVE: "RECEIVE_HEAVE",
-    DEPTH_ERROR: "DEPTH_ERROR",  // obselete
-    ACROSS_TRACK_ERROR: "ACROSS_TRACK_ERROR", // obselete
-    ALONG_TRACK_ERROR: "ALONG_TRACK_ERROR", // obselete
+    DEPTH_ERROR: "DEPTH_ERROR",  // obsolete
+    ACROSS_TRACK_ERROR: "ACROSS_TRACK_ERROR", // obsolete
+    ALONG_TRACK_ERROR: "ALONG_TRACK_ERROR", // obsolete
     NOMINAL_DEPTH: "NOMINAL_DEPTH",
     QUALITY_FLAGS: "QUALITY_FLAGS",
     BEAM_FLAGS: "BEAM_FLAGS",
@@ -231,11 +231,11 @@ var SubRecordNames = map[SubRecordID]string{
     EM950: "EM950",
     EM121A: "EM121A",
     EM121: "EM121",
-    SASS: "SASS",  // obselete
+    SASS: "SASS",  // obsolete
     SEAMAP: "SEAMAP",
     SEABAT: "SEABAT",
     EM1000: "EM1000",
-    TYPEIII_SEABEAM: "TYPEIII_SEABEAM",  // obselete
+    TYPEIII_SEABEAM: "TYPEIII_SEABEAM",  // obsolete
     SB_AMP: "SB_AMP",
     SEABAT_II: "SEABAT_II",
     SEABAT_8101: "SEABAT_8101",
@@ -303,7 +303,7 @@ var RecordNames = map[RecordID]string{
     SENSOR_PARAMETERS: "SENSOR_PARAMETERS",
     COMMENT: "COMMENT",
     HISTORY: "HISTORY",
-    NAVIGATION_ERROR: "NAVIGATION_ERROR",  // obselete
+    NAVIGATION_ERROR: "NAVIGATION_ERROR",  // obsolete
     SWATH_BATHY_SUMMARY: "SWATH_BATHY_SUMMARY",
     SINGLE_BEAM_PING: "SINGLE_BEAM_PING",
     HV_NAVIGATION_ERROR: "HV_NAVIGATION_ERROR",  // replaces navigation error
