@@ -40,6 +40,12 @@ type ScaleFactor struct {
     Compression_flag bool  // if true, then the associated array is compressed
 }
 
+type PingGroup struct {
+    Start uint64
+    Stop uint64
+    Scale_Factors map[SubRecordID]ScaleFactor
+}
+
 // PingInfo contains some basic information regarding the ping such as
 // the number of beams, what sub-records are populated.
 // The initial reasoning behind why, is to provide a basic descriptor
@@ -51,6 +57,42 @@ type PingInfo struct {
     Sub_Records []SubRecordID
     Scale_Factors bool
     scale_factors map[SubRecordID]ScaleFactor
+}
+
+// PingGroups combines pings together based on their presence or absence of
+// scale factors. It is a forward linear search, and if a given ping is missing
+// scale factors, then it is included as part of the ping group where the previous
+// set of scale factors were found.
+// For example; [0, 10] indicates that the ping group contains pings 0 up to and
+// including ping 9. It is a [start, stop) index based on the linear ordering
+// of pings found in the GSF file.
+func (fi *FileInfo) PGroups() {
+    var (
+        start int
+        ping_group PingGroup
+        groups []PingGroup
+        sf map[SubRecordID]ScaleFactor
+    )
+
+    groups = make([]PingGroup, 0)
+
+    for i, ping := range(fi.Ping_Info) {
+        if ping.Scale_Factors {
+            if i > 0 {
+                // new group
+                ping_group = PingGroup{uint64(start), uint64(i), sf}
+                groups = append(groups, ping_group)
+            }
+            // update with latest dependency
+            start = i
+            sf = fi.Ping_Info[start].scale_factors
+        } else {
+            // set scale factors based on the last read scale factors
+            fi.Ping_Info[i].scale_factors = sf
+        }
+    }
+
+    fi.Index.Ping_Groups = groups
 }
 
 func decode_ping_hdr(reader *bytes.Reader) PingHeader {
