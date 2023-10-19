@@ -5,6 +5,7 @@ import (
     "encoding/binary"
     "time"
     "errors"
+    "math"
 
     tiledb "github.com/TileDB-Inc/TileDB-Go"
 )
@@ -150,7 +151,7 @@ func (g *GsfFile) AttitudeRecords(fi *FileInfo) (attitude Attitude) {
 // thing anyway.
 func attitude_tiledb_array(file_uri string, ctx *tiledb.Context, nrows uint64) error {
     // an arbitrary choice; maybe at a future date we evaluate a good number
-    tile_sz := uint64(50000)
+    tile_sz := uint64(math.Min(float64(50000), float64(nrows)))
 
     // array domain
     domain, err := tiledb.NewDomain(ctx)
