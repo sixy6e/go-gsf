@@ -1,9 +1,9 @@
 package gsf
 
 import (
-    "path/filepath"
-    "github.com/samber/lo"
-    tiledb "github.com/TileDB-Inc/TileDB-Go"
+	tiledb "github.com/TileDB-Inc/TileDB-Go"
+	"github.com/samber/lo"
+	"path/filepath"
 )
 
 // An internal general purpose trawling function. Potentially could be globally
@@ -11,31 +11,31 @@ import (
 // The basename is only matched with the pattern, eg
 // ("*.gsf", "0060_20150624_185509_Investigator_em710.gsf")
 func trawl(vfs *tiledb.VFS, pattern string, uri string, items []string) []string {
-    dirs, files, err := vfs.List(uri)
-    if err != nil {
-        panic(err)
-    }
+	dirs, files, err := vfs.List(uri)
+	if err != nil {
+		panic(err)
+	}
 
-    // check files for the matching pattern
-    for _, file := range(files) {
-        match, err := filepath.Match(pattern, filepath.Base(file))
-        if err != nil {
-            panic(err)
-        }
+	// check files for the matching pattern
+	for _, file := range files {
+		match, err := filepath.Match(pattern, filepath.Base(file))
+		if err != nil {
+			panic(err)
+		}
 
-        if match {
-            items = append(items, file)
-        }
-    }
+		if match {
+			items = append(items, file)
+		}
+	}
 
-    dirs = lo.Without(dirs, uri)  // avoiding a potential infinite loop
+	dirs = lo.Without(dirs, uri) // avoiding a potential infinite loop
 
-    // recurse over every directory
-    for _, dir := range(dirs) {
-        items = trawl(vfs, pattern, dir, items)
-    }
+	// recurse over every directory
+	for _, dir := range dirs {
+		items = trawl(vfs, pattern, dir, items)
+	}
 
-    return items
+	return items
 }
 
 // A specific function to recursively search for *.gsf files under a given URI.
@@ -43,44 +43,44 @@ func trawl(vfs *tiledb.VFS, pattern string, uri string, items []string) []string
 // filesystems or object stores such as AWS-S3. A TileDB config is required
 // for searching object stores with permission constraints.
 func FindGsf(uri string, config_uri string) []string {
-    var (
-        config *tiledb.Config
-        err error
-        items []string
-        pattern string
-    )
+	var (
+		config  *tiledb.Config
+		err     error
+		items   []string
+		pattern string
+	)
 
-    // get a generic config if no path provided
-    if config_uri == "" {
-        config, err = tiledb.NewConfig()
-        if err != nil {
-            panic(err)
-        }
-    } else {
-        config, err = tiledb.LoadConfig(config_uri)
-        if err != nil {
-            panic(err)
-        }
-    }
+	// get a generic config if no path provided
+	if config_uri == "" {
+		config, err = tiledb.NewConfig()
+		if err != nil {
+			panic(err)
+		}
+	} else {
+		config, err = tiledb.LoadConfig(config_uri)
+		if err != nil {
+			panic(err)
+		}
+	}
 
-    defer config.Free()
+	defer config.Free()
 
-    ctx, err := tiledb.NewContext(config)
-    if err != nil {
-        panic(err)
-    }
-    defer ctx.Free()
+	ctx, err := tiledb.NewContext(config)
+	if err != nil {
+		panic(err)
+	}
+	defer ctx.Free()
 
-    vfs, err := tiledb.NewVFS(ctx, config)
-    if err != nil {
-        panic(err)
-    }
-    defer vfs.Free()
+	vfs, err := tiledb.NewVFS(ctx, config)
+	if err != nil {
+		panic(err)
+	}
+	defer vfs.Free()
 
-    items = make([]string, 0)
-    pattern = "*.gsf"
+	items = make([]string, 0)
+	pattern = "*.gsf"
 
-    items = trawl(vfs, pattern, uri, items)
+	items = trawl(vfs, pattern, uri, items)
 
-    return items
+	return items
 }
