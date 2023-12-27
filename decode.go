@@ -1,7 +1,5 @@
 package gsf
 
-import ()
-
 type RecordID int32
 type SubRecordID int32
 type SensorID uint16
@@ -15,6 +13,10 @@ const (
 	SCALE4             int64    = 1_000_000 // TODO; convert to proper named type (int32, int64 etc)
 )
 
+const (
+	MAX_BEAM_ARRAY_SUBRECORD_ID SubRecordID = 30
+)
+
 // Base record IDs.
 const (
 	HEADER RecordID = 1 + iota
@@ -26,7 +28,7 @@ const (
 	HISTORY
 	NAVIGATION_ERROR // obsolete
 	SWATH_BATHY_SUMMARY
-	SINGLE_BEAM_PING
+	SINGLE_BEAM_PING    // use discouraged
 	HV_NAVIGATION_ERROR // replaces navigation error
 	ATTITUDE            // 12
 )
@@ -41,13 +43,13 @@ const (
 	MEAN_CAL_AMPLITUDE
 	MEAN_REL_AMPLITUDE
 	ECHO_WIDTH
-	QUALITY_FACTOR
+	QUALITY_FACTOR // replaces quality flags
 	RECEIVE_HEAVE
 	DEPTH_ERROR        // obsolete
 	ACROSS_TRACK_ERROR // obsolete
 	ALONG_TRACK_ERROR  // obsolete
 	NOMINAL_DEPTH
-	QUALITY_FLAGS
+	QUALITY_FLAGS // considered obsolete
 	BEAM_FLAGS
 	SIGNAL_TO_NOISE
 	BEAM_ANGLE_FORWARD
@@ -186,6 +188,13 @@ const (
 	NULL_ACROSS_TRACK_ERROR float32 = 0.0
 	NULL_ALONG_TRACK_ERROR  float32 = 0.0
 	NULL_NAP_POS_ERROR      float32 = 0.0
+)
+
+// Field sizes for ping subarrays
+const (
+	FIELD_SIZE_ONE  uint32 = 0x10
+	FIELD_SIZE_TWO  uint32 = 0x20
+	FIELD_SIZE_FOUR uint32 = 0x40
 )
 
 // Subrecord labels. Used for defining the output schema
