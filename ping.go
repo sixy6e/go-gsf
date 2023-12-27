@@ -27,12 +27,6 @@ type PingHeader struct {
 	Ping_flags         int16
 }
 
-type SubRecord struct {
-	Id         SubRecordID
-	Datasize   uint32
-	Byte_index int64
-}
-
 type ScaleFactor struct {
 	Id               SubRecordID
 	Scale            float32 // TODO float32?
@@ -42,9 +36,43 @@ type ScaleFactor struct {
 	Field_size       int
 }
 
+type BeamArray struct {
+	Depth                []float32
+	AcrossTrack          []float32
+	AlongTrack           []float32
+	TravelTime           []float32
+	BeamAngle            []float32
+	MeanCalAmplitude     []float32
+	MeanRelAmplitude     []float32
+	EchoWidth            []float32
+	QualityFactor        []float32
+	RecieveHeave         []float32
+	DepthError           []float32 // obsolete
+	AcrossTrackError     []float32 // obsolete
+	AlongTrackError      []float32 // obsolete
+	NominalDepth         []float32
+	QualityFlags         []float32
+	BeamFlags            []float32
+	SignalToNoise        []float32
+	BeamAngleForward     []float32
+	VerticalError        []float32
+	HorizontalError      []float32
+	IntensitySeries      []float32
+	SectorNumber         []float32
+	DetectionInfo        []float32
+	IncidentBeamAdj      []float32
+	SystemCleaning       []float32
+	DopplerCorrection    []float32
+	SonarVertUncertainty []float32
+	SonarHorzUncertainty []float32
+	DetectionWindow      []float32
+	MeanAbsCoef          []float32
+}
+
 type PingGroup struct {
 	Start         uint64
 	Stop          uint64
+	Number_Beams  uint64
 	Scale_Factors map[SubRecordID]ScaleFactor
 }
 
@@ -74,23 +102,29 @@ func (fi *FileInfo) PGroups() {
 		ping_group PingGroup
 		groups     []PingGroup
 		sf         map[SubRecordID]ScaleFactor
+		beam_count uint64
 	)
 
 	groups = make([]PingGroup, 0)
+	beam_count = uint64(0)
 
 	for i, ping := range fi.Ping_Info {
 		if ping.Scale_Factors {
 			if i > 0 {
 				// new group
-				ping_group = PingGroup{uint64(start), uint64(i), sf}
+				ping_group = PingGroup{
+					uint64(start), uint64(i), beam_count, sf,
+				}
 				groups = append(groups, ping_group)
 			}
-			// update with latest dependency
+			// update with latest sf dependency and reset counters
 			start = i
+			beam_count = uint64(0)
 			sf = fi.Ping_Info[start].scale_factors
 		} else {
 			// set scale factors based on the last read scale factors
 			fi.Ping_Info[i].scale_factors = sf
+			beam_count += uint64(ping_group.Number_Beams)
 		}
 	}
 
@@ -265,12 +299,14 @@ func ping_info(reader *bytes.Reader, rec RecordHdr) PingInfo {
 // Another instance was a duplicate ping. Same timestamp, location, depth, but zero values
 // for supporting attributes/sub-records/fields (heading, course, +others). Again, this
 // appeared to have never been encountered before (or never looked).
-func SwathBathymetryPingRec(buffer []byte, rec RecordHdr) PingHeader {
+func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo) PingHeader {
 	var (
 		idx int64 = 0
 		// sf map[SubRecordID]ScaleFactor
 		nbytes int64
 		// subrecord_hdr int32
+		beam_data []float32
+		beams     BeamArray
 	)
 
 	// buffer := make([]byte, rec.Datasize)
@@ -297,6 +333,242 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr) PingHeader {
 		// however, we'll rely on the scale factors from PingInfo.scale_factors
 		_, nbytes = scale_factors_rec(reader)
 		idx += nbytes
+	}
+
+	bytes_per_beam := sub_rec.Datasize / uint32(pinfo.Number_Beams)
+
+	// TODO; implement loop that reads through each sub record
+	// decode each sub-record beam array
+	// also need to handle sensor specific records as well
+	switch sub_rec.Id {
+	case DEPTH:
+		beam_data = sub_rec.DecodeSubRecArray(
+			reader,
+			pinfo.Number_Beams,
+			pinfo.scale_factors[sub_rec.Id],
+			bytes_per_beam,
+			false,
+		)
+		beams.Depth = beam_data
+	case ACROSS_TRACK:
+		beam_data = sub_rec.DecodeSubRecArray(
+			reader,
+			pinfo.Number_Beams,
+			pinfo.scale_factors[sub_rec.Id],
+			bytes_per_beam,
+			true,
+		)
+		beams.AcrossTrack = beam_data
+	case ALONG_TRACK:
+		beam_data = sub_rec.DecodeSubRecArray(
+			reader,
+			pinfo.Number_Beams,
+			pinfo.scale_factors[sub_rec.Id],
+			bytes_per_beam,
+			true,
+		)
+		beams.AlongTrack = beam_data
+	case TRAVEL_TIME:
+		beam_data = sub_rec.DecodeSubRecArray(
+			reader,
+			pinfo.Number_Beams,
+			pinfo.scale_factors[sub_rec.Id],
+			bytes_per_beam,
+			false,
+		)
+		beams.TravelTime = beam_data
+	case BEAM_ANGLE:
+		beam_data = sub_rec.DecodeSubRecArray(
+			reader,
+			pinfo.Number_Beams,
+			pinfo.scale_factors[sub_rec.Id],
+			bytes_per_beam,
+			true,
+		)
+		beams.BeamAngle = beam_data
+	case MEAN_CAL_AMPLITUDE:
+		beam_data = sub_rec.DecodeSubRecArray(
+			reader,
+			pinfo.Number_Beams,
+			pinfo.scale_factors[sub_rec.Id],
+			bytes_per_beam,
+			true,
+		)
+		beams.MeanCalAmplitude = beam_data
+	case MEAN_REL_AMPLITUDE:
+		beam_data = sub_rec.DecodeSubRecArray(
+			reader,
+			pinfo.Number_Beams,
+			pinfo.scale_factors[sub_rec.Id],
+			bytes_per_beam,
+			false,
+		)
+		beams.MeanRelAmplitude = beam_data
+	case ECHO_WIDTH:
+		beam_data = sub_rec.DecodeSubRecArray(
+			reader,
+			pinfo.Number_Beams,
+			pinfo.scale_factors[sub_rec.Id],
+			bytes_per_beam,
+			false,
+		)
+		beams.EchoWidth = beam_data
+	case QUALITY_FACTOR:
+		beam_data = sub_rec.DecodeSubRecArray(
+			reader,
+			pinfo.Number_Beams,
+			pinfo.scale_factors[sub_rec.Id],
+			bytes_per_beam,
+			false,
+		)
+		beams.QualityFactor = beam_data
+	case RECEIVE_HEAVE:
+		beam_data = sub_rec.DecodeSubRecArray(
+			reader,
+			pinfo.Number_Beams,
+			pinfo.scale_factors[sub_rec.Id],
+			bytes_per_beam,
+			true,
+		)
+		beams.RecieveHeave = beam_data
+	case DEPTH_ERROR:
+		beam_data = sub_rec.DecodeSubRecArray(
+			reader,
+			pinfo.Number_Beams,
+			pinfo.scale_factors[sub_rec.Id],
+			bytes_per_beam,
+			false,
+		)
+		beams.DepthError = beam_data
+	case ACROSS_TRACK_ERROR:
+		beam_data = sub_rec.DecodeSubRecArray(
+			reader,
+			pinfo.Number_Beams,
+			pinfo.scale_factors[sub_rec.Id],
+			bytes_per_beam,
+			false,
+		)
+		beams.AcrossTrackError = beam_data
+	case ALONG_TRACK_ERROR:
+		beam_data = sub_rec.DecodeSubRecArray(
+			reader,
+			pinfo.Number_Beams,
+			pinfo.scale_factors[sub_rec.Id],
+			bytes_per_beam,
+			false,
+		)
+		beams.AlongTrackError = beam_data
+	case NOMINAL_DEPTH:
+		beam_data = sub_rec.DecodeSubRecArray(
+			reader,
+			pinfo.Number_Beams,
+			pinfo.scale_factors[sub_rec.Id],
+			bytes_per_beam,
+			false,
+		)
+		beams.NominalDepth = beam_data
+	case QUALITY_FLAGS:
+		// obselete
+		// TODO; has specific decoder
+	case BEAM_FLAGS:
+		// TODO; has specific decoder
+	case SIGNAL_TO_NOISE:
+		beam_data = sub_rec.DecodeSubRecArray(
+			reader,
+			pinfo.Number_Beams,
+			pinfo.scale_factors[sub_rec.Id],
+			bytes_per_beam,
+			true,
+		)
+		beams.SignalToNoise = beam_data
+	case BEAM_ANGLE_FORWARD:
+		beam_data = sub_rec.DecodeSubRecArray(
+			reader,
+			pinfo.Number_Beams,
+			pinfo.scale_factors[sub_rec.Id],
+			bytes_per_beam,
+			false,
+		)
+		beams.BeamAngleForward = beam_data
+	case VERTICAL_ERROR:
+		beam_data = sub_rec.DecodeSubRecArray(
+			reader,
+			pinfo.Number_Beams,
+			pinfo.scale_factors[sub_rec.Id],
+			bytes_per_beam,
+			false,
+		)
+		beams.VerticalError = beam_data
+	case HORIZONTAL_ERROR:
+		beam_data = sub_rec.DecodeSubRecArray(
+			reader,
+			pinfo.Number_Beams,
+			pinfo.scale_factors[sub_rec.Id],
+			bytes_per_beam,
+			false,
+		)
+		beams.HorizontalError = beam_data
+	case INTENSITY_SERIES:
+	case SECTOR_NUMBER:
+		// TODO; has specific decoder
+	case DETECTION_INFO:
+		// TODO; has specific decoder
+	case INCIDENT_BEAM_ADJ:
+		beam_data = sub_rec.DecodeSubRecArray(
+			reader,
+			pinfo.Number_Beams,
+			pinfo.scale_factors[sub_rec.Id],
+			bytes_per_beam,
+			true,
+		)
+		beams.IncidentBeamAdj = beam_data
+	case SYSTEM_CLEANING:
+		// TODO; has specific decoder
+	case DOPPLER_CORRECTION:
+		beam_data = sub_rec.DecodeSubRecArray(
+			reader,
+			pinfo.Number_Beams,
+			pinfo.scale_factors[sub_rec.Id],
+			bytes_per_beam,
+			true,
+		)
+		beams.DopplerCorrection = beam_data
+	case SONAR_VERT_UNCERTAINTY:
+		beam_data = sub_rec.DecodeSubRecArray(
+			reader,
+			pinfo.Number_Beams,
+			pinfo.scale_factors[sub_rec.Id],
+			bytes_per_beam,
+			false,
+		)
+		beams.SonarVertUncertainty = beam_data
+	case SONAR_HORZ_UNCERTAINTY:
+		beam_data = sub_rec.DecodeSubRecArray(
+			reader,
+			pinfo.Number_Beams,
+			pinfo.scale_factors[sub_rec.Id],
+			bytes_per_beam,
+			false,
+		)
+		beams.SonarHorzUncertainty = beam_data
+	case DETECTION_WINDOW:
+		beam_data = sub_rec.DecodeSubRecArray(
+			reader,
+			pinfo.Number_Beams,
+			pinfo.scale_factors[sub_rec.Id],
+			bytes_per_beam,
+			false,
+		)
+		beams.DetectionWindow = beam_data
+	case MEAN_ABS_COEF:
+		beam_data = sub_rec.DecodeSubRecArray(
+			reader,
+			pinfo.Number_Beams,
+			pinfo.scale_factors[sub_rec.Id],
+			bytes_per_beam,
+			false,
+		)
+		beams.MeanAbsCoef = beam_data
 	}
 
 	return hdr
