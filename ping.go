@@ -335,6 +335,7 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo) PingHe
 		idx += nbytes
 	}
 
+	// only relevant for the ping sub-record arrays and not the sensor specific
 	bytes_per_beam := sub_rec.Datasize / uint32(pinfo.Number_Beams)
 
 	// TODO; implement loop that reads through each sub record
