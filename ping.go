@@ -342,6 +342,8 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo) PingHe
 	// decode each sub-record beam array
 	// also need to handle sensor specific records as well
 	switch sub_rec.Id {
+
+	// beam array subrecords
 	case DEPTH:
 		beam_data = sub_rec.DecodeSubRecArray(
 			reader,
@@ -510,6 +512,7 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo) PingHe
 		)
 		beams.HorizontalError = beam_data
 	case INTENSITY_SERIES:
+		// TODO; has specific decoder
 	case SECTOR_NUMBER:
 		// TODO; has specific decoder
 	case DETECTION_INFO:
@@ -570,6 +573,77 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo) PingHe
 			false,
 		)
 		beams.MeanAbsCoef = beam_data
+
+	// sensor specific subrecords
+	case SEABEAM:
+		// DecodeSeabeam
+	case EM12:
+		// DecodeEM12
+	case EM100:
+		// DecodeEM100
+	case EM950:
+		// DecodeEM950
+	case EM121A:
+		// DecodeEM121A
+	case EM121:
+		// DecodeEM121
+	case SASS: // obsolete
+		// DecodeSASS
+	case SEAMAP:
+		// DecodeSeaMap
+	case SEABAT:
+		// DecodeSeaBat
+	case EM1000:
+		// DecodeEM1000
+	case TYPEIII_SEABEAM: // obsolete
+		// DecodeTypeIII
+	case SB_AMP:
+		// DecodeSBAmp
+	case SEABAT_II:
+		// DecodeSeaBatII
+	case SEABAT_8101:
+		// DecodeSeaBat8101
+	case SEABEAM_2112:
+		// DecodeSeaBeam2112
+	case ELAC_MKII:
+		// DecodeElacMkII
+	case CMP_SAAS: // CMP (compressed), should be used in place of SASS
+		// DecodeCmpSass
+	case RESON_8101, RESON_8111, RESON_8124, RESON_8125, RESON_8150, RESON_8160:
+		// DecodeReson8100
+	case EM120, EM300, EM1002, EM2000, EM3000, EM3002, EM3000D, EM3002D, EM121A_SIS:
+		// DecodeEM3
+	case EM710, EM302, EM122, EM2040:
+		// DecodeEM4
+	case GEOSWATH_PLUS:
+		// DecodeGeoSwathPlus
+	case KLEIN_5410_BSS:
+		// DecodeKlein5410Bss
+	case RESON_7125:
+		// DecodeReson7100
+	case EM300_RAW, EM1002_RAW, EM2000_RAW, EM3000_RAW, EM120_RAW, EM3002_RAW, EM3000D_RAW, EM3002D_RAW, EM121A_SIS_RAW:
+		// DecodeEM3Raw
+	case DELTA_T:
+		// DecodeDeltaT
+	case R2SONIC_2022, R2SONIC_2024, R2SONIC_2020:
+		// DecodeR2Sonic
+	case SR_NOT_DEFINED: // the spec makes no mention of ID 154
+	case RESON_TSERIES:
+		// DecodeResonTSeries
+	case KMALL:
+		// DecodeKMALL
+
+		// single beam swath sensor specific subrecords
+	case SWATH_ECHOTRAC, SWATH_BATHY2000, SWATH_PDD:
+		// DecodeSBEchotrac
+	case SWATH_MGD77:
+		// DecodeSBMGD77
+	case SWATH_BDB:
+		// DecodeSBBDB
+	case SWATH_NOSHDB:
+		// DecodeSBNOSHDB
+	case SWATH_NAVISOUND:
+		// DecodeSBNavisound
 	}
 
 	return hdr
