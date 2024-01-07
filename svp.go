@@ -5,10 +5,13 @@ import (
 	"bytes"
 	"encoding/binary"
 	"errors"
+	"reflect"
 	"time"
+
 	// "fmt"
 
 	tiledb "github.com/TileDB-Inc/TileDB-Go"
+	"github.com/yuin/stagparser"
 )
 
 var ErrCreateSvpTdb = errors.New("Error Creating SVP TileDB Array")
@@ -33,12 +36,12 @@ var ErrWriteSvpTdb = errors.New("Error Writing SVP TileDB Array")
 // So for simplicity, if it is a single record, or a million records, we'll use the same
 // data structure; array and array of arrays (variable length arrays).
 type SoundVelocityProfile struct {
-	Observation_timestamp []time.Time
-	Applied_timestamp     []time.Time
-	Longitude             []float64
-	Latitude              []float64
-	Depth                 [][]float32
-	Sound_velocity        [][]float32
+	Observation_timestamp []time.Time `tiledb:"dtype=datetime_ns,ftype=attr" filters:"zstd(level=16)"`
+	Applied_timestamp     []time.Time `tiledb:"dtype=datetime_ns,ftype=attr" filters:"zstd(level=16)"`
+	Longitude             []float64   `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
+	Latitude              []float64   `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
+	Depth                 [][]float32 `tiledb:"dtype=float32,ftype=attr,var" filters:"zstd(level=16)"`
+	Sound_velocity        [][]float32 `tiledb:"dtype=float32,ftype=attr,var" filters:"zstd(level=16)"`
 	depth                 []float32
 	sound_velocity        []float32
 	n_points              uint64
@@ -308,6 +311,8 @@ func svp_tiledb_array(file_uri string, ctx *tiledb.Context, nrows uint64) error 
 		return errors.Join(ErrCreateSvpTdb, err)
 	}
 
+	// TEST svp method for setting up attrs
+
 	// setup attributes:
 	// observation_timestamp, applied_timestamp, longitude, latitude, depth, sound_velocity
 	// just using zstd for compression. timestamps could benefit from positive delta,
@@ -399,6 +404,114 @@ func svp_tiledb_array(file_uri string, ctx *tiledb.Context, nrows uint64) error 
 	err = array.Create(schema)
 	if err != nil {
 		return errors.Join(ErrCreateSvpTdb, err)
+	}
+
+	return nil
+}
+
+func (s *SoundVelocityProfile) SchemaAttrs(schema *tiledb.ArraySchema, ctx *tiledb.Context) error {
+	var (
+		tdb_dtype tiledb.Datatype
+	)
+	values := reflect.ValueOf(s)
+	types := values.Type()
+	filt_defs := stagparser.ParseStruct(s, "filters")
+	tdb_defs := stagparser.ParseStruct(s, "tiledb")
+
+	for i := 0; i < values.NumField(); i++ {
+		name := types.Field(i).Name
+		field_tdb_defs := tdb_defs[name]
+		field_filt_defs := filt_defs[name]
+
+		ftype, status := field_tdb_defs.Attribute("ftype")
+		if status == false {
+			return errors.Join(ErrCreateSvpTdb, errors.New("ftype tag not found"))
+		}
+		if ftype == "dim" {
+			// ignore dimensions
+			continue
+		}
+
+		dtype, status := field_tdb_defs.Attribute("dtype")
+		if status == false {
+			return errors.Join(ErrCreateSvpTdb, errors.New("dtype tag not found"))
+		}
+
+		switch dtype {
+		case "float32":
+			tdb_dtype = tiledb.TILEDB_FLOAT32
+		case "float64":
+			tdb_dtype = tiledb.TILEDB_FLOAT64
+		case "datetime_ns":
+			tdb_dtype = tiledb.TILEDB_DATETIME_NS
+		}
+
+		attr_filts, err := tiledb.NewFilterList(ctx)
+		if err != nil {
+			return errors.Join(ErrCreateSvpTdb, err)
+		}
+		defer attr_filts.Free()
+
+		// filter pipeline
+		for _, filter := range field_filt_defs {
+			switch filter {
+			case "zstd":
+				level, status := filter.Attribute("level")
+				if status == false {
+					return errors.Join(ErrCreateSvpTdb, errors.New("zstd level not defined"))
+				}
+				filt, err := ZstdFilter(ctx, level)
+				if err != nil {
+					return errors.Join(ErrCreateSvpTdb, err)
+				}
+				defer filt.Free()
+				err = attr_filts.AddFilter(filt)
+				if err != nil {
+					return errors.Join(ErrCreateSvpTdb, err)
+				}
+			case "gzip":
+				level, status := filter.Attribute("level")
+				if status == false {
+					return errors.Join(ErrCreateSvpTdb, errors.New("gzip level not defined"))
+				}
+				filt, err := ZstdFilter(ctx, level)
+				if err != nil {
+					return errors.Join(ErrCreateSvpTdb, err)
+				}
+				defer filt.Free()
+				err = attr_filts.AddFilter(filt)
+				if err != nil {
+					return errors.Join(ErrCreateSvpTdb, err)
+				}
+			}
+		}
+		// create attr
+		attr, err := tiledb.NewAttribute(ctx, name, tdb_dtype)
+		if err != nil {
+			return errors.Join(ErrCreateSvpTdb, err)
+		}
+		defer attr.Free()
+
+		// variable length attrs
+		_, status = field_tdb_defs.Attribute("var")
+		if status == true {
+			attr.SetCellValNum(tiledb.TILEDB_VAR_NUM)
+			if err != nil {
+				return errors.Join(ErrCreateSvpTdb, err)
+			}
+		}
+
+		// attach filter pipeline to attr
+		err = AttachFilters(attr_filts, attr)
+		if err != nil {
+			return errors.Join(ErrCreateSvpTdb, err)
+		}
+
+		// attach attr to schema
+		err = schema.AddAttributes(attr)
+		if err != nil {
+			return errors.Join(ErrCreateSvpTdb, err)
+		}
 	}
 
 	return nil
