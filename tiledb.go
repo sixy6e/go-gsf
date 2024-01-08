@@ -4,6 +4,7 @@ import (
 	"errors"
 
 	tiledb "github.com/TileDB-Inc/TileDB-Go"
+	stgpsr "github.com/yuin/stagparser"
 )
 
 var ErrAddFilters = errors.New("Error Adding Filter To FilterList")
@@ -88,7 +89,8 @@ func Lz4Filter(ctx *tiledb.Context, level int32) (*tiledb.Filter, error) {
 }
 
 // RleFilter initialises the Run Length Encoding compression filter and sets the
-// compression level.
+// compression level. Note; the compression level is meaningless for RLE, and
+// is quietly ignored internally by TileDB.
 func RleFilter(ctx *tiledb.Context, level int32) (*tiledb.Filter, error) {
 	filt, err := tiledb.NewFilter(ctx, tiledb.TILEDB_FILTER_RLE)
 	if err != nil {
@@ -121,6 +123,23 @@ func Bzip2Filter(ctx *tiledb.Context, level int32) (*tiledb.Filter, error) {
 	return filt, nil
 }
 
+// BitWidthReductionFilter initialises the Bit width reduction and sets the
+// window size.
+func BitWidthReductionFilter(ctx *tiledb.Context, window int32) (*tiledb.Filter, error) {
+	filt, err := tiledb.NewFilter(ctx, tiledb.TILEDB_FILTER_BIT_WIDTH_REDUCTION)
+	if err != nil {
+		return nil, err
+	}
+
+	err = filt.SetOption(tiledb.TILEDB_BIT_WIDTH_MAX_WINDOW, window)
+	if err != nil {
+		filt.Free()
+		return nil, err
+	}
+
+	return filt, nil
+}
+
 // AttachFilters acts as a helper for when setting the same pipeline filter list to
 // a bunch of attributes.
 func AttachFilters(filter_list *tiledb.FilterList, attrs ...*tiledb.Attribute) error {
@@ -128,6 +147,252 @@ func AttachFilters(filter_list *tiledb.FilterList, attrs ...*tiledb.Attribute) e
 		err := attr.SetFilterList(filter_list)
 		if err != nil {
 			return err
+		}
+	}
+
+	return nil
+}
+
+// CreateAttr creates a tiledb attribute along with the compression filter
+// pipeline. The configuration is specified by the tags attached to the
+// struct type.
+// Tags for tiledb include: dtype, var, ftype.
+// Where dtype is datatype, var is variable length, ftype is fieldtype
+// (dim or attr) for dimension or attribute (dim skips the field).
+// Supported datatype values are int8, uint8, int16, uint16, int32, uint32,
+// int64, uint64, float32, float64, datetime_ns.
+// Tags for filters include: zstd(level=16), gzip(level=6), bysh, bish,
+// lz4(level=6), rle(level=-1), bzip2(level=6), bitw(window=-1).
+// Where level indicates the compression level, window indicates the window size
+// (-1 indicates default), zstd is zstandard, gzip is deflate,
+// rle is run length encoding, bysh is byteshuffle, bish is bitshuffle and
+// bitw is bit width reduction.
+// Filters will be set in the order they're specified in the tag.
+// Variable length fields will have the offsets compressed using a default
+// strategy of positive-delta, byteshuffle, and finally zstandard with level=16.
+// An example tag is `tiledb:"dtype=uint16,ftype=attr" filters:"bysh,zstandard(level=16)"`
+func CreateAttr(
+	field_name string,
+	filter_defs []stgpsr.Definition,
+	tiledb_defs map[string]stgpsr.Definition,
+	schema *tiledb.ArraySchema,
+	ctx *tiledb.Context,
+) error {
+
+	var (
+		tdb_dtype tiledb.Datatype
+		def       stgpsr.Definition
+		status    bool
+	)
+
+	def, status = tiledb_defs["dtype"]
+	if !status {
+		return errors.Join(ErrCreateSvpTdb, errors.New("dtype tag not found"))
+	}
+	dtype, _ := def.Attribute("dtype")
+
+	// define datatype
+	switch dtype {
+	case "int8":
+		tdb_dtype = tiledb.TILEDB_INT8
+	case "uint8":
+		tdb_dtype = tiledb.TILEDB_UINT8
+	case "int16":
+		tdb_dtype = tiledb.TILEDB_INT16
+	case "uint16":
+		tdb_dtype = tiledb.TILEDB_UINT16
+	case "int32":
+		tdb_dtype = tiledb.TILEDB_INT32
+	case "uint32":
+		tdb_dtype = tiledb.TILEDB_UINT32
+	case "int64":
+		tdb_dtype = tiledb.TILEDB_INT64
+	case "uint64":
+		tdb_dtype = tiledb.TILEDB_UINT64
+	case "float32":
+		tdb_dtype = tiledb.TILEDB_FLOAT32
+	case "float64":
+		tdb_dtype = tiledb.TILEDB_FLOAT64
+	case "datetime_ns": // can add other datetime types when required
+		tdb_dtype = tiledb.TILEDB_DATETIME_NS
+	}
+
+	attr_filts, err := tiledb.NewFilterList(ctx)
+	if err != nil {
+		return errors.Join(ErrCreateSvpTdb, err)
+	}
+	defer attr_filts.Free()
+
+	// filter pipeline
+	for _, filter := range filter_defs {
+		switch filter.Name() {
+		case "zstd":
+			level, status := filter.Attribute("level")
+			if !status {
+				return errors.Join(ErrCreateSvpTdb, errors.New("zstd level not defined"))
+			}
+			filt, err := ZstdFilter(ctx, int32(level.(int64)))
+			if err != nil {
+				return errors.Join(ErrCreateSvpTdb, err)
+			}
+			defer filt.Free()
+			err = attr_filts.AddFilter(filt)
+			if err != nil {
+				return errors.Join(ErrCreateSvpTdb, err)
+			}
+		case "gzip":
+			level, status := filter.Attribute("level")
+			if !status {
+				return errors.Join(ErrCreateSvpTdb, errors.New("gzip level not defined"))
+			}
+			filt, err := ZstdFilter(ctx, int32(level.(int64)))
+			if err != nil {
+				return errors.Join(ErrCreateSvpTdb, err)
+			}
+			defer filt.Free()
+			err = attr_filts.AddFilter(filt)
+			if err != nil {
+				return errors.Join(ErrCreateSvpTdb, err)
+			}
+		case "lz4":
+			level, status := filter.Attribute("level")
+			if !status {
+				return errors.Join(ErrCreateSvpTdb, errors.New("lz4 level not defined"))
+			}
+			filt, err := Lz4Filter(ctx, int32(level.(int64)))
+			if err != nil {
+				return errors.Join(ErrCreateSvpTdb, err)
+			}
+			defer filt.Free()
+			err = attr_filts.AddFilter(filt)
+			if err != nil {
+				return errors.Join(ErrCreateSvpTdb, err)
+			}
+		case "rle":
+			level, status := filter.Attribute("level")
+			if !status {
+				return errors.Join(ErrCreateSvpTdb, errors.New("rle level not defined"))
+			}
+			filt, err := RleFilter(ctx, int32(level.(int64)))
+			if err != nil {
+				return errors.Join(ErrCreateSvpTdb, err)
+			}
+			defer filt.Free()
+			err = attr_filts.AddFilter(filt)
+			if err != nil {
+				return errors.Join(ErrCreateSvpTdb, err)
+			}
+		case "bzip2":
+			level, status := filter.Attribute("level")
+			if !status {
+				return errors.Join(ErrCreateSvpTdb, errors.New("bzip2 level not defined"))
+			}
+			filt, err := Bzip2Filter(ctx, int32(level.(int64)))
+			if err != nil {
+				return errors.Join(ErrCreateSvpTdb, err)
+			}
+			defer filt.Free()
+			err = attr_filts.AddFilter(filt)
+			if err != nil {
+				return errors.Join(ErrCreateSvpTdb, err)
+			}
+		case "bitw":
+			win, status := filter.Attribute("window")
+			if !status {
+				return errors.Join(ErrCreateSvpTdb, errors.New("bitwidth window not defined"))
+			}
+			filt, err := BitWidthReductionFilter(ctx, int32(win.(int64)))
+			if err != nil {
+				return errors.Join(ErrCreateSvpTdb, err)
+			}
+			defer filt.Free()
+			err = attr_filts.AddFilter(filt)
+			if err != nil {
+				return errors.Join(ErrCreateSvpTdb, err)
+			}
+		case "bish":
+			filt, err := tiledb.NewFilter(ctx, tiledb.TILEDB_FILTER_BITSHUFFLE)
+			if err != nil {
+				return errors.Join(ErrCreateSvpTdb, err)
+			}
+			defer filt.Free()
+			err = attr_filts.AddFilter(filt)
+			if err != nil {
+				return errors.Join(ErrCreateSvpTdb, err)
+			}
+		case "bysh":
+			filt, err := tiledb.NewFilter(ctx, tiledb.TILEDB_FILTER_BYTESHUFFLE)
+			if err != nil {
+				return errors.Join(ErrCreateSvpTdb, err)
+			}
+			defer filt.Free()
+			err = attr_filts.AddFilter(filt)
+			if err != nil {
+				return errors.Join(ErrCreateSvpTdb, err)
+			}
+		}
+	}
+
+	// create attr
+	attr, err := tiledb.NewAttribute(ctx, field_name, tdb_dtype)
+	if err != nil {
+		return errors.Join(ErrCreateSvpTdb, err)
+	}
+	defer attr.Free()
+
+	// variable length attrs
+	_, status = tiledb_defs["var"]
+	if status {
+		attr.SetCellValNum(tiledb.TILEDB_VAR_NUM)
+		if err != nil {
+			return errors.Join(ErrCreateSvpTdb, err)
+		}
+	}
+
+	// attach filter pipeline to attr
+	err = AttachFilters(attr_filts, attr)
+	if err != nil {
+		return errors.Join(ErrCreateSvpTdb, err)
+	}
+
+	// attach attr to schema
+	err = schema.AddAttributes(attr)
+	if err != nil {
+		return errors.Join(ErrCreateSvpTdb, err)
+	}
+
+	// variable length attrs filters
+	// making an assumption that the var attr needs to be set on the schema
+	// before we add the offsets filter pipeline to the schema
+	if status {
+		offset_filts, err := tiledb.NewFilterList(ctx)
+		if err != nil {
+			return errors.Join(ErrCreateSvpTdb, err)
+		}
+
+		dd_filt, err := tiledb.NewFilter(ctx, tiledb.TILEDB_FILTER_POSITIVE_DELTA)
+		if err != nil {
+			return errors.Join(ErrCreateSvpTdb, err)
+		}
+
+		bysh_filt, err := tiledb.NewFilter(ctx, tiledb.TILEDB_FILTER_BYTESHUFFLE)
+		if err != nil {
+			return errors.Join(ErrCreateSvpTdb, err)
+		}
+
+		zstd_filt, err := ZstdFilter(ctx, int32(16))
+		if err != nil {
+			return errors.Join(ErrCreateSvpTdb, err)
+		}
+
+		err = AddFilters(offset_filts, dd_filt, bysh_filt, zstd_filt)
+		if err != nil {
+			return errors.Join(ErrCreateSvpTdb, err)
+		}
+
+		err = schema.SetOffsetsFilterList(offset_filts)
+		if err != nil {
+			return errors.Join(ErrCreateSvpTdb, err)
 		}
 	}
 
