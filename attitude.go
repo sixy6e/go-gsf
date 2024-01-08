@@ -228,70 +228,8 @@ func (a *Attitude) attitude_tiledb_array(file_uri string, ctx *tiledb.Context, n
 		return errors.Join(ErrCreateAttitudeTdb, err)
 	}
 
+	// add the struct fields as tiledb attributes
 	a.schemaAttrs(schema, ctx)
-
-	// setup attributes; timestamp, pitch, roll, heave, heading
-	// just using zstd for compression. timestamp could benefit from positive delta
-	// Attitude records should be in ascending, but no guarantee from these GSF files.
-	// zstd, err := ZstdFilter(ctx, level)
-	// if err != nil {
-	// 	return errors.Join(ErrCreateSvpTdb, err)
-	// }
-	// defer zstd.Free()
-
-	// ts, err := tiledb.NewAttribute(ctx, "timestamp", tiledb.TILEDB_DATETIME_NS)
-	// if err != nil {
-	// 	return errors.Join(ErrCreateAttitudeTdb, err)
-	// }
-	// defer ts.Free()
-
-	// pitch, err := tiledb.NewAttribute(ctx, "pitch", tiledb.TILEDB_FLOAT32)
-	// if err != nil {
-	// 	return errors.Join(ErrCreateAttitudeTdb, err)
-	// }
-	// defer pitch.Free()
-
-	// roll, err := tiledb.NewAttribute(ctx, "roll", tiledb.TILEDB_FLOAT32)
-	// if err != nil {
-	// 	return errors.Join(ErrCreateAttitudeTdb, err)
-	// }
-	// defer roll.Free()
-
-	// heave, err := tiledb.NewAttribute(ctx, "heave", tiledb.TILEDB_FLOAT32)
-	// if err != nil {
-	// 	return errors.Join(ErrCreateAttitudeTdb, err)
-	// }
-	// defer heave.Free()
-
-	// heading, err := tiledb.NewAttribute(ctx, "heading", tiledb.TILEDB_FLOAT32)
-	// if err != nil {
-	// 	return errors.Join(ErrCreateAttitudeTdb, err)
-	// }
-	// defer heading.Free()
-
-	// // compression filter pipeline
-	// attr_filts, err := tiledb.NewFilterList(ctx)
-	// if err != nil {
-	// 	return errors.Join(ErrCreateAttitudeTdb, err)
-	// }
-	// defer attr_filts.Free()
-
-	// err = attr_filts.AddFilter(zstd)
-	// if err != nil {
-	// 	return errors.Join(ErrCreateAttitudeTdb, err)
-	// }
-
-	// // attach filter pipeline to attrs
-	// err = AttachFilters(attr_filts, ts, pitch, roll, heave, heading)
-	// if err != nil {
-	// 	return errors.Join(ErrCreateAttitudeTdb, err)
-	// }
-
-	// // attach attrs to the schema
-	// err = schema.AddAttributes(ts, pitch, roll, heave, heading)
-	// if err != nil {
-	// 	return errors.Join(ErrCreateAttitudeTdb, err)
-	// }
 
 	// finally, create the empty array on disk, object store, etc
 	array, err := tiledb.NewArray(ctx, file_uri)
@@ -308,6 +246,7 @@ func (a *Attitude) attitude_tiledb_array(file_uri string, ctx *tiledb.Context, n
 	return nil
 }
 
+// schemaAttrs establishes the tiledb attributes for the Attitude struct.
 func (a *Attitude) schemaAttrs(schema *tiledb.ArraySchema, ctx *tiledb.Context) error {
 	var (
 		field_tdb_defs map[string]stgpsr.Definition
