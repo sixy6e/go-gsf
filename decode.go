@@ -262,7 +262,7 @@ var SubRecordNames = map[SubRecordID]string{
 	EM3002:          "EM3002",
 	EM3000D:         "EM3000D",
 	EM3002D:         "EM3002D",
-	EM121a_SIS:      "EM121a_SIS",
+	EM121A_SIS:      "EM121A_SIS",
 	EM710:           "EM710",
 	EM302:           "EM302",
 	EM122:           "EM122",
