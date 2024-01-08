@@ -11,7 +11,7 @@ import (
 	// "fmt"
 
 	tiledb "github.com/TileDB-Inc/TileDB-Go"
-	"github.com/yuin/stagparser"
+	stgpsr "github.com/yuin/stagparser"
 )
 
 var ErrCreateSvpTdb = errors.New("Error Creating SVP TileDB Array")
@@ -230,8 +230,13 @@ func (g *GsfFile) SoundVelocityProfileRecords(fi *FileInfo) (svp SoundVelocityPr
 }
 
 // svp_tiledb_array establishes the schema and array on disk/object store.
-func svp_tiledb_array(file_uri string, ctx *tiledb.Context, nrows uint64) error {
-	// an arbitrary choice; maybe at a future date we evaluate a good number
+func (s *SoundVelocityProfile) svp_tiledb_array(
+	file_uri string,
+	ctx *tiledb.Context,
+	nrows uint64,
+) error {
+	// an arbitrary choice; maybe at a future date we evaluate a significant
+	// number of gsf files.
 	// the samples provided so far indicate 1 or 2 rows (points of acquisition)
 	// so making the tilesize the same as the number of rows will be fine until
 	// we start getting hundreds of rows
@@ -317,82 +322,84 @@ func svp_tiledb_array(file_uri string, ctx *tiledb.Context, nrows uint64) error 
 	// observation_timestamp, applied_timestamp, longitude, latitude, depth, sound_velocity
 	// just using zstd for compression. timestamps could benefit from positive delta,
 	// but additional work is required for evaluation
-	zstd, err := ZstdFilter(ctx, level)
-	if err != nil {
-		return errors.Join(ErrCreateSvpTdb, err)
-	}
-	defer zstd.Free()
+	// zstd, err := ZstdFilter(ctx, level)
+	// if err != nil {
+	// 	return errors.Join(ErrCreateSvpTdb, err)
+	// }
+	// defer zstd.Free()
 
-	obs_ts, err := tiledb.NewAttribute(ctx, "observation_timestamp", tiledb.TILEDB_DATETIME_NS)
-	if err != nil {
-		return errors.Join(ErrCreateSvpTdb, err)
-	}
-	defer obs_ts.Free()
+	// obs_ts, err := tiledb.NewAttribute(ctx, "observation_timestamp", tiledb.TILEDB_DATETIME_NS)
+	// if err != nil {
+	// 	return errors.Join(ErrCreateSvpTdb, err)
+	// }
+	// defer obs_ts.Free()
 
-	app_ts, err := tiledb.NewAttribute(ctx, "applied_timestamp", tiledb.TILEDB_DATETIME_NS)
-	if err != nil {
-		return errors.Join(ErrCreateSvpTdb, err)
-	}
-	defer app_ts.Free()
+	// app_ts, err := tiledb.NewAttribute(ctx, "applied_timestamp", tiledb.TILEDB_DATETIME_NS)
+	// if err != nil {
+	// 	return errors.Join(ErrCreateSvpTdb, err)
+	// }
+	// defer app_ts.Free()
 
-	lon, err := tiledb.NewAttribute(ctx, "longitude", tiledb.TILEDB_FLOAT64)
-	if err != nil {
-		return errors.Join(ErrCreateSvpTdb, err)
-	}
-	defer lon.Free()
+	// lon, err := tiledb.NewAttribute(ctx, "longitude", tiledb.TILEDB_FLOAT64)
+	// if err != nil {
+	// 	return errors.Join(ErrCreateSvpTdb, err)
+	// }
+	// defer lon.Free()
 
-	lat, err := tiledb.NewAttribute(ctx, "latitude", tiledb.TILEDB_FLOAT64)
-	if err != nil {
-		return errors.Join(ErrCreateSvpTdb, err)
-	}
-	defer lat.Free()
+	// lat, err := tiledb.NewAttribute(ctx, "latitude", tiledb.TILEDB_FLOAT64)
+	// if err != nil {
+	// 	return errors.Join(ErrCreateSvpTdb, err)
+	// }
+	// defer lat.Free()
 
-	depth, err := tiledb.NewAttribute(ctx, "depth", tiledb.TILEDB_FLOAT32)
-	if err != nil {
-		return errors.Join(ErrCreateSvpTdb, err)
-	}
-	defer depth.Free()
+	// depth, err := tiledb.NewAttribute(ctx, "depth", tiledb.TILEDB_FLOAT32)
+	// if err != nil {
+	// 	return errors.Join(ErrCreateSvpTdb, err)
+	// }
+	// defer depth.Free()
 
-	velocity, err := tiledb.NewAttribute(ctx, "sound_velocity", tiledb.TILEDB_FLOAT32)
-	if err != nil {
-		return errors.Join(ErrCreateSvpTdb, err)
-	}
-	defer velocity.Free()
+	// velocity, err := tiledb.NewAttribute(ctx, "sound_velocity", tiledb.TILEDB_FLOAT32)
+	// if err != nil {
+	// 	return errors.Join(ErrCreateSvpTdb, err)
+	// }
+	// defer velocity.Free()
 
-	// define depth and velocity as variable length arrays
-	depth.SetCellValNum(tiledb.TILEDB_VAR_NUM)
-	if err != nil {
-		return errors.Join(ErrCreateSvpTdb, err)
-	}
+	// // define depth and velocity as variable length arrays
+	// depth.SetCellValNum(tiledb.TILEDB_VAR_NUM)
+	// if err != nil {
+	// 	return errors.Join(ErrCreateSvpTdb, err)
+	// }
 
-	velocity.SetCellValNum(tiledb.TILEDB_VAR_NUM)
-	if err != nil {
-		return errors.Join(ErrCreateSvpTdb, err)
-	}
+	// velocity.SetCellValNum(tiledb.TILEDB_VAR_NUM)
+	// if err != nil {
+	// 	return errors.Join(ErrCreateSvpTdb, err)
+	// }
 
-	// compression filter pipeline
-	attr_filts, err := tiledb.NewFilterList(ctx)
-	if err != nil {
-		return errors.Join(ErrCreateSvpTdb, err)
-	}
-	defer attr_filts.Free()
+	// // compression filter pipeline
+	// attr_filts, err := tiledb.NewFilterList(ctx)
+	// if err != nil {
+	// 	return errors.Join(ErrCreateSvpTdb, err)
+	// }
+	// defer attr_filts.Free()
 
-	err = attr_filts.AddFilter(zstd)
-	if err != nil {
-		return errors.Join(ErrCreateSvpTdb, err)
-	}
+	// err = attr_filts.AddFilter(zstd)
+	// if err != nil {
+	// 	return errors.Join(ErrCreateSvpTdb, err)
+	// }
 
-	// attach filter pipeline to attrs
-	err = AttachFilters(attr_filts, obs_ts, app_ts, lon, lat, depth, velocity)
-	if err != nil {
-		return errors.Join(ErrCreateSvpTdb, err)
-	}
+	// // attach filter pipeline to attrs
+	// err = AttachFilters(attr_filts, obs_ts, app_ts, lon, lat, depth, velocity)
+	// if err != nil {
+	// 	return errors.Join(ErrCreateSvpTdb, err)
+	// }
 
-	// attach attrs to the schema
-	err = schema.AddAttributes(obs_ts, app_ts, lon, lat, depth, velocity)
-	if err != nil {
-		return errors.Join(ErrCreateSvpTdb, err)
-	}
+	// // attach attrs to the schema
+	// err = schema.AddAttributes(obs_ts, app_ts, lon, lat, depth, velocity)
+	// if err != nil {
+	// 	return errors.Join(ErrCreateSvpTdb, err)
+	// }
+
+	s.schemaAttrs(schema, ctx)
 
 	// finally, create the empty array on disk, object store, etc
 	array, err := tiledb.NewArray(ctx, file_uri)
@@ -409,109 +416,131 @@ func svp_tiledb_array(file_uri string, ctx *tiledb.Context, nrows uint64) error 
 	return nil
 }
 
-func (s *SoundVelocityProfile) SchemaAttrs(schema *tiledb.ArraySchema, ctx *tiledb.Context) error {
+func (s *SoundVelocityProfile) schemaAttrs(schema *tiledb.ArraySchema, ctx *tiledb.Context) error {
 	var (
-		tdb_dtype tiledb.Datatype
+		// tdb_dtype      tiledb.Datatype
+		field_tdb_defs map[string]stgpsr.Definition
+		def            stgpsr.Definition
+		status         bool
+		// field_filt_defs map[string]stagparser.Definition
 	)
-	values := reflect.ValueOf(s)
+	values := reflect.ValueOf(s).Elem()
 	types := values.Type()
-	filt_defs := stagparser.ParseStruct(s, "filters")
-	tdb_defs := stagparser.ParseStruct(s, "tiledb")
+	filt_defs, _ := stgpsr.ParseStruct(s, "filters")
+	tdb_defs, _ := stgpsr.ParseStruct(s, "tiledb")
 
 	for i := 0; i < values.NumField(); i++ {
 		name := types.Field(i).Name
-		field_tdb_defs := tdb_defs[name]
+		// field_tdb_defs := tdb_defs[name]
 		field_filt_defs := filt_defs[name]
 
-		ftype, status := field_tdb_defs.Attribute("ftype")
+		field_tdb_defs = make(map[string]stgpsr.Definition)
+		for _, v := range tdb_defs[name] {
+			field_tdb_defs[v.Name()] = v
+		}
+
+		// field_filt_defs = make(map[string]stagparser.Definition)
+		// for _, v := range filt_defs[name] {
+		// 	field_filt_defs[v.Name()] = v
+		// }
+
+		// pull the field type and ignore dimension fields
+		def, status = field_tdb_defs["ftype"]
 		if status == false {
 			return errors.Join(ErrCreateSvpTdb, errors.New("ftype tag not found"))
 		}
+		ftype, _ := def.Attribute("ftype")
 		if ftype == "dim" {
 			// ignore dimensions
 			continue
 		}
 
-		dtype, status := field_tdb_defs.Attribute("dtype")
-		if status == false {
-			return errors.Join(ErrCreateSvpTdb, errors.New("dtype tag not found"))
-		}
-
-		switch dtype {
-		case "float32":
-			tdb_dtype = tiledb.TILEDB_FLOAT32
-		case "float64":
-			tdb_dtype = tiledb.TILEDB_FLOAT64
-		case "datetime_ns":
-			tdb_dtype = tiledb.TILEDB_DATETIME_NS
-		}
-
-		attr_filts, err := tiledb.NewFilterList(ctx)
-		if err != nil {
-			return errors.Join(ErrCreateSvpTdb, err)
-		}
-		defer attr_filts.Free()
-
-		// filter pipeline
-		for _, filter := range field_filt_defs {
-			switch filter {
-			case "zstd":
-				level, status := filter.Attribute("level")
-				if status == false {
-					return errors.Join(ErrCreateSvpTdb, errors.New("zstd level not defined"))
-				}
-				filt, err := ZstdFilter(ctx, level)
-				if err != nil {
-					return errors.Join(ErrCreateSvpTdb, err)
-				}
-				defer filt.Free()
-				err = attr_filts.AddFilter(filt)
-				if err != nil {
-					return errors.Join(ErrCreateSvpTdb, err)
-				}
-			case "gzip":
-				level, status := filter.Attribute("level")
-				if status == false {
-					return errors.Join(ErrCreateSvpTdb, errors.New("gzip level not defined"))
-				}
-				filt, err := ZstdFilter(ctx, level)
-				if err != nil {
-					return errors.Join(ErrCreateSvpTdb, err)
-				}
-				defer filt.Free()
-				err = attr_filts.AddFilter(filt)
-				if err != nil {
-					return errors.Join(ErrCreateSvpTdb, err)
-				}
-			}
-		}
-		// create attr
-		attr, err := tiledb.NewAttribute(ctx, name, tdb_dtype)
-		if err != nil {
-			return errors.Join(ErrCreateSvpTdb, err)
-		}
-		defer attr.Free()
-
-		// variable length attrs
-		_, status = field_tdb_defs.Attribute("var")
-		if status == true {
-			attr.SetCellValNum(tiledb.TILEDB_VAR_NUM)
-			if err != nil {
-				return errors.Join(ErrCreateSvpTdb, err)
-			}
-		}
-
-		// attach filter pipeline to attr
-		err = AttachFilters(attr_filts, attr)
+		err := CreateAttr(name, field_filt_defs, field_tdb_defs, schema, ctx)
 		if err != nil {
 			return errors.Join(ErrCreateSvpTdb, err)
 		}
 
-		// attach attr to schema
-		err = schema.AddAttributes(attr)
-		if err != nil {
-			return errors.Join(ErrCreateSvpTdb, err)
-		}
+		// def, status = field_tdb_defs["dtype"]
+		// if status == false {
+		// 	return errors.Join(ErrCreateSvpTdb, errors.New("dtype tag not found"))
+		// }
+		// dtype, _ := def.Attribute("dtype")
+
+		// switch dtype {
+		// case "float32":
+		// 	tdb_dtype = tiledb.TILEDB_FLOAT32
+		// case "float64":
+		// 	tdb_dtype = tiledb.TILEDB_FLOAT64
+		// case "datetime_ns":
+		// 	tdb_dtype = tiledb.TILEDB_DATETIME_NS
+		// }
+
+		// attr_filts, err := tiledb.NewFilterList(ctx)
+		// if err != nil {
+		// 	return errors.Join(ErrCreateSvpTdb, err)
+		// }
+		// defer attr_filts.Free()
+
+		// // filter pipeline
+		// for _, filter := range field_filt_defs {
+		// 	switch filter.Name() {
+		// 	case "zstd":
+		// 		level, status := filter.Attribute("level")
+		// 		if status == false {
+		// 			return errors.Join(ErrCreateSvpTdb, errors.New("zstd level not defined"))
+		// 		}
+		// 		filt, err := ZstdFilter(ctx, int32(level.(int64)))
+		// 		if err != nil {
+		// 			return errors.Join(ErrCreateSvpTdb, err)
+		// 		}
+		// 		defer filt.Free()
+		// 		err = attr_filts.AddFilter(filt)
+		// 		if err != nil {
+		// 			return errors.Join(ErrCreateSvpTdb, err)
+		// 		}
+		// 	case "gzip":
+		// 		level, status := filter.Attribute("level")
+		// 		if status == false {
+		// 			return errors.Join(ErrCreateSvpTdb, errors.New("gzip level not defined"))
+		// 		}
+		// 		filt, err := ZstdFilter(ctx, int32(level.(int64)))
+		// 		if err != nil {
+		// 			return errors.Join(ErrCreateSvpTdb, err)
+		// 		}
+		// 		defer filt.Free()
+		// 		err = attr_filts.AddFilter(filt)
+		// 		if err != nil {
+		// 			return errors.Join(ErrCreateSvpTdb, err)
+		// 		}
+		// 	}
+		// }
+		// // create attr
+		// attr, err := tiledb.NewAttribute(ctx, name, tdb_dtype)
+		// if err != nil {
+		// 	return errors.Join(ErrCreateSvpTdb, err)
+		// }
+		// defer attr.Free()
+
+		// // variable length attrs
+		// _, status = field_tdb_defs["var"]
+		// if status == true {
+		// 	attr.SetCellValNum(tiledb.TILEDB_VAR_NUM)
+		// 	if err != nil {
+		// 		return errors.Join(ErrCreateSvpTdb, err)
+		// 	}
+		// }
+
+		// // attach filter pipeline to attr
+		// err = AttachFilters(attr_filts, attr)
+		// if err != nil {
+		// 	return errors.Join(ErrCreateSvpTdb, err)
+		// }
+
+		// // attach attr to schema
+		// err = schema.AddAttributes(attr)
+		// if err != nil {
+		// 	return errors.Join(ErrCreateSvpTdb, err)
+		// }
 	}
 
 	return nil
@@ -559,7 +588,7 @@ func (s *SoundVelocityProfile) ToTileDB(file_uri string, config_uri string) erro
 	defer ctx.Free()
 
 	nrows := uint64(len(s.Observation_timestamp))
-	err = svp_tiledb_array(file_uri, ctx, nrows)
+	err = s.svp_tiledb_array(file_uri, ctx, nrows)
 	if err != nil {
 		return err
 	}
@@ -592,22 +621,22 @@ func (s *SoundVelocityProfile) ToTileDB(file_uri string, config_uri string) erro
 		app_time[i] = s.Applied_timestamp[i].UnixNano()
 	}
 
-	_, err = query.SetDataBuffer("observation_timestamp", obs_time)
+	_, err = query.SetDataBuffer("Observation_timestamp", obs_time)
 	if err != nil {
 		return errors.Join(ErrWriteSvpTdb, err)
 	}
 
-	_, err = query.SetDataBuffer("applied_timestamp", app_time)
+	_, err = query.SetDataBuffer("Applied_timestamp", app_time)
 	if err != nil {
 		return errors.Join(ErrWriteSvpTdb, err)
 	}
 
-	_, err = query.SetDataBuffer("longitude", s.Longitude)
+	_, err = query.SetDataBuffer("Longitude", s.Longitude)
 	if err != nil {
 		return errors.Join(ErrWriteSvpTdb, err)
 	}
 
-	_, err = query.SetDataBuffer("latitude", s.Latitude)
+	_, err = query.SetDataBuffer("Latitude", s.Latitude)
 	if err != nil {
 		return errors.Join(ErrWriteSvpTdb, err)
 	}
@@ -615,6 +644,7 @@ func (s *SoundVelocityProfile) ToTileDB(file_uri string, config_uri string) erro
 	// variable length attrs
 	// need to define a 1D offset array for variable length attributes
 	// eg data = []int32{1, 1, 2, 3, 3, 3, 4}; offset = []uint64{0, 8, 12, 24}
+	// alternate representation is [][]int32{{1, 1}, {2}, {3, 3, 3}, {4}}
 	arr_offset = make([]uint64, nrows)
 	offset = uint64(0)
 	bytes_val = uint64(4) // may look confusing with uint64, so 4*bytes for float32
@@ -623,22 +653,22 @@ func (s *SoundVelocityProfile) ToTileDB(file_uri string, config_uri string) erro
 		arr_offset[i] = offset * bytes_val
 		offset += length * bytes_val
 	}
-	_, err = query.SetOffsetsBuffer("depth", arr_offset)
+	_, err = query.SetOffsetsBuffer("Depth", arr_offset)
 	if err != nil {
 		return errors.Join(ErrWriteSvpTdb, err)
 	}
 
-	_, err = query.SetOffsetsBuffer("sound_velocity", arr_offset)
+	_, err = query.SetOffsetsBuffer("Sound_velocity", arr_offset)
 	if err != nil {
 		return errors.Join(ErrWriteSvpTdb, err)
 	}
 
-	_, err = query.SetDataBuffer("depth", s.depth)
+	_, err = query.SetDataBuffer("Depth", s.depth)
 	if err != nil {
 		return errors.Join(ErrWriteSvpTdb, err)
 	}
 
-	_, err = query.SetDataBuffer("sound_velocity", s.sound_velocity)
+	_, err = query.SetDataBuffer("Sound_velocity", s.sound_velocity)
 	if err != nil {
 		return errors.Join(ErrWriteSvpTdb, err)
 	}
