@@ -275,3 +275,26 @@ func DecodeEM4Specific(reader *bytes.Reader) (sensor_data EM4) {
 
 	return sensor_data
 }
+
+func (g *GsfFile) EM4SpecificRecords(fi *FileInfo, start uint64, stop uint64) (sensor_data EM4) {
+
+	// var (
+	//     // nrecs uint64
+	//     rec RecordHdr
+	//     recs []RecordHdr
+	// )
+
+	// nrecs = fi.Metadata.Record_Counts[RecordNames[SWATH_BATHYMETRY_PING]]
+	// recs = fi.Record_Index[RecordNames[SWATH_BATHYMETRY_PING]][start:stop]
+
+	// retrieve and process each ping
+	// for i := uint64(0); i < nrecs; i++ {
+	//
+	// }
+
+	// for idx, rec := range recs {
+	//
+	// }
+
+	return sensor_data
+}
