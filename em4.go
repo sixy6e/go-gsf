@@ -68,6 +68,21 @@ type EM4 struct {
 	ProcessorUnitYawStabilization     []float32
 }
 
+type EM4Imagery struct {
+	SamplingFrequency   []float64
+	MeanAbsorption      []float32
+	TransmitPulseLength []float32
+	RangeNorm           []uint16
+	StartTvgRamp        []uint16
+	StopTvgRamp         []uint16
+	BackscatterN        []float32
+	BackscatterO        []float32
+	TransmitBeamWidth   []float32
+	TvgCrossOver        []float32
+	Offset              []int16
+	Scale               []int16
+}
+
 func DecodeEM4Specific(reader *bytes.Reader) (sensor_data EM4) {
 
 	var (
@@ -297,4 +312,46 @@ func (g *GsfFile) EM4SpecificRecords(fi *FileInfo, start uint64, stop uint64) (s
 	// }
 
 	return sensor_data
+}
+
+func DecodeEM4Imagery(reader *bytes.Reader) (em4_md EM4Imagery) {
+
+	var (
+		base struct {
+			SamplingFrequency1  int32
+			SamplingFrequency2  int32
+			MeanAbsorption      uint16
+			TransmitPulseLength uint16
+			RangeNorm           uint16
+			StartTvgRamp        uint16
+			StopTvgRamp         uint16
+			BackscatterN        int16
+			BackscatterO        int16
+			TransmitBeamWidth   uint16
+			TvgCrossOver        uint16
+			Offset              int16
+			Scale               int16
+			Spare               [5]uint32 // 20 bytes spare
+		}
+	)
+
+	_ = binary.Read(reader, binary.BigEndian, &base)
+
+	em4_md.SamplingFrequency = []float64{
+		float64(base.SamplingFrequency1) +
+			float64(base.SamplingFrequency2)/
+				float64(4_000_000_000)}
+	em4_md.MeanAbsorption = []float32{float32(base.MeanAbsorption)}
+	em4_md.TransmitPulseLength = []float32{float32(base.TransmitPulseLength)}
+	em4_md.RangeNorm = []uint16{base.RangeNorm}
+	em4_md.StartTvgRamp = []uint16{base.StartTvgRamp}
+	em4_md.StopTvgRamp = []uint16{base.StopTvgRamp}
+	em4_md.BackscatterN = []float32{float32(base.BackscatterN) / float32(10.0)}
+	em4_md.BackscatterO = []float32{float32(base.BackscatterO) / float32(10.0)}
+	em4_md.TransmitBeamWidth = []float32{float32(base.TransmitBeamWidth) / float32(10.0)}
+	em4_md.TvgCrossOver = []float32{float32(base.TvgCrossOver) / float32(10.0)}
+	em4_md.Offset = []int16{base.Offset}
+	em4_md.Scale = []int16{base.Scale}
+
+	return em4_md
 }
