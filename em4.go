@@ -79,9 +79,13 @@ type EM4Imagery struct {
 	BackscatterO        []float32
 	TransmitBeamWidth   []float32
 	TvgCrossOver        []float32
-	Offset              []int16
-	Scale               []int16
+	offset              []int16
+	scale               []int16
 }
+
+// func (e EM4Imagery) Serialise() bool {
+// 	return true
+// }
 
 func DecodeEM4Specific(reader *bytes.Reader) (sensor_data EM4) {
 
