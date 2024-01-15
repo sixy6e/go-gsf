@@ -44,7 +44,7 @@ type LonLat struct {
 // BeamsLonLat calculates arrays of longitude and latitude of len(along_track).
 // Most likely the func will change; potentially a method for ping data, header or GeoCoefficients.
 // For formulae details: https://gis.stackexchange.com/questions/75528/understanding-terms-in-length-of-degree-formula
-func BeamsLonLat(lon, lat float64, heading float32, along_track, across_track []float32, coef GeoCoefficients) LonLat {
+func (ba *BeamArray) BeamsLonLat(lon, lat float64, heading float32, coef *GeoCoefficients) LonLat {
 	var (
 		acr_trck float64
 		aln_trck float64
@@ -58,28 +58,26 @@ func BeamsLonLat(lon, lat float64, heading float32, along_track, across_track []
 	head_rad := deg2rad * float64(heading)
 
 	// latitude metres scale factor
-	lat_sf :=
-		coef.A -
-			coef.B*math.Cos(2.0*lat_rad) +
-			coef.C*math.Cos(4.0*lat_rad) -
-			coef.D*math.Cos(6.0*lat_rad)
+	lat_sf := coef.A -
+		coef.B*math.Cos(2.0*lat_rad) +
+		coef.C*math.Cos(4.0*lat_rad) -
+		coef.D*math.Cos(6.0*lat_rad)
 
 	// longitude metres scale factor
-	lon_sf :=
-		coef.E*math.Cos(lat_rad) -
-			coef.F*math.Cos(3.0*lat_rad) +
-			coef.G*math.Cos(5.0*lat_rad)
+	lon_sf := coef.E*math.Cos(lat_rad) -
+		coef.F*math.Cos(3.0*lat_rad) +
+		coef.G*math.Cos(5.0*lat_rad)
 
 	delta_x := math.Sin(head_rad)
 	delta_y := math.Cos(head_rad)
 
-	n := len(along_track)
-	lon2 := make([]float64, len(along_track))
-	lat2 := make([]float64, len(along_track))
+	n := len(ba.AlongTrack)
+	lon2 := make([]float64, n)
+	lat2 := make([]float64, n)
 
 	for i := 0; i < n; i++ {
-		acr_trck = float64(across_track[i])
-		aln_trck = float64(along_track[i])
+		acr_trck = float64(ba.AcrossTrack[i])
+		aln_trck = float64(ba.AlongTrack[i])
 		lon2[i] = lon + delta_y/lon_sf*acr_trck + delta_x/lon_sf*aln_trck
 		lat2[i] = lat - delta_x/lat_sf*acr_trck + delta_y/lat_sf*aln_trck
 	}
