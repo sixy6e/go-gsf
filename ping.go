@@ -432,7 +432,7 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 				sr_reader,
 				pinfo.Number_Beams,
 				pinfo.scale_factors[sub_rec.Id],
-				bytes_per_beam,
+				FIELD_SIZE_TWO,
 				true,
 			)
 			ping_data.Beam_array.BeamAngle = beam_data
@@ -472,7 +472,7 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 				sr_reader,
 				pinfo.Number_Beams,
 				pinfo.scale_factors[sub_rec.Id],
-				bytes_per_beam,
+				FIELD_SIZE_ONE,
 				false,
 			)
 			ping_data.Beam_array.QualityFactor = beam_data
@@ -482,7 +482,7 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 				sr_reader,
 				pinfo.Number_Beams,
 				pinfo.scale_factors[sub_rec.Id],
-				bytes_per_beam,
+				FIELD_SIZE_ONE,
 				true,
 			)
 			ping_data.Beam_array.RecieveHeave = beam_data
@@ -492,7 +492,7 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 				sr_reader,
 				pinfo.Number_Beams,
 				pinfo.scale_factors[sub_rec.Id],
-				bytes_per_beam,
+				FIELD_SIZE_TWO,
 				false,
 			)
 			ping_data.Beam_array.DepthError = beam_data
@@ -502,7 +502,7 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 				sr_reader,
 				pinfo.Number_Beams,
 				pinfo.scale_factors[sub_rec.Id],
-				bytes_per_beam,
+				FIELD_SIZE_TWO,
 				false,
 			)
 			ping_data.Beam_array.AcrossTrackError = beam_data
@@ -512,7 +512,7 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 				sr_reader,
 				pinfo.Number_Beams,
 				pinfo.scale_factors[sub_rec.Id],
-				bytes_per_beam,
+				FIELD_SIZE_TWO,
 				false,
 			)
 			ping_data.Beam_array.AlongTrackError = beam_data
@@ -542,7 +542,7 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 				sr_reader,
 				pinfo.Number_Beams,
 				pinfo.scale_factors[sub_rec.Id],
-				bytes_per_beam,
+				FIELD_SIZE_ONE,
 				true,
 			)
 			ping_data.Beam_array.SignalToNoise = beam_data
@@ -552,7 +552,7 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 				sr_reader,
 				pinfo.Number_Beams,
 				pinfo.scale_factors[sub_rec.Id],
-				bytes_per_beam,
+				FIELD_SIZE_TWO,
 				false,
 			)
 			ping_data.Beam_array.BeamAngleForward = beam_data
@@ -562,7 +562,7 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 				sr_reader,
 				pinfo.Number_Beams,
 				pinfo.scale_factors[sub_rec.Id],
-				bytes_per_beam,
+				FIELD_SIZE_TWO,
 				false,
 			)
 			ping_data.Beam_array.VerticalError = beam_data
@@ -572,7 +572,7 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 				sr_reader,
 				pinfo.Number_Beams,
 				pinfo.scale_factors[sub_rec.Id],
-				bytes_per_beam,
+				FIELD_SIZE_TWO,
 				false,
 			)
 			ping_data.Beam_array.HorizontalError = beam_data
@@ -583,7 +583,6 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 			ping_data.Sensory_imagery_metadata = img_md
 			// idx += nbytes
 		case SECTOR_NUMBER:
-			// TODO; has specific decoder
 			// should be fine to just use DecodeSubRecArray and specify
 			// 1-byte per beam
 			beam_data = sub_rec.DecodeSubRecArray(
@@ -596,25 +595,45 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 			ping_data.Beam_array.SectorNumber = beam_data
 			// idx += nbytes
 		case DETECTION_INFO:
-			// TODO; has specific decoder
+			// should be fine to just use DecodeSubRecArray and specify
+			// 1-byte per beam
+			beam_data = sub_rec.DecodeSubRecArray(
+				sr_reader,
+				pinfo.Number_Beams,
+				pinfo.scale_factors[sub_rec.Id],
+				FIELD_SIZE_ONE,
+				false,
+			)
+			ping_data.Beam_array.DetectionInfo = beam_data
+			// idx += nbytes
 		case INCIDENT_BEAM_ADJ:
 			beam_data = sub_rec.DecodeSubRecArray(
 				sr_reader,
 				pinfo.Number_Beams,
 				pinfo.scale_factors[sub_rec.Id],
-				bytes_per_beam,
+				FIELD_SIZE_ONE,
 				true,
 			)
 			ping_data.Beam_array.IncidentBeamAdj = beam_data
 			// idx += nbytes
 		case SYSTEM_CLEANING:
-			// TODO; has specific decoder
+			// should be fine to just use DecodeSubRecArray and specify
+			// 1-byte per beam
+			beam_data = sub_rec.DecodeSubRecArray(
+				sr_reader,
+				pinfo.Number_Beams,
+				pinfo.scale_factors[sub_rec.Id],
+				FIELD_SIZE_ONE,
+				false,
+			)
+			ping_data.Beam_array.SystemCleaning = beam_data
+			// idx += nbytes
 		case DOPPLER_CORRECTION:
 			beam_data = sub_rec.DecodeSubRecArray(
 				sr_reader,
 				pinfo.Number_Beams,
 				pinfo.scale_factors[sub_rec.Id],
-				bytes_per_beam,
+				FIELD_SIZE_ONE,
 				true,
 			)
 			ping_data.Beam_array.DopplerCorrection = beam_data
@@ -624,7 +643,7 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 				sr_reader,
 				pinfo.Number_Beams,
 				pinfo.scale_factors[sub_rec.Id],
-				bytes_per_beam,
+				FIELD_SIZE_TWO,
 				false,
 			)
 			ping_data.Beam_array.SonarVertUncertainty = beam_data
@@ -634,7 +653,7 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 				sr_reader,
 				pinfo.Number_Beams,
 				pinfo.scale_factors[sub_rec.Id],
-				bytes_per_beam,
+				FIELD_SIZE_TWO,
 				false,
 			)
 			ping_data.Beam_array.SonarHorzUncertainty = beam_data
