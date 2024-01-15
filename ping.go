@@ -27,6 +27,26 @@ type PingHeader struct {
 	Ping_flags         int16
 }
 
+type PingHeaders struct {
+	Timestamp          []time.Time
+	Longitude          []float64
+	Latitude           []float64
+	Number_beams       []uint16
+	Centre_beam        []uint16
+	Tide_corrector     []float32
+	Depth_corrector    []float32
+	Heading            []float32
+	Pitch              []float32
+	Roll               []float32
+	Heave              []float32
+	Course             []float32
+	Speed              []float32
+	Height             []float32
+	Separation         []float32
+	GPS_tide_corrector []float32
+	Ping_flags         []int16
+}
+
 type ScaleFactor struct {
 	Id               SubRecordID
 	Scale            float32 // TODO float32?
@@ -52,7 +72,7 @@ type BeamArray struct {
 	AlongTrackError      []float32 // obsolete
 	NominalDepth         []float32
 	QualityFlags         []float32
-	BeamFlags            []float32
+	BeamFlags            []uint8
 	SignalToNoise        []float32
 	BeamAngleForward     []float32
 	VerticalError        []float32
@@ -87,6 +107,16 @@ type PingInfo struct {
 	Sub_Records   []SubRecordID
 	Scale_Factors bool
 	scale_factors map[SubRecordID]ScaleFactor
+}
+
+type PingData struct {
+	Ping_headers             PingHeaders
+	Beam_array               BeamArray
+	Brb_intensity            BrbIntensity
+	Sensor_metadata          SensorMetadata
+	Sensory_imagery_metadata SensorImageryMetadata
+	Lon_lat                  LonLat
+	n_pings                  uint64
 }
 
 // PingGroups combines pings together based on their presence or absence of
@@ -299,352 +329,415 @@ func ping_info(reader *bytes.Reader, rec RecordHdr) PingInfo {
 // Another instance was a duplicate ping. Same timestamp, location, depth, but zero values
 // for supporting attributes/sub-records/fields (heading, course, +others). Again, this
 // appeared to have never been encountered before (or never looked).
-func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo) PingHeader {
+func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor_id SubRecordID) PingHeader {
 	var (
-		idx int64 = 0
-		// sf map[SubRecordID]ScaleFactor
-		nbytes int64
-		// subrecord_hdr int32
+		idx       int64 = 0
+		nbytes    int64
 		beam_data []float32
-		beams     BeamArray
+		ping_data PingData
+		img_md    SensorImageryMetadata
+		intensity BrbIntensity
+		sr_buff   []byte
+		sr_reader *bytes.Reader
+		// sf map[SubRecordID]ScaleFactor
+		// sen_md    SensorMetadata
+		// beams     BeamArray
+		// subrecord_hdr int32
 	)
 
-	// buffer := make([]byte, rec.Datasize)
-	// _ = binary.Read(stream, binary.BigEndian, &buffer)
 	reader := bytes.NewReader(buffer)
 
 	hdr := decode_ping_hdr(reader)
 	idx += 56 // 56 bytes read for ping header
 	offset := rec.Byte_index + idx
 
-	// first subrecord
-	//reader := bytes.NewReader(buffer[56:])
-	_, _ = reader.Seek(idx, 0)
-	// _ = binary.Read(reader, binary.BigEndian, &subrecord_hdr)
-	// subrecord_id := (int(subrecord_hdr) & 0xFF000000) >> 24
-	// subrecord_size := int(subrecord_hdr) & 0x00FFFFFF
-	sub_rec := SubRecHdr(reader, offset)
-	idx += 4
+	// TODO; move loop to here
+	for (int64(rec.Datasize) - idx) > 4 {
 
-	// case switching; SCALE_FACTORS == 100
-	// if scale factor else get scale factor
-	if sub_rec.Id == SCALE_FACTORS {
-		// read and structure the scale factors
-		// however, we'll rely on the scale factors from PingInfo.scale_factors
-		_, nbytes = scale_factors_rec(reader)
-		idx += nbytes
-	}
+		// subrecord header
+		// _, _ = reader.Seek(idx, 0) // shouldn't be needed
+		sub_rec := SubRecHdr(reader, offset)
+		idx += 4
 
-	// only relevant for the ping sub-record arrays and not the sensor specific
-	bytes_per_beam := sub_rec.Datasize / uint32(pinfo.Number_Beams)
+		// read the whole subrecord and form a new reader
+		// i think this is easier than passing around how many
+		// bytes are read from each func associated with decoding a subrecord
+		sr_buff = make([]byte, sub_rec.Datasize)
+		_ = binary.Read(reader, binary.BigEndian, &sr_buff)
+		sr_reader = bytes.NewReader(sr_buff)
 
-	// TODO; implement loop that reads through each sub record
-	// decode each sub-record beam array
-	// also need to handle sensor specific records as well
-	switch sub_rec.Id {
+		// offset is used to track the start of the subrecord from the start
+		// of the file as given by Record.Byte_index
+		// Incase we wish to serialise the subrecord info along with the record info
+		offset += int64(sub_rec.Datasize)
+		idx += int64(sub_rec.Datasize)
 
-	// beam array subrecords
-	case DEPTH:
-		beam_data = sub_rec.DecodeSubRecArray(
-			reader,
-			pinfo.Number_Beams,
-			pinfo.scale_factors[sub_rec.Id],
-			bytes_per_beam,
-			false,
-		)
-		beams.Depth = beam_data
-	case ACROSS_TRACK:
-		beam_data = sub_rec.DecodeSubRecArray(
-			reader,
-			pinfo.Number_Beams,
-			pinfo.scale_factors[sub_rec.Id],
-			bytes_per_beam,
-			true,
-		)
-		beams.AcrossTrack = beam_data
-	case ALONG_TRACK:
-		beam_data = sub_rec.DecodeSubRecArray(
-			reader,
-			pinfo.Number_Beams,
-			pinfo.scale_factors[sub_rec.Id],
-			bytes_per_beam,
-			true,
-		)
-		beams.AlongTrack = beam_data
-	case TRAVEL_TIME:
-		beam_data = sub_rec.DecodeSubRecArray(
-			reader,
-			pinfo.Number_Beams,
-			pinfo.scale_factors[sub_rec.Id],
-			bytes_per_beam,
-			false,
-		)
-		beams.TravelTime = beam_data
-	case BEAM_ANGLE:
-		beam_data = sub_rec.DecodeSubRecArray(
-			reader,
-			pinfo.Number_Beams,
-			pinfo.scale_factors[sub_rec.Id],
-			bytes_per_beam,
-			true,
-		)
-		beams.BeamAngle = beam_data
-	case MEAN_CAL_AMPLITUDE:
-		beam_data = sub_rec.DecodeSubRecArray(
-			reader,
-			pinfo.Number_Beams,
-			pinfo.scale_factors[sub_rec.Id],
-			bytes_per_beam,
-			true,
-		)
-		beams.MeanCalAmplitude = beam_data
-	case MEAN_REL_AMPLITUDE:
-		beam_data = sub_rec.DecodeSubRecArray(
-			reader,
-			pinfo.Number_Beams,
-			pinfo.scale_factors[sub_rec.Id],
-			bytes_per_beam,
-			false,
-		)
-		beams.MeanRelAmplitude = beam_data
-	case ECHO_WIDTH:
-		beam_data = sub_rec.DecodeSubRecArray(
-			reader,
-			pinfo.Number_Beams,
-			pinfo.scale_factors[sub_rec.Id],
-			bytes_per_beam,
-			false,
-		)
-		beams.EchoWidth = beam_data
-	case QUALITY_FACTOR:
-		beam_data = sub_rec.DecodeSubRecArray(
-			reader,
-			pinfo.Number_Beams,
-			pinfo.scale_factors[sub_rec.Id],
-			bytes_per_beam,
-			false,
-		)
-		beams.QualityFactor = beam_data
-	case RECEIVE_HEAVE:
-		beam_data = sub_rec.DecodeSubRecArray(
-			reader,
-			pinfo.Number_Beams,
-			pinfo.scale_factors[sub_rec.Id],
-			bytes_per_beam,
-			true,
-		)
-		beams.RecieveHeave = beam_data
-	case DEPTH_ERROR:
-		beam_data = sub_rec.DecodeSubRecArray(
-			reader,
-			pinfo.Number_Beams,
-			pinfo.scale_factors[sub_rec.Id],
-			bytes_per_beam,
-			false,
-		)
-		beams.DepthError = beam_data
-	case ACROSS_TRACK_ERROR:
-		beam_data = sub_rec.DecodeSubRecArray(
-			reader,
-			pinfo.Number_Beams,
-			pinfo.scale_factors[sub_rec.Id],
-			bytes_per_beam,
-			false,
-		)
-		beams.AcrossTrackError = beam_data
-	case ALONG_TRACK_ERROR:
-		beam_data = sub_rec.DecodeSubRecArray(
-			reader,
-			pinfo.Number_Beams,
-			pinfo.scale_factors[sub_rec.Id],
-			bytes_per_beam,
-			false,
-		)
-		beams.AlongTrackError = beam_data
-	case NOMINAL_DEPTH:
-		beam_data = sub_rec.DecodeSubRecArray(
-			reader,
-			pinfo.Number_Beams,
-			pinfo.scale_factors[sub_rec.Id],
-			bytes_per_beam,
-			false,
-		)
-		beams.NominalDepth = beam_data
-	case QUALITY_FLAGS:
-		// obselete
-		// TODO; has specific decoder
-	case BEAM_FLAGS:
-		// TODO; has specific decoder
-	case SIGNAL_TO_NOISE:
-		beam_data = sub_rec.DecodeSubRecArray(
-			reader,
-			pinfo.Number_Beams,
-			pinfo.scale_factors[sub_rec.Id],
-			bytes_per_beam,
-			true,
-		)
-		beams.SignalToNoise = beam_data
-	case BEAM_ANGLE_FORWARD:
-		beam_data = sub_rec.DecodeSubRecArray(
-			reader,
-			pinfo.Number_Beams,
-			pinfo.scale_factors[sub_rec.Id],
-			bytes_per_beam,
-			false,
-		)
-		beams.BeamAngleForward = beam_data
-	case VERTICAL_ERROR:
-		beam_data = sub_rec.DecodeSubRecArray(
-			reader,
-			pinfo.Number_Beams,
-			pinfo.scale_factors[sub_rec.Id],
-			bytes_per_beam,
-			false,
-		)
-		beams.VerticalError = beam_data
-	case HORIZONTAL_ERROR:
-		beam_data = sub_rec.DecodeSubRecArray(
-			reader,
-			pinfo.Number_Beams,
-			pinfo.scale_factors[sub_rec.Id],
-			bytes_per_beam,
-			false,
-		)
-		beams.HorizontalError = beam_data
-	case INTENSITY_SERIES:
-		// TODO; has specific decoder
-	case SECTOR_NUMBER:
-		// TODO; has specific decoder
-	case DETECTION_INFO:
-		// TODO; has specific decoder
-	case INCIDENT_BEAM_ADJ:
-		beam_data = sub_rec.DecodeSubRecArray(
-			reader,
-			pinfo.Number_Beams,
-			pinfo.scale_factors[sub_rec.Id],
-			bytes_per_beam,
-			true,
-		)
-		beams.IncidentBeamAdj = beam_data
-	case SYSTEM_CLEANING:
-		// TODO; has specific decoder
-	case DOPPLER_CORRECTION:
-		beam_data = sub_rec.DecodeSubRecArray(
-			reader,
-			pinfo.Number_Beams,
-			pinfo.scale_factors[sub_rec.Id],
-			bytes_per_beam,
-			true,
-		)
-		beams.DopplerCorrection = beam_data
-	case SONAR_VERT_UNCERTAINTY:
-		beam_data = sub_rec.DecodeSubRecArray(
-			reader,
-			pinfo.Number_Beams,
-			pinfo.scale_factors[sub_rec.Id],
-			bytes_per_beam,
-			false,
-		)
-		beams.SonarVertUncertainty = beam_data
-	case SONAR_HORZ_UNCERTAINTY:
-		beam_data = sub_rec.DecodeSubRecArray(
-			reader,
-			pinfo.Number_Beams,
-			pinfo.scale_factors[sub_rec.Id],
-			bytes_per_beam,
-			false,
-		)
-		beams.SonarHorzUncertainty = beam_data
-	case DETECTION_WINDOW:
-		beam_data = sub_rec.DecodeSubRecArray(
-			reader,
-			pinfo.Number_Beams,
-			pinfo.scale_factors[sub_rec.Id],
-			bytes_per_beam,
-			false,
-		)
-		beams.DetectionWindow = beam_data
-	case MEAN_ABS_COEF:
-		beam_data = sub_rec.DecodeSubRecArray(
-			reader,
-			pinfo.Number_Beams,
-			pinfo.scale_factors[sub_rec.Id],
-			bytes_per_beam,
-			false,
-		)
-		beams.MeanAbsCoef = beam_data
+		// only relevant for the ping sub-record arrays and not the sensor specific
+		bytes_per_beam := sub_rec.Datasize / uint32(pinfo.Number_Beams)
 
-	// sensor specific subrecords
-	case SEABEAM:
-		// DecodeSeabeam
-	case EM12:
-		// DecodeEM12
-	case EM100:
-		// DecodeEM100
-	case EM950:
-		// DecodeEM950
-	case EM121A:
-		// DecodeEM121A
-	case EM121:
-		// DecodeEM121
-	case SASS: // obsolete
-		// DecodeSASS
-	case SEAMAP:
-		// DecodeSeaMap
-	case SEABAT:
-		// DecodeSeaBat
-	case EM1000:
-		// DecodeEM1000
-	case TYPEIII_SEABEAM: // obsolete
-		// DecodeTypeIII
-	case SB_AMP:
-		// DecodeSBAmp
-	case SEABAT_II:
-		// DecodeSeaBatII
-	case SEABAT_8101:
-		// DecodeSeaBat8101
-	case SEABEAM_2112:
-		// DecodeSeaBeam2112
-	case ELAC_MKII:
-		// DecodeElacMkII
-	case CMP_SAAS: // CMP (compressed), should be used in place of SASS
-		// DecodeCmpSass
-	case RESON_8101, RESON_8111, RESON_8124, RESON_8125, RESON_8150, RESON_8160:
-		// DecodeReson8100
-	case EM120, EM300, EM1002, EM2000, EM3000, EM3002, EM3000D, EM3002D, EM121A_SIS:
-		// DecodeEM3
-	case EM710, EM302, EM122, EM2040:
-		// DecodeEM4
-	case GEOSWATH_PLUS:
-		// DecodeGeoSwathPlus
-	case KLEIN_5410_BSS:
-		// DecodeKlein5410Bss
-	case RESON_7125:
-		// DecodeReson7100
-	case EM300_RAW, EM1002_RAW, EM2000_RAW, EM3000_RAW, EM120_RAW, EM3002_RAW, EM3000D_RAW, EM3002D_RAW, EM121A_SIS_RAW:
-		// DecodeEM3Raw
-	case DELTA_T:
-		// DecodeDeltaT
-	case R2SONIC_2022, R2SONIC_2024, R2SONIC_2020:
-		// DecodeR2Sonic
-	case SR_NOT_DEFINED: // the spec makes no mention of ID 154
-	case RESON_TSERIES:
-		// DecodeResonTSeries
-	case KMALL:
-		// DecodeKMALL
+		// decode each sub-record beam array
+		// also need to handle sensor specific records as well
+		switch sub_rec.Id {
 
-		// single beam swath sensor specific subrecords
-	case SWATH_ECHOTRAC, SWATH_BATHY2000, SWATH_PDD:
-		// DecodeSBEchotrac
-	case SWATH_MGD77:
-		// DecodeSBMGD77
-	case SWATH_BDB:
-		// DecodeSBBDB
-	case SWATH_NOSHDB:
-		// DecodeSBNOSHDB
-	case SWATH_NAVISOUND:
-		// DecodeSBNavisound
+		// scale factors
+		case SCALE_FACTORS:
+			// read and structure the scale factors
+			// however, we'll rely on the scale factors from PingInfo.scale_factors
+			_, nbytes = scale_factors_rec(sr_reader)
+			// idx += nbytes
+
+		// beam array subrecords
+		case DEPTH:
+			beam_data = sub_rec.DecodeSubRecArray(
+				sr_reader,
+				pinfo.Number_Beams,
+				pinfo.scale_factors[sub_rec.Id],
+				bytes_per_beam,
+				false,
+			)
+			ping_data.Beam_array.Depth = beam_data
+			// idx += nbytes
+		case ACROSS_TRACK:
+			beam_data = sub_rec.DecodeSubRecArray(
+				sr_reader,
+				pinfo.Number_Beams,
+				pinfo.scale_factors[sub_rec.Id],
+				bytes_per_beam,
+				true,
+			)
+			ping_data.Beam_array.AcrossTrack = beam_data
+			// idx += nbytes
+		case ALONG_TRACK:
+			beam_data = sub_rec.DecodeSubRecArray(
+				sr_reader,
+				pinfo.Number_Beams,
+				pinfo.scale_factors[sub_rec.Id],
+				bytes_per_beam,
+				true,
+			)
+			ping_data.Beam_array.AlongTrack = beam_data
+			// idx += nbytes
+		case TRAVEL_TIME:
+			beam_data = sub_rec.DecodeSubRecArray(
+				sr_reader,
+				pinfo.Number_Beams,
+				pinfo.scale_factors[sub_rec.Id],
+				bytes_per_beam,
+				false,
+			)
+			ping_data.Beam_array.TravelTime = beam_data
+			// idx += nbytes
+		case BEAM_ANGLE:
+			beam_data = sub_rec.DecodeSubRecArray(
+				sr_reader,
+				pinfo.Number_Beams,
+				pinfo.scale_factors[sub_rec.Id],
+				bytes_per_beam,
+				true,
+			)
+			ping_data.Beam_array.BeamAngle = beam_data
+			// idx += nbytes
+		case MEAN_CAL_AMPLITUDE:
+			beam_data = sub_rec.DecodeSubRecArray(
+				sr_reader,
+				pinfo.Number_Beams,
+				pinfo.scale_factors[sub_rec.Id],
+				bytes_per_beam,
+				true,
+			)
+			ping_data.Beam_array.MeanCalAmplitude = beam_data
+			// idx += nbytes
+		case MEAN_REL_AMPLITUDE:
+			beam_data = sub_rec.DecodeSubRecArray(
+				sr_reader,
+				pinfo.Number_Beams,
+				pinfo.scale_factors[sub_rec.Id],
+				bytes_per_beam,
+				false,
+			)
+			ping_data.Beam_array.MeanRelAmplitude = beam_data
+			// idx += nbytes
+		case ECHO_WIDTH:
+			beam_data = sub_rec.DecodeSubRecArray(
+				sr_reader,
+				pinfo.Number_Beams,
+				pinfo.scale_factors[sub_rec.Id],
+				bytes_per_beam,
+				false,
+			)
+			ping_data.Beam_array.EchoWidth = beam_data
+			// idx += nbytes
+		case QUALITY_FACTOR:
+			beam_data = sub_rec.DecodeSubRecArray(
+				sr_reader,
+				pinfo.Number_Beams,
+				pinfo.scale_factors[sub_rec.Id],
+				bytes_per_beam,
+				false,
+			)
+			ping_data.Beam_array.QualityFactor = beam_data
+			// idx += nbytes
+		case RECEIVE_HEAVE:
+			beam_data = sub_rec.DecodeSubRecArray(
+				sr_reader,
+				pinfo.Number_Beams,
+				pinfo.scale_factors[sub_rec.Id],
+				bytes_per_beam,
+				true,
+			)
+			ping_data.Beam_array.RecieveHeave = beam_data
+			// idx += nbytes
+		case DEPTH_ERROR:
+			beam_data = sub_rec.DecodeSubRecArray(
+				sr_reader,
+				pinfo.Number_Beams,
+				pinfo.scale_factors[sub_rec.Id],
+				bytes_per_beam,
+				false,
+			)
+			ping_data.Beam_array.DepthError = beam_data
+			// idx += nbytes
+		case ACROSS_TRACK_ERROR:
+			beam_data = sub_rec.DecodeSubRecArray(
+				sr_reader,
+				pinfo.Number_Beams,
+				pinfo.scale_factors[sub_rec.Id],
+				bytes_per_beam,
+				false,
+			)
+			ping_data.Beam_array.AcrossTrackError = beam_data
+			// idx += nbytes
+		case ALONG_TRACK_ERROR:
+			beam_data = sub_rec.DecodeSubRecArray(
+				sr_reader,
+				pinfo.Number_Beams,
+				pinfo.scale_factors[sub_rec.Id],
+				bytes_per_beam,
+				false,
+			)
+			ping_data.Beam_array.AlongTrackError = beam_data
+			// idx += nbytes
+		case NOMINAL_DEPTH:
+			beam_data = sub_rec.DecodeSubRecArray(
+				sr_reader,
+				pinfo.Number_Beams,
+				pinfo.scale_factors[sub_rec.Id],
+				bytes_per_beam,
+				false,
+			)
+			ping_data.Beam_array.NominalDepth = beam_data
+			// idx += nbytes
+		case QUALITY_FLAGS:
+			// obselete
+			// TODO; has specific decoder
+			panic("QUALITY_FLAGS subrecord has been superceded")
+		case BEAM_FLAGS:
+			ping_data.Beam_array.BeamFlags, nbytes = DecodeBeamFlagsArray(
+				sr_reader,
+				pinfo.Number_Beams,
+			)
+			// idx += nbytes
+		case SIGNAL_TO_NOISE:
+			beam_data = sub_rec.DecodeSubRecArray(
+				sr_reader,
+				pinfo.Number_Beams,
+				pinfo.scale_factors[sub_rec.Id],
+				bytes_per_beam,
+				true,
+			)
+			ping_data.Beam_array.SignalToNoise = beam_data
+			// idx += nbytes
+		case BEAM_ANGLE_FORWARD:
+			beam_data = sub_rec.DecodeSubRecArray(
+				sr_reader,
+				pinfo.Number_Beams,
+				pinfo.scale_factors[sub_rec.Id],
+				bytes_per_beam,
+				false,
+			)
+			ping_data.Beam_array.BeamAngleForward = beam_data
+			// idx += nbytes
+		case VERTICAL_ERROR:
+			beam_data = sub_rec.DecodeSubRecArray(
+				sr_reader,
+				pinfo.Number_Beams,
+				pinfo.scale_factors[sub_rec.Id],
+				bytes_per_beam,
+				false,
+			)
+			ping_data.Beam_array.VerticalError = beam_data
+			// idx += nbytes
+		case HORIZONTAL_ERROR:
+			beam_data = sub_rec.DecodeSubRecArray(
+				sr_reader,
+				pinfo.Number_Beams,
+				pinfo.scale_factors[sub_rec.Id],
+				bytes_per_beam,
+				false,
+			)
+			ping_data.Beam_array.HorizontalError = beam_data
+			// idx += nbytes
+		case INTENSITY_SERIES:
+			intensity, img_md = DecocdeBrbIntensity(sr_reader, pinfo.Number_Beams, sensor_id)
+			ping_data.Brb_intensity = intensity
+			ping_data.Sensory_imagery_metadata = img_md
+			// idx += nbytes
+		case SECTOR_NUMBER:
+			// TODO; has specific decoder
+			// should be fine to just use DecodeSubRecArray and specify
+			// 1-byte per beam
+			beam_data = sub_rec.DecodeSubRecArray(
+				sr_reader,
+				pinfo.Number_Beams,
+				pinfo.scale_factors[sub_rec.Id],
+				FIELD_SIZE_ONE,
+				false,
+			)
+			ping_data.Beam_array.SectorNumber = beam_data
+			// idx += nbytes
+		case DETECTION_INFO:
+			// TODO; has specific decoder
+		case INCIDENT_BEAM_ADJ:
+			beam_data = sub_rec.DecodeSubRecArray(
+				sr_reader,
+				pinfo.Number_Beams,
+				pinfo.scale_factors[sub_rec.Id],
+				bytes_per_beam,
+				true,
+			)
+			ping_data.Beam_array.IncidentBeamAdj = beam_data
+			// idx += nbytes
+		case SYSTEM_CLEANING:
+			// TODO; has specific decoder
+		case DOPPLER_CORRECTION:
+			beam_data = sub_rec.DecodeSubRecArray(
+				sr_reader,
+				pinfo.Number_Beams,
+				pinfo.scale_factors[sub_rec.Id],
+				bytes_per_beam,
+				true,
+			)
+			ping_data.Beam_array.DopplerCorrection = beam_data
+			// idx += nbytes
+		case SONAR_VERT_UNCERTAINTY:
+			beam_data = sub_rec.DecodeSubRecArray(
+				sr_reader,
+				pinfo.Number_Beams,
+				pinfo.scale_factors[sub_rec.Id],
+				bytes_per_beam,
+				false,
+			)
+			ping_data.Beam_array.SonarVertUncertainty = beam_data
+			// idx += nbytes
+		case SONAR_HORZ_UNCERTAINTY:
+			beam_data = sub_rec.DecodeSubRecArray(
+				sr_reader,
+				pinfo.Number_Beams,
+				pinfo.scale_factors[sub_rec.Id],
+				bytes_per_beam,
+				false,
+			)
+			ping_data.Beam_array.SonarHorzUncertainty = beam_data
+			// idx += nbytes
+		case DETECTION_WINDOW:
+			beam_data = sub_rec.DecodeSubRecArray(
+				sr_reader,
+				pinfo.Number_Beams,
+				pinfo.scale_factors[sub_rec.Id],
+				bytes_per_beam,
+				false,
+			)
+			ping_data.Beam_array.DetectionWindow = beam_data
+			// idx += nbytes
+		case MEAN_ABS_COEF:
+			beam_data = sub_rec.DecodeSubRecArray(
+				sr_reader,
+				pinfo.Number_Beams,
+				pinfo.scale_factors[sub_rec.Id],
+				bytes_per_beam,
+				false,
+			)
+			ping_data.Beam_array.MeanAbsCoef = beam_data
+			// idx += nbytes
+
+		// sensor specific subrecords
+		case SEABEAM:
+			// DecodeSeabeam
+		case EM12:
+			// DecodeEM12
+		case EM100:
+			// DecodeEM100
+		case EM950:
+			// DecodeEM950
+		case EM121A:
+			// DecodeEM121A
+		case EM121:
+			// DecodeEM121
+		case SASS: // obsolete
+			// DecodeSASS
+		case SEAMAP:
+			// DecodeSeaMap
+		case SEABAT:
+			// DecodeSeaBat
+		case EM1000:
+			// DecodeEM1000
+		case TYPEIII_SEABEAM: // obsolete
+			// DecodeTypeIII
+		case SB_AMP:
+			// DecodeSBAmp
+		case SEABAT_II:
+			// DecodeSeaBatII
+		case SEABAT_8101:
+			// DecodeSeaBat8101
+		case SEABEAM_2112:
+			// DecodeSeaBeam2112
+		case ELAC_MKII:
+			// DecodeElacMkII
+		case CMP_SAAS: // CMP (compressed), should be used in place of SASS
+			// DecodeCmpSass
+		case RESON_8101, RESON_8111, RESON_8124, RESON_8125, RESON_8150, RESON_8160:
+			// DecodeReson8100
+		case EM120, EM300, EM1002, EM2000, EM3000, EM3002, EM3000D, EM3002D, EM121A_SIS:
+			// DecodeEM3
+		case EM710, EM302, EM122, EM2040:
+			// DecodeEM4
+			ping_data.Sensor_metadata.EM_4 = DecodeEM4Specific(sr_reader)
+			// idx += nbytes
+		case GEOSWATH_PLUS:
+			// DecodeGeoSwathPlus
+		case KLEIN_5410_BSS:
+			// DecodeKlein5410Bss
+		case RESON_7125:
+			// DecodeReson7100
+		case EM300_RAW, EM1002_RAW, EM2000_RAW, EM3000_RAW, EM120_RAW, EM3002_RAW, EM3000D_RAW, EM3002D_RAW, EM121A_SIS_RAW:
+			// DecodeEM3Raw
+		case DELTA_T:
+			// DecodeDeltaT
+		case R2SONIC_2022, R2SONIC_2024, R2SONIC_2020:
+			// DecodeR2Sonic
+		case SR_NOT_DEFINED: // the spec makes no mention of ID 154
+		case RESON_TSERIES:
+			// DecodeResonTSeries
+		case KMALL:
+			// DecodeKMALL
+
+			// single beam swath sensor specific subrecords
+		case SWATH_ECHOTRAC, SWATH_BATHY2000, SWATH_PDD:
+			// DecodeSBEchotrac
+		case SWATH_MGD77:
+			// DecodeSBMGD77
+		case SWATH_BDB:
+			// DecodeSBBDB
+		case SWATH_NOSHDB:
+			// DecodeSBNOSHDB
+		case SWATH_NAVISOUND:
+			// DecodeSBNavisound
+		}
 	}
 
 	return hdr
+}
+
+func (g *GsfFile) SwathBathymetryPingRecords() (ping_data PingData) {
+	return ping_data
 }
