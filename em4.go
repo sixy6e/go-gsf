@@ -103,7 +103,7 @@ func DecodeEM4Specific(reader *bytes.Reader) (sensor_data EM4) {
 			VehicleDepth           int32
 			Spare                  [4]int32
 			TransmitSectors        int16
-		}
+		} // 48 bytes
 		sector_buffer struct {
 			TiltAngle       []float32
 			FocusRange      []float32
@@ -127,10 +127,10 @@ func DecodeEM4Specific(reader *bytes.Reader) (sensor_data EM4) {
 			SectorNumber    uint8
 			SignalBandwith  int32
 			Spare           [4]int32
-		}
+		} // 40 bytes
 		spare_buffer struct {
 			Spare [4]int32
-		}
+		} // 16 bytes
 		runtime_buffer struct {
 			RunTimeModelNumber            int16
 			RunTimeDatagramTime_sec       int32
@@ -163,7 +163,7 @@ func DecodeEM4Specific(reader *bytes.Reader) (sensor_data EM4) {
 			RunTimeTransmitAlongTilt      int16
 			RunTimeFilterId2              uint8
 			Spare                         [4]int32
-		}
+		} // 63 bytes
 		proc_buffer struct {
 			ProcessorUnitCpuLoad              uint8
 			ProcessorUnitSensorStatus         uint16
@@ -171,16 +171,20 @@ func DecodeEM4Specific(reader *bytes.Reader) (sensor_data EM4) {
 			ProcessorUnitAchievedStbdCoverage uint8
 			ProcessorUnitYawStabilization     int16
 			Spare                             [4]int32
-		}
+		} // 23 bytes
 	)
+
+	// n_bytes = 0
 
 	// first 46 bytes
 	_ = binary.Read(reader, binary.BigEndian, &buffer)
+	// n_bytes += 46
 
 	// sector arrays
 	// what if TransmitSectors == 0???
 	for i := int16(0); i < buffer.TransmitSectors; i++ {
 		_ = binary.Read(reader, binary.BigEndian, &sector_buffer_base)
+		// n_bytes += 40
 		sector_buffer.TiltAngle = append(
 			sector_buffer.TiltAngle,
 			float32(sector_buffer_base.TiltAngle)/float32(100),
@@ -221,12 +225,15 @@ func DecodeEM4Specific(reader *bytes.Reader) (sensor_data EM4) {
 
 	// spare 16 bytes
 	_ = binary.Read(reader, binary.BigEndian, &spare_buffer)
+	// n_bytes += 16
 
 	// next 63 bytes for the RunTime info
 	_ = binary.Read(reader, binary.BigEndian, &runtime_buffer)
+	// n_bytes += 63
 
 	// next 23 bytes for the processing unit info
 	_ = binary.Read(reader, binary.BigEndian, &proc_buffer)
+	// n_bytes += 23
 
 	// populate generic
 	sensor_data.ModelNumber = []int16{buffer.ModelNumber}
@@ -292,7 +299,7 @@ func DecodeEM4Specific(reader *bytes.Reader) (sensor_data EM4) {
 	sensor_data.ProcessorUnitAchievedStbdCoverage = []uint8{proc_buffer.ProcessorUnitAchievedStbdCoverage}
 	sensor_data.ProcessorUnitYawStabilization = []float32{float32(proc_buffer.ProcessorUnitYawStabilization) / float32(100)}
 
-	return sensor_data
+	return sensor_data // , n_bytes
 }
 
 func (g *GsfFile) EM4SpecificRecords(fi *FileInfo, start uint64, stop uint64) (sensor_data EM4) {
@@ -336,10 +343,12 @@ func DecodeEM4Imagery(reader *bytes.Reader) (em4_md EM4Imagery) {
 			Offset              int16
 			Scale               int16
 			Spare               [5]uint32 // 20 bytes spare
-		}
+		} // 50 bytes
 	)
+	// n_bytes = 0
 
 	_ = binary.Read(reader, binary.BigEndian, &base)
+	// n_bytes += 50
 
 	em4_md.SamplingFrequency = []float64{
 		float64(base.SamplingFrequency1) +
@@ -354,8 +363,8 @@ func DecodeEM4Imagery(reader *bytes.Reader) (em4_md EM4Imagery) {
 	em4_md.BackscatterO = []float32{float32(base.BackscatterO) / float32(10.0)}
 	em4_md.TransmitBeamWidth = []float32{float32(base.TransmitBeamWidth) / float32(10.0)}
 	em4_md.TvgCrossOver = []float32{float32(base.TvgCrossOver) / float32(10.0)}
-	em4_md.Offset = []int16{base.Offset}
-	em4_md.Scale = []int16{base.Scale}
+	em4_md.offset = []int16{base.Offset}
+	em4_md.scale = []int16{base.Scale}
 
-	return em4_md
+	return em4_md // , n_bytes
 }
