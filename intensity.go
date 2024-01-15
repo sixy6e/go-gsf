@@ -21,30 +21,33 @@ type BrbIntensity struct {
 // DecocdeBrbIntensity decodes the timeseries intensity sub-record. Each beam will have
 // a variable length of intensity samples, the index for the bottom detect sample, and the
 // sample itself.
-func DecocdeBrbIntensity(buffer []byte, nbeams uint16, sensor_id SubRecordID) (intensity BrbIntensity) {
+func DecocdeBrbIntensity(reader *bytes.Reader, nbeams uint16, sensor_id SubRecordID) (intensity BrbIntensity, img_md SensorImageryMetadata) {
 
 	var (
 		base struct {
 			Bits_per_sample     uint8 // (8, 12, 16, or 32)
 			Applied_corrections uint32
 			Spare               [4]uint32 // 16 bytes
-		}
+		} // 21 bytes
 		base2 struct {
 			Sample_count  uint16
 			Detect_sample uint16
 			Start_range   uint16
 			Spare         [3]uint16 // 6 bytes
-		}
-		count       []uint16
-		detect      []uint16
-		st_rng      []uint16
-		detect_val  []float32
-		timeseries  []float32
-		samples_u1  []uint8
-		samples_u2  []uint16
-		samples_u4  []uint32
-		samples_f32 []float32
-		img_md      SensorImageryMetadata
+		} // 12 bytes
+		count        []uint16
+		detect       []uint16
+		st_rng       []uint16
+		detect_val   []float32
+		timeseries   []float32
+		samples_u1   []uint8
+		samples_u2   []uint16
+		samples_u4   []uint32
+		samples_f32  []float32
+		three_bytes  [3]byte
+		unpack_bytes [4]byte
+		// n_bytes      int64
+		// img_md      SensorImageryMetadata
 		// timeseries [][]float32
 	)
 
@@ -54,10 +57,12 @@ func DecocdeBrbIntensity(buffer []byte, nbeams uint16, sensor_id SubRecordID) (i
 	st_rng = make([]uint16, 0, nbeams)
 	timeseries = make([]float32, 0, nbeams*66) // 66 ... just becasuse
 	// timeseries = make([][]float32, nbeams)
+	// nbytes = 0
 
-	reader := bytes.NewReader(buffer)
+	// reader := bytes.NewReader(buffer)
 
 	_ = binary.Read(reader, binary.BigEndian, &base)
+	// nbytes += 21
 
 	switch sensor_id {
 
@@ -71,7 +76,8 @@ func DecocdeBrbIntensity(buffer []byte, nbeams uint16, sensor_id SubRecordID) (i
 		// DecodeReson8100Imagery
 	case EM122, EM302, EM710, EM2040:
 		// DecodeEM4Imagery
-		img_md.EM4Imagery = DecodeEM4Imagery(reader)
+		img_md.EM4_imagery = DecodeEM4Imagery(reader)
+		// nbytes += n_bytes
 	case KLEIN_5410_BSS:
 		// DecodeKlein5410BssImagery
 	case KMALL:
@@ -84,47 +90,74 @@ func DecocdeBrbIntensity(buffer []byte, nbeams uint16, sensor_id SubRecordID) (i
 
 	for i := uint16(0); i < nbeams; i++ {
 		_ = binary.Read(reader, binary.BigEndian, &base2)
+		// nbytes += 12
 
 		count = append(count, base2.Sample_count)
 		detect = append(detect, base2.Detect_sample)
 		st_rng = append(st_rng, base2.Start_range)
 
+		// the spec only mentioned 1 byte per sample, so the following
+		// is an implementation (of sorts) based on the gsf code base
 		if base.Bits_per_sample == 12 {
 			// TODO
+			samples_f32 = make([]float32, base2.Sample_count)
+			samples_u4 = make([]uint32, base2.Sample_count)
+
+			// 3 bytes of data are bit compacted and decompress into 2 samples
+			for j := uint16(0); j < nbeams; j += 2 {
+				_ = binary.Read(reader, binary.BigEndian, &three_bytes)
+				// nbytes += 3
+
+				// unpacking the first sample
+
+				// upper bits of 3b[0] into lowerbits of unpack[2]
+				unpack_bytes[2] = three_bytes[0] >> 4
+
+				// lower bits of 3b[1] into upper bits of unpack[3]
+				unpack_bytes[3] = (three_bytes[0] & 0x0f) << 4
+
+				// upper bits of 3b[1] combine into lower bits of unpack[3]
+				unpack_bytes[3] |= (three_bytes[1] & 0xf0) >> 4
+
+				samples_u4[j] = binary.BigEndian.Uint32(unpack_bytes[:])
+
+				if j+1 < nbeams {
+					// unpacking the second sample
+
+					// lower bits of tb[1] into unpack[2]
+					unpack_bytes[2] = three_bytes[1] & 0x0f
+
+					// tb[2] into unpack[3]
+					unpack_bytes[3] = three_bytes[2]
+
+					samples_u4[j+1] = binary.BigEndian.Uint32(unpack_bytes[:])
+				}
+			}
+
+			for k, v := range samples_u4 {
+				samples_f32[k] = float32(v)
+			}
 		} else {
-			// for j := uint16(0); j < base2.Sample_count; j++ {
-			// 	samples_f32 = make([]float32, base2.Sample_count)
-
-			// 	switch bytes_per_sample {
-			// 	case 1:
-			// 		samples_u1 = make([]uint8, base2.Sample_count)
-			// 		_ = binary.Read(reader, binary.BigEndian, samples_u1)
-			// 	case 2:
-			// 		samples_u2 = make([]uint16, base2.Sample_count)
-			// 		_ = binary.Read(reader, binary.BigEndian, samples_u2)
-			// 	case 4:
-			// 		samples_u4 = make([]uint32, base2.Sample_count)
-			// 		_ = binary.Read(reader, binary.BigEndian, samples_u4)
-			// 	}
-
-			// }
 			samples_f32 = make([]float32, base2.Sample_count)
 			switch bytes_per_sample {
 			case 1:
 				samples_u1 = make([]uint8, base2.Sample_count)
 				_ = binary.Read(reader, binary.BigEndian, samples_u1)
+				// n_bytes += 1 * int64(base2.Sample_count)
 				for k, v := range samples_u1 {
 					samples_f32[k] = float32(v)
 				}
 			case 2:
 				samples_u2 = make([]uint16, base2.Sample_count)
 				_ = binary.Read(reader, binary.BigEndian, samples_u2)
+				// n_bytes += 2 * int64(base2.Sample_count)
 				for k, v := range samples_u2 {
 					samples_f32[k] = float32(v)
 				}
 			case 4:
 				samples_u4 = make([]uint32, base2.Sample_count)
 				_ = binary.Read(reader, binary.BigEndian, samples_u4)
+				// n_bytes += 4 * int64(base2.Sample_count)
 				for k, v := range samples_u4 {
 					samples_f32[k] = float32(v)
 				}
@@ -140,11 +173,11 @@ func DecocdeBrbIntensity(buffer []byte, nbeams uint16, sensor_id SubRecordID) (i
 		switch sensor_id {
 		case EM120, EM120_RAW, EM300, EM300_RAW, EM1002, EM1002_RAW, EM2000, EM2000_RAW, EM3000, EM3000_RAW, EM3002, EM3002_RAW, EM3000D, EM3000D_RAW, EM3002D, EM3002D_RAW, EM121A_SIS, EM121A_SIS_RAW:
 			for k, v := range samples_f32 {
-				samples_f32[k] = (v - float32(img_md.EM3Imagery.offset[0])) / float32(2)
+				samples_f32[k] = (v - float32(img_md.EM3_imagery.offset[0])) / float32(2)
 			}
 		case EM122, EM302, EM710, EM2040:
 			for k, v := range samples_f32 {
-				samples_f32[k] = (v - float32(img_md.EM4Imagery.offset[0])) / float32(10)
+				samples_f32[k] = (v - float32(img_md.EM4_imagery.offset[0])) / float32(10)
 			}
 		}
 		// append
@@ -159,5 +192,5 @@ func DecocdeBrbIntensity(buffer []byte, nbeams uint16, sensor_id SubRecordID) (i
 	intensity.BottomDetectIndex = detect
 	intensity.sample_count = count
 
-	return intensity
+	return intensity, img_md // , n_bytes
 }
