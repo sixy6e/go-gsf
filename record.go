@@ -64,6 +64,7 @@ func (sr *SubRecord) DecodeByteArray(
 	scaled_data = make([]float32, 0, number_beams)
 
 	_ = binary.Read(reader, binary.BigEndian, &data)
+	// n_bytes = 1 * int64(number_beams)
 	// if err != nil {
 	//
 	// }
@@ -72,7 +73,7 @@ func (sr *SubRecord) DecodeByteArray(
 		scaled_data[k] = float32(v)/scale_factor.Scale - scale_factor.Offset
 	}
 
-	return scaled_array
+	return scaled_array // , n_bytes
 }
 
 // DecodeSignedByteArray decodes the beam array data stored as int8.
@@ -90,6 +91,7 @@ func (sr *SubRecord) DecodeSignedByteArray(
 	scaled_data = make([]float32, 0, number_beams)
 
 	_ = binary.Read(reader, binary.BigEndian, &data)
+	// n_bytes = 1 * int64(number_beams)
 	// if err != nil {
 	//
 	// }
@@ -98,7 +100,7 @@ func (sr *SubRecord) DecodeSignedByteArray(
 		scaled_data[k] = float32(v)/scale_factor.Scale - scale_factor.Offset
 	}
 
-	return scaled_array
+	return scaled_array // , n_bytes
 }
 
 // DecodeTwoByteArray decodes the beam array data stored as uint16.
@@ -112,6 +114,7 @@ func (sr *SubRecord) DecodeTwoByteArray(reader *bytes.Reader, number_beams uint1
 	scaled_data = make([]float32, 0, number_beams)
 
 	_ = binary.Read(reader, binary.BigEndian, &data)
+	// n_bytes = 2 * int64(number_beams)
 	// if err != nil {
 	//
 	// }
@@ -120,7 +123,7 @@ func (sr *SubRecord) DecodeTwoByteArray(reader *bytes.Reader, number_beams uint1
 		scaled_data[k] = float32(v)/scale_factor.Scale - scale_factor.Offset
 	}
 
-	return scaled_array
+	return scaled_array // , n_bytes
 }
 
 // DecodeSignedTwoByteArray decodes the beam array data stored as int16.
@@ -138,6 +141,7 @@ func (sr *SubRecord) DecodeSignedTwoByteArray(
 	scaled_data = make([]float32, 0, number_beams)
 
 	_ = binary.Read(reader, binary.BigEndian, &data)
+	// n_bytes = 2 * int64(number_beams)
 	// if err != nil {
 	//
 	// }
@@ -146,11 +150,11 @@ func (sr *SubRecord) DecodeSignedTwoByteArray(
 		scaled_data[k] = float32(v)/scale_factor.Scale - scale_factor.Offset
 	}
 
-	return scaled_array
+	return scaled_array // , n_bytes
 }
 
 // DecodeFourByteArray decodes the beam array data stored as uint32.
-func (sr *SubRecord) DecodeFourTwoByteArray(
+func (sr *SubRecord) DecodeFourByteArray(
 	reader *bytes.Reader,
 	number_beams uint16,
 	scale_factor ScaleFactor,
@@ -164,6 +168,7 @@ func (sr *SubRecord) DecodeFourTwoByteArray(
 	scaled_data = make([]float32, 0, number_beams)
 
 	_ = binary.Read(reader, binary.BigEndian, &data)
+	// n_bytes = 4 * int64(number_beams)
 	// if err != nil {
 	//
 	// }
@@ -172,11 +177,11 @@ func (sr *SubRecord) DecodeFourTwoByteArray(
 		scaled_data[k] = float32(v)/scale_factor.Scale - scale_factor.Offset
 	}
 
-	return scaled_array
+	return scaled_array // , n_bytes
 }
 
 // DecodeSignedFourTwoByteArray decodes the beam array data stored as int32.
-func (sr *SubRecord) DecodeSignedFourTwoByteArray(
+func (sr *SubRecord) DecodeSignedFourByteArray(
 	reader *bytes.Reader,
 	number_beams uint16,
 	scale_factor ScaleFactor,
@@ -190,6 +195,7 @@ func (sr *SubRecord) DecodeSignedFourTwoByteArray(
 	scaled_data = make([]float32, 0, number_beams)
 
 	_ = binary.Read(reader, binary.BigEndian, &data)
+	// n_bytes = 4 * int64(number_beams)
 	// if err != nil {
 	//
 	// }
@@ -198,7 +204,7 @@ func (sr *SubRecord) DecodeSignedFourTwoByteArray(
 		scaled_data[k] = float32(v)/scale_factor.Scale - scale_factor.Offset
 	}
 
-	return scaled_array
+	return scaled_array // , n_bytes
 }
 
 // DecodeSubRecArray decodes the beam array data.
@@ -223,18 +229,21 @@ func (sr *SubRecord) DecodeSubRecArray(
 		case FIELD_SIZE_ONE:
 			data := make([]int8, 0, number_beams)
 			_ = binary.Read(reader, binary.BigEndian, &data)
+			// n_bytes = 1 * int64(number_beams)
 			for k, v := range data {
 				scaled_data[k] = float32(v)/scale_factor.Scale - scale_factor.Offset
 			}
 		case FIELD_SIZE_TWO:
 			data := make([]int16, 0, number_beams)
 			_ = binary.Read(reader, binary.BigEndian, &data)
+			// n_bytes = 2 * int64(number_beams)
 			for k, v := range data {
 				scaled_data[k] = float32(v)/scale_factor.Scale - scale_factor.Offset
 			}
 		case FIELD_SIZE_FOUR:
 			data := make([]int32, 0, number_beams)
 			_ = binary.Read(reader, binary.BigEndian, &data)
+			// n_bytes = 4 * int64(number_beams)
 			for k, v := range data {
 				scaled_data[k] = float32(v)/scale_factor.Scale - scale_factor.Offset
 			}
@@ -262,5 +271,5 @@ func (sr *SubRecord) DecodeSubRecArray(
 		}
 	}
 
-	return scaled_array
+	return scaled_array // , n_bytes
 }
