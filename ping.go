@@ -110,7 +110,7 @@ type PingInfo struct {
 }
 
 type PingData struct {
-	Ping_headers             PingHeaders
+	Ping_headers             []PingHeader
 	Beam_array               BeamArray
 	Brb_intensity            BrbIntensity
 	Sensor_metadata          SensorMetadata
@@ -339,9 +339,9 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 		intensity  BrbIntensity
 		sr_buff    []byte
 		sr_reader  *bytes.Reader
+		sen_md     SensorMetadata
 		// nbytes    int64
 		// sf map[SubRecordID]ScaleFactor
-		// sen_md    SensorMetadata
 		// beams     BeamArray
 		// subrecord_hdr int32
 	)
@@ -580,8 +580,6 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 			// idx += nbytes
 		case INTENSITY_SERIES:
 			intensity, img_md = DecocdeBrbIntensity(sr_reader, pinfo.Number_Beams, sensor_id)
-			ping_data.Brb_intensity = intensity
-			ping_data.Sensory_imagery_metadata = img_md
 			// idx += nbytes
 		case SECTOR_NUMBER:
 			// should be fine to just use DecodeSubRecArray and specify
@@ -721,6 +719,7 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 			// DecodeEM3
 		case EM710, EM302, EM122, EM2040:
 			// DecodeEM4
+			sen_md.EM_4 = DecodeEM4Specific(sr_reader)
 			ping_data.Sensor_metadata.EM_4 = DecodeEM4Specific(sr_reader)
 			// idx += nbytes
 		case GEOSWATH_PLUS:
@@ -736,6 +735,7 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 		case R2SONIC_2022, R2SONIC_2024, R2SONIC_2020:
 			// DecodeR2Sonic
 		case SR_NOT_DEFINED: // the spec makes no mention of ID 154
+			panic("Subrecord ID 154 is not defined.")
 		case RESON_TSERIES:
 			// DecodeResonTSeries
 		case KMALL:
@@ -754,6 +754,17 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 			// DecodeSBNavisound
 		}
 	}
+
+	geocoef := NewCoefWgs84()
+	lonlat := beam_array.BeamsLonLat(hdr.Longitude, hdr.Latitude, hdr.Heading, geocoef)
+
+	ping_data.Ping_headers = []PingHeader{hdr}
+	ping_data.Beam_array = beam_array
+	ping_data.Brb_intensity = intensity
+	ping_data.Sensory_imagery_metadata = img_md
+	ping_data.Sensor_metadata = sen_md
+	ping_data.Lon_lat = lonlat
+	ping_data.n_pings = uint64(1)
 
 	return hdr
 }
