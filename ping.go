@@ -5,6 +5,10 @@ import (
 	"bytes"
 	"encoding/binary"
 	"time"
+
+	tiledb "github.com/TileDB-Inc/TileDB-Go"
+	// "math"
+	// "github.com/samber/lo"
 )
 
 type PingHeader struct {
@@ -329,7 +333,7 @@ func ping_info(reader *bytes.Reader, rec RecordHdr) PingInfo {
 // Another instance was a duplicate ping. Same timestamp, location, depth, but zero values
 // for supporting attributes/sub-records/fields (heading, course, +others). Again, this
 // appeared to have never been encountered before (or never looked).
-func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor_id SubRecordID) PingHeader {
+func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor_id SubRecordID) PingData {
 	var (
 		idx        int64 = 0
 		beam_data  []float32
@@ -765,9 +769,47 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 	ping_data.Lon_lat = lonlat
 	ping_data.n_pings = uint64(1)
 
-	return hdr
+	return ping_data
 }
 
-func (g *GsfFile) SwathBathymetryPingRecords() (ping_data PingData) {
-	return ping_data
+// SbpToTileDB converts SwathBathymetryPing Records to TileDB arrays.
+// Beam array data will be converted to a sparse point cloud using
+// longitude and latitude (named as X and Y) dimensional axes.
+// SensorMetadata and SensorImageryMetadata subrecords will be written to a dense
+// array along with the PingHeader data. This dense array will be single axis, using
+// pings [0, n] as the axis units, akin to a table of data with n-rows where n is
+// the number of pings.
+// As there potentially are a lot of ping records, this process will be chunked
+// into roughly chunks of 1000 pings in size given by:
+// github.com/samber/lo.Chunk([]ping_records, math.Ceil(n_pings / 1000)).
+// In time (and interest), this chunk size can be made configurable.
+// There is potential to create the beam arrays as a 2D dense array using [ping, beam]
+// as the dimensional axes. The rationale is for input into algorithms that require
+// input based on the sensor configuration; such as a beam adjacency filter that
+// operates on a ping by ping basis.
+func (g *GsfFile) SbpToTileDB(fi *FileInfo, file_uri string, config_uri string) error {
+	var config *tiledb.Config
+	var err error
+
+	// get a generic config if no path provided
+	if config_uri == "" {
+		config, err = tiledb.NewConfig()
+		if err != nil {
+			return err
+		}
+	} else {
+		config, err = tiledb.LoadConfig(config_uri)
+		if err != nil {
+			return err
+		}
+	}
+
+	defer config.Free()
+
+	ctx, err := tiledb.NewContext(config)
+	if err != nil {
+		return err
+	}
+	defer ctx.Free()
+	return nil
 }
