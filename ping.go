@@ -352,7 +352,6 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 	idx += 56 // 56 bytes read for ping header
 	offset := rec.Byte_index + idx
 
-	// TODO; move loop to here
 	for (int64(rec.Datasize) - idx) > 4 {
 
 		// subrecord header
