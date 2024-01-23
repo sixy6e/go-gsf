@@ -6,9 +6,10 @@ import (
 	"encoding/binary"
 	"time"
 
+	"math"
+
 	tiledb "github.com/TileDB-Inc/TileDB-Go"
-	// "math"
-	// "github.com/samber/lo"
+	"github.com/samber/lo"
 )
 
 type PingHeader struct {
@@ -787,9 +788,17 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 // as the dimensional axes. The rationale is for input into algorithms that require
 // input based on the sensor configuration; such as a beam adjacency filter that
 // operates on a ping by ping basis.
-func (g *GsfFile) SbpToTileDB(fi *FileInfo, file_uri string, config_uri string) error {
-	var config *tiledb.Config
-	var err error
+func (g *GsfFile) SbpToTileDB(fi *FileInfo, dense_file_uri string, sparse_file_uri, config_uri string) error {
+	var (
+		ping_data    PingData
+		config       *tiledb.Config
+		err          error
+		number_beams uint64
+	)
+	number_beams = 0
+
+	rec_name := RecordNames[SWATH_BATHYMETRY_PING]
+	total_pings := fi.Record_Counts[rec_name]
 
 	// get a generic config if no path provided
 	if config_uri == "" {
@@ -806,10 +815,74 @@ func (g *GsfFile) SbpToTileDB(fi *FileInfo, file_uri string, config_uri string) 
 
 	defer config.Free()
 
-	ctx, err := tiledb.NewContext(config)
+	// contexts for both the sparse and dense arrays
+	dense_ctx, err := tiledb.NewContext(config)
 	if err != nil {
 		return err
 	}
-	defer ctx.Free()
+	defer dense_ctx.Free()
+
+	sparse_ctx, err := tiledb.NewContext(config)
+	if err != nil {
+		return err
+	}
+	defer sparse_ctx.Free()
+
+	// TODO setup schemas and creation of arrays
+	// (x, y) sparse point cloud array
+	// (ping) dense table array
+	// sr_schema := fi.SubRecord_Schema
+	// contains_intensity := lo.Contains(sr_schema, SubRecordNames[INTENSITY_SERIES])
+
+	// cleanup subrecord names to match the BeamArray fields names
+	// for k, v := range sr_schema {
+	// 	sr_schema[k] = pascal_case(v)
+	// }
+
+	// if contains_intensity {
+	// 	btype := reflect.TypeOf(BrbIntensity{})
+	// 	for i := 0; i < btype.NumField(); i++ {
+	// 		if btype.Field(i).IsExported() {
+	// 			sr_schema = append(sr_schema, btype.Field(i).Name)
+	// 		}
+	// 	}
+	// }
+	beam_names, md_names := fi.PingFields()
+
+	// setup the chunks to process
+	ngroups := int(math.Ceil(float64(total_pings) / float64(1000)))
+	idxs := make([]uint64, total_pings)
+	for i := uint64(0); i < total_pings; i++ {
+		idxs[i] = i
+	}
+	chunks := lo.Chunk(idxs, ngroups)
+
+	// need some info to initialise arrays that will get written into
+	for _, chunk := range chunks {
+
+		n_pings := len(chunk)
+		number_beams = 0
+		for _, idx := range chunk {
+			number_beams += uint64(fi.Ping_Info[idx].Number_Beams)
+		}
+
+		for _, idx := range chunk {
+
+		}
+	}
+
+	// process each chunk
+	for _, chunk := range chunks {
+
+		n_pings := len(chunk)
+		for _, idx := range chunk {
+			number_beams += uint64(fi.Ping_Info[idx].Number_Beams)
+		}
+
+		for _, idx := range chunk {
+
+		}
+	}
+
 	return nil
 }
