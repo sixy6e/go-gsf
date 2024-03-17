@@ -94,6 +94,11 @@ type BeamArray struct {
 	MeanAbsCoef          []float32
 }
 
+type PingBeamNumbers struct {
+	PingNumber []uint64
+	BeamNumber []uint16
+}
+
 type PingGroup struct {
 	Start         uint64
 	Stop          uint64
@@ -400,6 +405,9 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 				bytes_per_beam,
 				false,
 			)
+			// TODO convert from depth (positive units) to Z-axis
+			// ... never got confirmation from the SME's, but I presume it is
+			// "z = depth * -1"
 			beam_array.Depth = beam_data
 			// idx += nbytes
 		case ACROSS_TRACK:
@@ -847,7 +855,7 @@ func (g *GsfFile) SbpToTileDB(fi *FileInfo, dense_file_uri string, sparse_file_u
 	// 		}
 	// 	}
 	// }
-	beam_names, md_names := fi.PingFields()
+	beam_names, md_names, err := fi.PingArrays(dense_file_uri, sparse_file_uri, dense_ctx, sparse_ctx)
 
 	// setup the chunks to process
 	ngroups := int(math.Ceil(float64(total_pings) / float64(1000)))
@@ -858,6 +866,8 @@ func (g *GsfFile) SbpToTileDB(fi *FileInfo, dense_file_uri string, sparse_file_u
 	chunks := lo.Chunk(idxs, ngroups)
 
 	// need some info to initialise arrays that will get written into
+	// also need to cater for intensity, which at the moment are stored
+	// as 1-D, with count offsets (to define var length)
 	for _, chunk := range chunks {
 
 		n_pings := len(chunk)
@@ -866,8 +876,15 @@ func (g *GsfFile) SbpToTileDB(fi *FileInfo, dense_file_uri string, sparse_file_u
 			number_beams += uint64(fi.Ping_Info[idx].Number_Beams)
 		}
 
+		// initialise beam arrays, backscatter, lonlat
+		// arrays for ping and beam numbers
+		// this info should be contained within the beam_names and md_names
 		for _, idx := range chunk {
-
+			// newPingData (initialise arrays)
+			// something like newPingData(n_pings, number_beams)
+			// read ping copy results into PingData
+			// read next ping ...
+			// once all pings for chunk are read, write to tiledb
 		}
 	}
 
