@@ -62,7 +62,7 @@ type ScaleFactor struct {
 }
 
 type BeamArray struct {
-	Depth                []float32
+	Z                    []float32
 	AcrossTrack          []float32
 	AlongTrack           []float32
 	TravelTime           []float32
@@ -408,7 +408,10 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 			// TODO convert from depth (positive units) to Z-axis
 			// ... never got confirmation from the SME's, but I presume it is
 			// "z = depth * -1"
-			beam_array.Depth = beam_data
+			for k, v := range beam_data {
+				beam_data[k] = v * float32(-1.0)
+			}
+			beam_array.Z = beam_data
 			// idx += nbytes
 		case ACROSS_TRACK:
 			beam_data = sub_rec.DecodeSubRecArray(

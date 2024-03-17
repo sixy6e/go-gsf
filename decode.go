@@ -199,7 +199,7 @@ const (
 
 // Subrecord labels. Used for defining the output schema
 var SubRecordNames = map[SubRecordID]string{
-	DEPTH:                  "DEPTH", // 1
+	DEPTH:                  "Z", // 1
 	ACROSS_TRACK:           "ACROSS_TRACK",
 	ALONG_TRACK:            "ALONG_TRACK",
 	TRAVEL_TIME:            "TRAVEL_TIME",
