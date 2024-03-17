@@ -405,9 +405,8 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 				bytes_per_beam,
 				false,
 			)
-			// TODO convert from depth (positive units) to Z-axis
-			// ... never got confirmation from the SME's, but I presume it is
-			// "z = depth * -1"
+
+			// converting to Z-axis domain (integrate with elevation)
 			for k, v := range beam_data {
 				beam_data[k] = v * float32(-1.0)
 			}
@@ -845,19 +844,6 @@ func (g *GsfFile) SbpToTileDB(fi *FileInfo, dense_file_uri string, sparse_file_u
 	// sr_schema := fi.SubRecord_Schema
 	// contains_intensity := lo.Contains(sr_schema, SubRecordNames[INTENSITY_SERIES])
 
-	// cleanup subrecord names to match the BeamArray fields names
-	// for k, v := range sr_schema {
-	// 	sr_schema[k] = pascal_case(v)
-	// }
-
-	// if contains_intensity {
-	// 	btype := reflect.TypeOf(BrbIntensity{})
-	// 	for i := 0; i < btype.NumField(); i++ {
-	// 		if btype.Field(i).IsExported() {
-	// 			sr_schema = append(sr_schema, btype.Field(i).Name)
-	// 		}
-	// 	}
-	// }
 	beam_names, md_names, err := fi.PingArrays(dense_file_uri, sparse_file_uri, dense_ctx, sparse_ctx)
 
 	// setup the chunks to process
