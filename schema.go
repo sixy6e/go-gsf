@@ -41,6 +41,42 @@ func fieldNames(t any) (names []string) {
 	return names
 }
 
+// chunkedStuctSlices is a helper func for initialising structs containing
+// slices to a defined capacity. For example PingData where the slices will be of
+// total number of beams in capacity. Or for SensorMetadata which will be of
+// npings in capacity. This ideally should reduce any overhead in reallocation
+// during appending.
+// However, unexported fields won't be handled. Will need to handle those outside
+// on a case by case basis.
+func chunkedStuctSlices(t any, length int) error {
+	values := reflect.ValueOf(t).Elem()
+	types := reflect.TypeOf(t).Elem()
+	for i := 0; i < values.NumField(); i++ {
+		field := values.Field(i)
+		t := field.Type()
+		if types.Field(i).IsExported() {
+			field.Set(reflect.MakeSlice(t, 0, length))
+		}
+	}
+
+	return nil
+}
+
+// chunkedBeamArray is a helper func for initialising structs containing
+// slices to a defined capacity. For example PingData where the slices will be of
+// total number of beams in capacity.
+// This ideally should reduce any overhead in reallocation during appending.
+// Only those fields listed in the parameter beam_names will be set.
+func chunkedBeamArray(t any, length int, beam_names []string) error {
+	values := reflect.ValueOf(t).Elem()
+	for _, v := range beam_names {
+		field := values.FieldByName(v)
+		ftype := field.Type()
+		field.Set(reflect.MakeSlice(ftype, 0, 6))
+	}
+	return nil
+}
+
 func schemaAttrs(t any, schema *tiledb.ArraySchema, ctx *tiledb.Context) error {
 	var (
 		field_tdb_defs map[string]stgpsr.Definition
