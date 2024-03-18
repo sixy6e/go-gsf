@@ -8,11 +8,6 @@ package gsf
 // 	Append() error
 // }
 
-type ScaleOffset struct {
-	Scale  int16
-	Offset int16
-}
-
 type SensorMetadata struct {
 	EM_4 EM4
 }

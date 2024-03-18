@@ -52,6 +52,11 @@ type PingHeaders struct {
 	Ping_flags         []int16
 }
 
+type ScaleOffset struct {
+	Scale  float32
+	Offset float32
+}
+
 type ScaleFactor struct {
 	Id               SubRecordID
 	Scale            float32 // TODO float32?
