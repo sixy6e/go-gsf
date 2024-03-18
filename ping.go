@@ -636,7 +636,7 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 			beam_array.HorizontalError = beam_data
 			// idx += nbytes
 		case INTENSITY_SERIES:
-			intensity, img_md = DecocdeBrbIntensity(sr_reader, pinfo.Number_Beams, sensor_id)
+			intensity, img_md = DecodeBrbIntensity(sr_reader, pinfo.Number_Beams, sensor_id)
 			// idx += nbytes
 		case SECTOR_NUMBER:
 			// should be fine to just use DecodeSubRecArray and specify

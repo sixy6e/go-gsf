@@ -38,10 +38,10 @@ func newBrbIntensity(number_beams int) (brb_int BrbIntensity) {
 	return brb_int
 }
 
-// DecocdeBrbIntensity decodes the timeseries intensity sub-record. Each beam will have
+// DecodeBrbIntensity decodes the timeseries intensity sub-record. Each beam will have
 // a variable length of intensity samples, the index for the bottom detect sample, and the
 // sample itself.
-func DecocdeBrbIntensity(reader *bytes.Reader, nbeams uint16, sensor_id SubRecordID) (intensity BrbIntensity, img_md SensorImageryMetadata) {
+func DecodeBrbIntensity(reader *bytes.Reader, nbeams uint16, sensor_id SubRecordID) (intensity BrbIntensity, img_md SensorImageryMetadata) {
 
 	var (
 		base struct {
