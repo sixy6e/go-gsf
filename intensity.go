@@ -66,6 +66,7 @@ func DecodeBrbIntensity(reader *bytes.Reader, nbeams uint16, sensor_id SubRecord
 		samples_f32  []float32
 		three_bytes  [3]byte
 		unpack_bytes [4]byte
+		scl_off      ScaleOffset
 		// n_bytes      int64
 		// img_md      SensorImageryMetadata
 		// timeseries [][]float32
@@ -96,7 +97,8 @@ func DecodeBrbIntensity(reader *bytes.Reader, nbeams uint16, sensor_id SubRecord
 		// DecodeReson8100Imagery
 	case EM122, EM302, EM710, EM2040:
 		// DecodeEM4Imagery
-		img_md.EM4_imagery = DecodeEM4Imagery(reader)
+		em4img, scl_off := DecodeEM4Imagery(reader)
+		img_md.EM4_imagery = em4img
 		// nbytes += n_bytes
 	case KLEIN_5410_BSS:
 		// DecodeKlein5410BssImagery
@@ -199,7 +201,7 @@ func DecodeBrbIntensity(reader *bytes.Reader, nbeams uint16, sensor_id SubRecord
 		case EM122, EM302, EM710, EM2040:
 			// TODO; loop over length, as range will copy the array
 			for k, v := range samples_f32 {
-				samples_f32[k] = (v - float32(img_md.EM4_imagery.offset[0])) / float32(10)
+				samples_f32[k] = (v - scl_off.Offset) / float32(10)
 			}
 		}
 		// append

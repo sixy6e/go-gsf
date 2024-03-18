@@ -13,6 +13,6 @@ type EM3Imagery struct {
 	BackscatterO        []float32
 	TransmitBeamWidth   []float32
 	TvgCrossOver        []float32
-	offset              []int16
-	scale               []int16
+	offset              []int16 // TODO: replace with ScaleOffset, but as a separate type not embedded
+	scale               []int16 // TODO: replace with ScaleOffset, but as a separate type not embedded
 }

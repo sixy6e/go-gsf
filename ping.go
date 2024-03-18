@@ -58,9 +58,8 @@ type ScaleOffset struct {
 }
 
 type ScaleFactor struct {
-	Id               SubRecordID
-	Scale            float32 // TODO float32?
-	Offset           float32
+	Id SubRecordID
+	ScaleOffset
 	Compression_flag int
 	Compressed       bool // if true, then the associated array is compressed
 	Field_size       int
@@ -308,8 +307,7 @@ func scale_factors_rec(reader *bytes.Reader) (scale_factors map[SubRecordID]Scal
 
 		scale_factor = ScaleFactor{
 			Id:               cnvrt_subid,
-			Scale:            float32(data[1]),
-			Offset:           float32(data[2]),
+			ScaleOffset:      ScaleOffset{float32(data[1]), float32(data[2])},
 			Compression_flag: comp_flag, // TODO; implement compression decoder
 			Compressed:       comp,
 			Field_size:       field_size, // this field doesn't appear to be used in the C code ???

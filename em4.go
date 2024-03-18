@@ -79,8 +79,6 @@ type EM4Imagery struct {
 	BackscatterO        []float32
 	TransmitBeamWidth   []float32
 	TvgCrossOver        []float32
-	offset              []int16
-	scale               []int16
 }
 
 // func (e EM4Imagery) Serialise() bool {
@@ -325,7 +323,7 @@ func (g *GsfFile) EM4SpecificRecords(fi *FileInfo, start uint64, stop uint64) (s
 	return sensor_data
 }
 
-func DecodeEM4Imagery(reader *bytes.Reader) (em4_md EM4Imagery) {
+func DecodeEM4Imagery(reader *bytes.Reader) (em4_md EM4Imagery, scl_off ScaleOffset) {
 
 	var (
 		base struct {
@@ -363,8 +361,8 @@ func DecodeEM4Imagery(reader *bytes.Reader) (em4_md EM4Imagery) {
 	em4_md.BackscatterO = []float32{float32(base.BackscatterO) / float32(10.0)}
 	em4_md.TransmitBeamWidth = []float32{float32(base.TransmitBeamWidth) / float32(10.0)}
 	em4_md.TvgCrossOver = []float32{float32(base.TvgCrossOver) / float32(10.0)}
-	em4_md.offset = []int16{base.Offset}
-	em4_md.scale = []int16{base.Scale}
 
-	return em4_md // , n_bytes
+	scl_off = ScaleOffset{float32(base.Scale), float32(base.Offset)}
+
+	return em4_md, scl_off // , n_bytes
 }
