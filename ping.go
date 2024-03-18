@@ -82,7 +82,7 @@ type BeamArray struct {
 	BeamAngleForward     []float32
 	VerticalError        []float32
 	HorizontalError      []float32
-	IntensitySeries      []float32
+	IntensitySeries      []float32 // TODO; check that this field can be removed
 	SectorNumber         []float32
 	DetectionInfo        []float32
 	IncidentBeamAdj      []float32
@@ -92,6 +92,18 @@ type BeamArray struct {
 	SonarHorzUncertainty []float32
 	DetectionWindow      []float32
 	MeanAbsCoef          []float32
+}
+
+// newBeamArray is a helper func for initialising BeamArray where
+// the specific sensor will contain slices initialised to the number of pings
+// required.
+// This func is only utilised when processing groups of pings to form a single
+// cohesive block of data.
+func newBeamArray(number_beams int, beam_names []string) (beam_array BeamArray) {
+	beam_array = BeamArray{}
+	chunkedBeamArray(&beam_array, number_beams, beam_names)
+
+	return beam_array
 }
 
 type PingBeamNumbers struct {
@@ -127,6 +139,36 @@ type PingData struct {
 	Sensory_imagery_metadata SensorImageryMetadata
 	Lon_lat                  LonLat
 	n_pings                  uint64
+}
+
+func newPingData(npings int, number_beams uint64, sensor_id SubRecordID, beam_names []string, contains_intensity bool) (pdata PingData) {
+	var (
+		brb        BrbIntensity
+		sen_img_md SensorImageryMetadata
+	)
+	headers := make([]PingHeader, 0, npings)
+	beam_array := newBeamArray(int(number_beams), beam_names)
+	sen_md := newSensorMetadata(npings, sensor_id)
+	lonlat := LonLat{make([]float64, 0, number_beams), make([]float64, 0, number_beams)}
+
+	// only allocate large slices if the GSF contains intensity
+	if contains_intensity {
+		brb = newBrbIntensity(int(number_beams))
+		sen_img_md = newSensorImageryMetadata(npings, sensor_id)
+	} else {
+		brb = BrbIntensity{}
+		sen_img_md = SensorImageryMetadata{}
+	}
+
+	pdata.Ping_headers = headers
+	pdata.Beam_array = beam_array
+	pdata.Brb_intensity = brb
+	pdata.Sensor_metadata = sen_md
+	pdata.Sensory_imagery_metadata = sen_img_md
+	pdata.Lon_lat = lonlat
+	pdata.n_pings = uint64(npings)
+
+	return pdata
 }
 
 // PingGroups combines pings together based on their presence or absence of
@@ -407,6 +449,7 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 			)
 
 			// converting to Z-axis domain (integrate with elevation)
+			// TODO; loop over length, as range will copy the array
 			for k, v := range beam_data {
 				beam_data[k] = v * float32(-1.0)
 			}
@@ -734,7 +777,7 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 		case EM710, EM302, EM122, EM2040:
 			// DecodeEM4
 			sen_md.EM_4 = DecodeEM4Specific(sr_reader)
-			ping_data.Sensor_metadata.EM_4 = DecodeEM4Specific(sr_reader)
+			// ping_data.Sensor_metadata.EM_4 = DecodeEM4Specific(sr_reader)  // COMMENTED for now, TODO; check it isn't needed
 			// idx += nbytes
 		case GEOSWATH_PLUS:
 			// DecodeGeoSwathPlus
@@ -841,8 +884,9 @@ func (g *GsfFile) SbpToTileDB(fi *FileInfo, dense_file_uri string, sparse_file_u
 	// TODO setup schemas and creation of arrays
 	// (x, y) sparse point cloud array
 	// (ping) dense table array
-	// sr_schema := fi.SubRecord_Schema
-	// contains_intensity := lo.Contains(sr_schema, SubRecordNames[INTENSITY_SERIES])
+
+	sr_schema := fi.SubRecord_Schema
+	contains_intensity := lo.Contains(sr_schema, SubRecordNames[INTENSITY_SERIES])
 
 	beam_names, md_names, err := fi.PingArrays(dense_file_uri, sparse_file_uri, dense_ctx, sparse_ctx)
 
