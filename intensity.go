@@ -18,6 +18,26 @@ type BrbIntensity struct {
 	// timeseries        [][]float32
 }
 
+// newBrbIntensity is a helper func for when initialising BrbIntensity and
+// attached to the PingData type. This func is only utilised when we're
+// processing the ping data in chunks, and combining each chunk into
+// a single cohesive unit for output into TileDB.
+// The TimeSeries field is of variable length, and we don't know the total
+// number of samples in each beam until runtime. So the array is set to the
+// capacity of number_beams * 66. No thorough investigation on the choice of 66,
+// except that for a few sample GSF files, the number of samples for each beam
+// was in the 60s.
+func newBrbIntensity(number_beams int) (brb_int BrbIntensity) {
+	brb_int = BrbIntensity{
+		make([]float32, 0, number_beams*66), // 66 ... just becasuse
+		make([]float32, 0, number_beams),
+		make([]uint16, 0, number_beams),
+		make([]uint16, 0, number_beams),
+		make([]uint16, 0, number_beams),
+	}
+	return brb_int
+}
+
 // DecocdeBrbIntensity decodes the timeseries intensity sub-record. Each beam will have
 // a variable length of intensity samples, the index for the bottom detect sample, and the
 // sample itself.
@@ -172,10 +192,12 @@ func DecocdeBrbIntensity(reader *bytes.Reader, nbeams uint16, sensor_id SubRecor
 		// generated the file.
 		switch sensor_id {
 		case EM120, EM120_RAW, EM300, EM300_RAW, EM1002, EM1002_RAW, EM2000, EM2000_RAW, EM3000, EM3000_RAW, EM3002, EM3002_RAW, EM3000D, EM3000D_RAW, EM3002D, EM3002D_RAW, EM121A_SIS, EM121A_SIS_RAW:
+			// TODO; loop over length, as range will copy the array
 			for k, v := range samples_f32 {
 				samples_f32[k] = (v - float32(img_md.EM3_imagery.offset[0])) / float32(2)
 			}
 		case EM122, EM302, EM710, EM2040:
+			// TODO; loop over length, as range will copy the array
 			for k, v := range samples_f32 {
 				samples_f32[k] = (v - float32(img_md.EM4_imagery.offset[0])) / float32(10)
 			}
