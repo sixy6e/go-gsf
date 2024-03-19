@@ -166,7 +166,7 @@ func mdSchemaAttrs(sensor_id SubRecordID, contains_intensity bool, schema *tiled
 	case EM710, EM302, EM122, EM2040:
 		// DecodeEM4
 		// names = append(names, fieldNames(EM4{})...)
-		err = schemaAttrs(EM4{}, schema, ctx)
+		err = schemaAttrs(&EM4{}, schema, ctx)
 	case GEOSWATH_PLUS:
 		// DecodeGeoSwathPlus
 	case KLEIN_5410_BSS:
@@ -221,7 +221,7 @@ func mdSchemaAttrs(sensor_id SubRecordID, contains_intensity bool, schema *tiled
 			// img_md.EM4_imagery = DecodeEM4Imagery(reader)
 			// nbytes += n_bytes
 			// names = append(names, fieldNames(EM4Imagery{})...)
-			err = schemaAttrs(EM4Imagery{}, schema, ctx)
+			err = schemaAttrs(&EM4Imagery{}, schema, ctx)
 		case KLEIN_5410_BSS:
 			// DecodeKlein5410BssImagery
 		case KMALL:
@@ -317,7 +317,7 @@ func pingDenseSchema(ctx *tiledb.Context, sensor_id SubRecordID, npings uint64, 
 
 	// add the struct fields as tiledb attributes
 	// ping header, sensor_metadata, sensor_imagery_metadata
-	err = schemaAttrs(PingHeader{}, schema, ctx)
+	err = schemaAttrs(&PingHeader{}, schema, ctx)
 	if err != nil {
 		return nil, errors.Join(ErrCreateAttributeTdb, err)
 	}
