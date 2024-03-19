@@ -186,14 +186,56 @@ type PingData struct {
 // A separate method will need to be used to append null data for the ping
 // missing required beam array records defined as a Set of all Sub_Records
 // from all SWATH_BATHYMETRY_PING records.
-func (pd *PingData) appendPingData(singlePing *PingData) error {
-	rf_pd := reflect.ValueOf(pd).Elem()
-	rf_sp := reflect.ValueOf(singlePing).Elem()
+func (pd *PingData) appendPingData(singlePing *PingData, contains_intensity bool) error {
+	// TODO; need to cater separately, i.e. BeamArray, LonLat, BrbIntensity
+	// Ping_headers
+	pd.Ping_headers = append(pd.Ping_headers, singlePing.Ping_headers[0])
+
+	// Beam_array
+	rf_pd := reflect.ValueOf(pd.Beam_array).Elem()
+	rf_sp := reflect.ValueOf(singlePing.Beam_array).Elem()
 
 	for _, name := range singlePing.ba_subrecords {
 		field_pd := rf_pd.FieldByName(name)
 		field_sp := rf_sp.FieldByName(name)
 		field_pd.Set(reflect.AppendSlice(field_pd, field_sp))
+	}
+
+	// Lon_lat
+	pd.Lon_lat.Longitude = append(pd.Lon_lat.Longitude, singlePing.Lon_lat.Longitude...)
+	pd.Lon_lat.Latitude = append(pd.Lon_lat.Latitude, singlePing.Lon_lat.Latitude...)
+
+	// Sensor_metadata
+	rf_pd = reflect.ValueOf(pd.Sensor_metadata).Elem()
+	rf_sp = reflect.ValueOf(singlePing.Sensor_metadata).Elem()
+	types := rf_pd.Type()
+
+	for i := 0; i < rf_pd.NumField(); i++ {
+		name := types.Field(i).Name
+		field_pd := rf_pd.FieldByName(name)
+		field_sp := rf_sp.FieldByName(name)
+		field_pd.Set(reflect.AppendSlice(field_pd, field_sp))
+	}
+
+	if contains_intensity {
+		// Brb_intensity
+		pd.Brb_intensity.TimeSeries = append(singlePing.Brb_intensity.TimeSeries, singlePing.Brb_intensity.TimeSeries...)
+		pd.Brb_intensity.BottomDetect = append(singlePing.Brb_intensity.BottomDetect, singlePing.Brb_intensity.BottomDetect...)
+		pd.Brb_intensity.BottomDetectIndex = append(singlePing.Brb_intensity.BottomDetectIndex, singlePing.Brb_intensity.BottomDetectIndex...)
+		pd.Brb_intensity.StartRange = append(singlePing.Brb_intensity.StartRange, singlePing.Brb_intensity.StartRange...)
+		pd.Brb_intensity.sample_count = append(singlePing.Brb_intensity.sample_count, singlePing.Brb_intensity.sample_count...)
+
+		// Sensory_imagery_metadata
+		rf_pd = reflect.ValueOf(pd.Sensory_imagery_metadata).Elem()
+		rf_sp = reflect.ValueOf(singlePing.Sensory_imagery_metadata).Elem()
+		types := rf_pd.Type()
+
+		for i := 0; i < rf_pd.NumField(); i++ {
+			name := types.Field(i).Name
+			field_pd := rf_pd.FieldByName(name)
+			field_sp := rf_sp.FieldByName(name)
+			field_pd.Set(reflect.AppendSlice(field_pd, field_sp))
+		}
 	}
 
 	return nil
