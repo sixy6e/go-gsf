@@ -1047,26 +1047,30 @@ func (g *GsfFile) SbpToTileDB(fi *FileInfo, dense_file_uri string, sparse_file_u
 
 		// initialise beam arrays, backscatter, lonlat
 		// arrays for ping and beam numbers
-		// beam_names var might not be ideal to use here. TODO; check that
-		// beam_names conatains all names from the sparse schema (includes ping, beam_number, etc)
-		// probably should use sr_schema which should only contain beam_array names
-		ping_data_chunk = newPingData(n_pings, number_beams, sensor_id, beam_names, contains_intensity)
+		ping_data_chunk = newPingData(n_pings, number_beams, sensor_id, sr_schema, contains_intensity)
 		ping_beam_ids = newPingBeamNumbers(int(number_beams))
 
 		// loop over each ping for this chunk of pings
 		for _, idx := range chunk {
 			rec := ping_records[idx]
-			buffer := make([]byte, rec.Datasize)
 			pinfo := fi.Ping_Info[idx]
+
+			buffer := make([]byte, rec.Datasize)
 			_ = binary.Read(g.Stream, binary.BigEndian, &buffer)
-			_ = ping_beam_ids.appendPingBeam(idx, pinfo.Number_Beams)
 			ping_data = SwathBathymetryPingRec(buffer, rec, pinfo, sensor_id)
+
+			// appending and null filling
+			_ = ping_beam_ids.appendPingBeam(idx, pinfo.Number_Beams)
+			_ = ping_data_chunk.appendPingData(&ping_data, contains_intensity)
+			_ = ping_data_chunk.fillNulls(&ping_data)
+
 			// newPingData (initialise arrays)
 			// something like newPingData(n_pings, number_beams)
 			// read ping copy results into PingData
 			// read next ping ...
 			// once all pings for chunk are read, write to tiledb
 		}
+		// serialise chunk to the TileDB array
 	}
 
 	// process each chunk
