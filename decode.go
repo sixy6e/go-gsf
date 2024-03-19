@@ -192,6 +192,9 @@ const (
 	NULL_ACROSS_TRACK_ERROR float32 = 0.0
 	NULL_ALONG_TRACK_ERROR  float32 = 0.0
 	NULL_NAP_POS_ERROR      float32 = 0.0
+	NULL_FLOAT32_ZERO       float32 = 0.0 // Would NaN be better?
+	NULL_UINT8_ZERO         uint8   = 0
+	NULL_UINT16_ZERO        uint16  = 0
 )
 
 // Field sizes for ping subarrays
