@@ -1,5 +1,9 @@
 package gsf
 
+import (
+	"github.com/samber/lo"
+)
+
 type RecordID int32
 type SubRecordID int32
 type SensorID uint16
@@ -300,6 +304,8 @@ var SubRecordNames = map[SubRecordID]string{
 	SWATH_PDD:       "SWATH_PDD",
 	SWATH_NAVISOUND: "SWATH_NAVISOUND", // 212
 }
+
+var InvSubRecordNames = lo.Invert(SubRecordNames)
 
 // Record labels.
 var RecordNames = map[RecordID]string{
