@@ -317,7 +317,7 @@ func pingDenseSchema(ctx *tiledb.Context, sensor_id SubRecordID, npings uint64, 
 
 	// add the struct fields as tiledb attributes
 	// ping header, sensor_metadata, sensor_imagery_metadata
-	err = schemaAttrs(&PingHeader{}, schema, ctx)
+	err = schemaAttrs(&PingHeaders{}, schema, ctx)
 	if err != nil {
 		return nil, errors.Join(ErrCreateAttributeTdb, err)
 	}
