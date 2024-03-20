@@ -18,7 +18,7 @@ import (
 // If issues arise later, or a case of inconsistencies in schemas occur for these
 // other fields is found, then something can be done.
 func (pd *PingData) fillNulls(singlePing *PingData) error {
-	nbeams := singlePing.Ping_headers[0].Number_beams
+	nbeams := singlePing.Ping_headers.Number_beams[0]
 	left, _ := lo.Difference(pd.ba_subrecords, singlePing.ba_subrecords)
 	for _, name := range left {
 		subr_id := InvSubRecordNames[name]
