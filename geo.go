@@ -37,8 +37,8 @@ func NewCoefWgs84() *GeoCoefficients {
 }
 
 type LonLat struct {
-	Longitude []float64
-	Latitude  []float64
+	Longitude []float64 `tiledb:"dtype=float64,ftype=dim" filters:"zstd(level=16)"`
+	Latitude  []float64 `tiledb:"dtype=float64,ftype=dim" filters:"zstd(level=16)"`
 }
 
 // BeamsLonLat calculates arrays of longitude and latitude of len(along_track).

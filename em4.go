@@ -13,72 +13,72 @@ import (
 // TODO; align into 64bit chunks
 // the spec says binary integers are stored as either 1-byte unsigned, 2-byte signed or unsigned, or 4-byte signed
 type EM4 struct {
-	ModelNumber                       []int16
-	PingCounter                       []int16
-	SerialNumber                      []int16
-	SurfaceVelocity                   []float32
-	TransducerDepth                   []float64
-	ValidDetections                   []int16
-	SamplingFrequency                 []float64
-	DopplerCorrectionScale            []int32
-	VehicleDepth                      []float32
-	TransmitSectors                   []int16
-	TiltAngle                         [][]float32
-	FocusRange                        [][]float32
-	SignalLength                      [][]float64
-	TransmitDelay                     [][]float64
-	CenterFrequency                   [][]float64
-	MeanAbsorption                    [][]float32
-	WaveformId                        [][]uint8
-	SectorNumber                      [][]uint8
-	SignalBandwith                    [][]float64
-	RunTimeModelNumber                []int16
-	RunTimeDatagramTime               []time.Time
-	RunTimePingCounter                []int16
-	RunTimeSerialNumber               []int16
-	RunTimeOperatorStationStatus      []uint8
-	RunTimeProcessingUnitStatus       []uint8
-	RunTimeBspStatus                  []uint8
-	RunTimeHeadTransceiverStatus      []uint8
-	RunTimeMode                       []uint8
-	RunTimeFilterId                   []uint8
-	RunTimeMinDepth                   []float32
-	RunTimeMaxDepth                   []float32
-	RunTimeAbsorption                 []float32
-	RunTimeTransmitPulseLength        []float32
-	RunTimeTransmitBeamWidth          []float32
-	RunTimeTransmitPowerReduction     []uint8
-	RunTimeReceiveBeamWidth           []float32
-	RunTimeReceiveBandwidth           []float32
-	RunTimeReceiveFixedGain           []uint8
-	RunTimeTvgCrossOverAngle          []uint8
-	RunTimeSsvSource                  []uint8
-	RunTimeMaxPortSwathWidth          []int16
-	RunTimeBeamSpacing                []uint8
-	RunTimeMaxPortCoverage            []uint8
-	RunTimeStabilization              []uint8
-	RunTimeMaxStbdCoverage            []uint8
-	RunTimeMaxStdbSwathWidth          []int16
-	RunTimeTransmitAlongTilt          []float32
-	RunTimeFilterId2                  []uint8
-	ProcessorUnitCpuLoad              []uint8
-	ProcessorUnitSensorStatus         []uint16
-	ProcessorUnitAchievedPortCoverage []uint8
-	ProcessorUnitAchievedStbdCoverage []uint8
-	ProcessorUnitYawStabilization     []float32
+	ModelNumber                       []int16     `tiledb:"dtype=int16,ftype=attr" filters:"zstd(level=16)"`
+	PingCounter                       []int16     `tiledb:"dtype=int16,ftype=attr" filters:"zstd(level=16)"`
+	SerialNumber                      []int16     `tiledb:"dtype=int16,ftype=attr" filters:"zstd(level=16)"`
+	SurfaceVelocity                   []float32   `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	TransducerDepth                   []float64   `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
+	ValidDetections                   []int16     `tiledb:"dtype=int16,ftype=attr" filters:"zstd(level=16)"`
+	SamplingFrequency                 []float64   `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
+	DopplerCorrectionScale            []int32     `tiledb:"dtype=int32,ftype=attr" filters:"zstd(level=16)"`
+	VehicleDepth                      []float32   `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	TransmitSectors                   []int16     `tiledb:"dtype=int16,ftype=attr" filters:"zstd(level=16)"`
+	TiltAngle                         [][]float32 `tiledb:"dtype=float32,ftype=attr,var" filters:"zstd(level=16)"`
+	FocusRange                        [][]float32 `tiledb:"dtype=float32,ftype=attr,var" filters:"zstd(level=16)"`
+	SignalLength                      [][]float64 `tiledb:"dtype=float64,ftype=attr,var" filters:"zstd(level=16)"`
+	TransmitDelay                     [][]float64 `tiledb:"dtype=float64,ftype=attr,var" filters:"zstd(level=16)"`
+	CenterFrequency                   [][]float64 `tiledb:"dtype=float64,ftype=attr,var" filters:"zstd(level=16)"`
+	MeanAbsorption                    [][]float32 `tiledb:"dtype=float32,ftype=attr,var" filters:"zstd(level=16)"`
+	WaveformId                        [][]uint8   `tiledb:"dtype=uint8,ftype=attr,var" filters:"zstd(level=16)"`
+	SectorNumber                      [][]uint8   `tiledb:"dtype=uint8,ftype=attr,var" filters:"zstd(level=16)"`
+	SignalBandwith                    [][]float64 `tiledb:"dtype=float64,ftype=attr,var" filters:"zstd(level=16)"`
+	RunTimeModelNumber                []int16     `tiledb:"dtype=int16,ftype=attr" filters:"zstd(level=16)"`
+	RunTimeDatagramTime               []time.Time `tiledb:"dtype=datetime_ns,ftype=attr" filters:"zstd(level=16)"`
+	RunTimePingCounter                []int16     `tiledb:"dtype=int16,ftype=attr" filters:"zstd(level=16)"`
+	RunTimeSerialNumber               []int16     `tiledb:"dtype=int16,ftype=attr" filters:"zstd(level=16)"`
+	RunTimeOperatorStationStatus      []uint8     `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
+	RunTimeProcessingUnitStatus       []uint8     `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
+	RunTimeBspStatus                  []uint8     `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
+	RunTimeHeadTransceiverStatus      []uint8     `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
+	RunTimeMode                       []uint8     `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
+	RunTimeFilterId                   []uint8     `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
+	RunTimeMinDepth                   []float32   `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	RunTimeMaxDepth                   []float32   `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	RunTimeAbsorption                 []float32   `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	RunTimeTransmitPulseLength        []float32   `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	RunTimeTransmitBeamWidth          []float32   `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	RunTimeTransmitPowerReduction     []uint8     `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
+	RunTimeReceiveBeamWidth           []float32   `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	RunTimeReceiveBandwidth           []float32   `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	RunTimeReceiveFixedGain           []uint8     `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
+	RunTimeTvgCrossOverAngle          []uint8     `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
+	RunTimeSsvSource                  []uint8     `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
+	RunTimeMaxPortSwathWidth          []int16     `tiledb:"dtype=int16,ftype=attr" filters:"zstd(level=16)"`
+	RunTimeBeamSpacing                []uint8     `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
+	RunTimeMaxPortCoverage            []uint8     `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
+	RunTimeStabilization              []uint8     `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
+	RunTimeMaxStbdCoverage            []uint8     `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
+	RunTimeMaxStdbSwathWidth          []int16     `tiledb:"dtype=int16,ftype=attr" filters:"zstd(level=16)"`
+	RunTimeTransmitAlongTilt          []float32   `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	RunTimeFilterId2                  []uint8     `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
+	ProcessorUnitCpuLoad              []uint8     `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
+	ProcessorUnitSensorStatus         []uint16    `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	ProcessorUnitAchievedPortCoverage []uint8     `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
+	ProcessorUnitAchievedStbdCoverage []uint8     `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
+	ProcessorUnitYawStabilization     []float32   `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
 }
 
 type EM4Imagery struct {
-	SamplingFrequency   []float64
-	MeanAbsorption      []float32
-	TransmitPulseLength []float32
-	RangeNorm           []uint16
-	StartTvgRamp        []uint16
-	StopTvgRamp         []uint16
-	BackscatterN        []float32
-	BackscatterO        []float32
-	TransmitBeamWidth   []float32
-	TvgCrossOver        []float32
+	SamplingFrequency   []float64 `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
+	MeanAbsorption      []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	TransmitPulseLength []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	RangeNorm           []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	StartTvgRamp        []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	StopTvgRamp         []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	BackscatterN        []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	BackscatterO        []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	TransmitBeamWidth   []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	TvgCrossOver        []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
 }
 
 // func (e EM4Imagery) Serialise() bool {
