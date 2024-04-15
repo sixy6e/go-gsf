@@ -23,7 +23,7 @@ func newSensorMetadata(number_pings int, sensor_id SubRecordID) (sen_md SensorMe
 	switch sensor_id {
 	case EM710, EM302, EM122, EM2040:
 		em4 := EM4{}
-		chunkedStuctSlices(&em4, number_pings)
+		chunkedStructSlices(&em4, number_pings)
 		sen_md.EM_4 = em4
 	}
 
@@ -47,12 +47,12 @@ func newSensorImageryMetadata(number_pings int, sensor_id SubRecordID) (sen_img_
 	case EM710, EM302, EM122, EM2040:
 		// EM4
 		em4i := EM4Imagery{}
-		chunkedStuctSlices(&em4i, number_pings)
+		chunkedStructSlices(&em4i, number_pings)
 		sen_img_md.EM4_imagery = em4i
 	case EM120, EM300, EM1002, EM2000, EM3000, EM3002, EM3000D, EM3002D, EM121A_SIS:
 		// EM3
 		em3i := EM3Imagery{}
-		chunkedStuctSlices(&em3i, number_pings)
+		chunkedStructSlices(&em3i, number_pings)
 		sen_img_md.EM3_imagery = em3i
 	}
 
