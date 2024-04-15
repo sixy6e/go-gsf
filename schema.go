@@ -14,6 +14,7 @@ import (
 var ErrCreateAttributeTdb = errors.New("Error Creating Attribute for TileDB Array")
 var ErrCreateMdDenseTdb = errors.New("Error Creating Dense Metadata TileDB Array")
 var ErrCreateBeamSparseTdb = errors.New("Error Creating Beam Sparse TileDB Array")
+var ErrCreateSchemaTdb = errors.New("Error Creating TileDB Schema")
 
 // pascalCase convert a string separated by underscores into
 // PascalCase. For example, ALPHA_BETA_GAMMA -> AlphaBetaGamma.
@@ -41,14 +42,14 @@ func fieldNames(t any) (names []string) {
 	return names
 }
 
-// chunkedStuctSlices is a helper func for initialising structs containing
+// chunkedStructSlices is a helper func for initialising structs containing
 // slices to a defined capacity. For example PingData where the slices will be of
 // total number of beams in capacity. Or for SensorMetadata which will be of
 // npings in capacity. This ideally should reduce any overhead in reallocation
 // during appending.
 // However, unexported fields won't be handled. Will need to handle those outside
 // on a case by case basis.
-func chunkedStuctSlices(t any, length int) error {
+func chunkedStructSlices(t any, length int) error {
 	values := reflect.ValueOf(t).Elem()
 	types := reflect.TypeOf(t).Elem()
 	for i := 0; i < values.NumField(); i++ {
@@ -251,7 +252,7 @@ func pingDenseSchema(ctx *tiledb.Context, sensor_id SubRecordID, npings uint64, 
 
 	// setup dimension options
 	// using a combination of delta filter (ascending rows) and zstandard
-	dim, err := tiledb.NewDimension(ctx, "__tiledb_rows", tiledb.TILEDB_UINT64, []uint64{0, npings - uint64(1)}, tile_sz)
+	dim, err := tiledb.NewDimension(ctx, "PING_ID", tiledb.TILEDB_UINT64, []uint64{0, npings - uint64(1)}, tile_sz)
 	if err != nil {
 		return nil, errors.Join(ErrCreateAttributeTdb, err)
 	}
@@ -412,6 +413,11 @@ func beamArrayAttrs(contains_intensity bool, beam_subrecords []string, schema *t
 	return nil
 }
 
+// beamSparseSchema sets up a sparse array schema for the beam array data
+// and if it exists, the brb intensity data.
+// Longitude and Latitude are the dimensional axes, denoted by X & Y.
+// The schema is set to allow duplicates, hilbert for cell ordering, row-major
+// for tile ordering.
 func beamSparseSchema(contains_intensity bool, beam_subrecords []string, ctx *tiledb.Context) (schema *tiledb.ArraySchema, err error) {
 	// array domain
 	domain, err := tiledb.NewDomain(ctx)
@@ -473,11 +479,41 @@ func beamSparseSchema(contains_intensity bool, beam_subrecords []string, ctx *ti
 	// setup schema
 	schema, err = tiledb.NewArraySchema(ctx, tiledb.TILEDB_SPARSE)
 	if err != nil {
-		return nil, errors.Join(ErrCreateAttributeTdb, err)
+		return nil, errors.Join(ErrCreateSchemaTdb, err)
 	}
 	// defer schema.Free()
 
+	err = schema.SetDomain(domain)
+	if err != nil {
+		return nil, errors.Join(ErrCreateSchemaTdb, err)
+	}
+
+	err = schema.SetCapacity(100_000)
+	if err != nil {
+		return nil, errors.Join(ErrCreateSchemaTdb, err)
+	}
+
+	err = schema.SetCellOrder(tiledb.TILEDB_HILBERT)
+	if err != nil {
+		return nil, errors.Join(ErrCreateSchemaTdb, err)
+	}
+
+	err = schema.SetTileOrder(tiledb.TILEDB_ROW_MAJOR)
+	if err != nil {
+		return nil, errors.Join(ErrCreateSchemaTdb, err)
+	}
+
+	err = schema.SetAllowsDups(true)
+	if err != nil {
+		return nil, errors.Join(ErrCreateSchemaTdb, err)
+	}
+
 	err = beamArrayAttrs(contains_intensity, beam_subrecords, schema, ctx)
+	if err != nil {
+		return nil, errors.Join(ErrCreateAttributeTdb, err)
+	}
+
+	err = schema.Check()
 	if err != nil {
 		return nil, errors.Join(ErrCreateAttributeTdb, err)
 	}
