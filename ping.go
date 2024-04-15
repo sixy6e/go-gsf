@@ -4,6 +4,7 @@ import (
 	// "os"
 	"bytes"
 	"encoding/binary"
+	"errors"
 	"reflect"
 	"time"
 
@@ -12,6 +13,11 @@ import (
 	tiledb "github.com/TileDB-Inc/TileDB-Go"
 	"github.com/samber/lo"
 )
+
+var ErrCreateBdTdb = errors.New("Error Creating Beam Data TileDB Array")
+var ErrWriteBdTdb = errors.New("Error Writing Beam Data TileDB Array")
+var ErrCreateMdTdb = errors.New("Error Creating Metadata TileDB Array")
+var ErrWriteMdTdb = errors.New("Error Writing Metadata TileDB Array")
 
 type PingHeader struct {
 	Timestamp          time.Time
@@ -59,7 +65,7 @@ type PingHeaders struct {
 // cohesive block of data.
 func newPingHeaders(number_pings int) (ping_headers PingHeaders) {
 	ping_headers = PingHeaders{}
-	chunkedStuctSlices(&ping_headers, number_pings)
+	chunkedStructSlices(&ping_headers, number_pings)
 
 	return ping_headers
 }
@@ -1002,6 +1008,431 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 	return ping_data
 }
 
+// writeBeamSparse serialises the beam data to a sparse TileDB array
+// using longitude and latitude as the dimensional axes.
+func (pd *PingData) writeBeamSparse(bd_array *tiledb.Array, ctx *tiledb.Context, ping_beam_ids *PingBeamNumbers) error {
+	// query construction
+	query, err := tiledb.NewQuery(ctx, bd_array)
+	if err != nil {
+		return errors.Join(ErrWriteBdTdb, err)
+	}
+	defer query.Free()
+
+	err = query.SetLayout(tiledb.TILEDB_UNORDERED)
+	if err != nil {
+		return errors.Join(ErrWriteBdTdb, err)
+	}
+
+	// should make for simpler code, if reflect is used to get the type's
+	// names and values (slice)
+	// For the time being, using a case switch and being explicit works just
+	// fine, albeit more code
+	// TODO; look at replacing most of the following with reflect
+
+	// dimensional axes buffers
+	_, err = query.SetDataBuffer("X", pd.Lon_lat.Longitude)
+	if err != nil {
+		return errors.Join(ErrWriteBdTdb, err)
+	}
+
+	_, err = query.SetDataBuffer("Y", pd.Lon_lat.Latitude)
+	if err != nil {
+		return errors.Join(ErrWriteBdTdb, err)
+	}
+
+	// beam array buffers
+	for _, name := range pd.ba_subrecords {
+		subr_id := InvSubRecordNames[name]
+
+		switch subr_id {
+		case DEPTH:
+			_, err = query.SetDataBuffer(name, pd.Beam_array.Z)
+			if err != nil {
+				return errors.Join(ErrWriteBdTdb, err)
+			}
+		case ACROSS_TRACK:
+			_, err = query.SetDataBuffer(name, pd.Beam_array.AcrossTrack)
+			if err != nil {
+				return errors.Join(ErrWriteBdTdb, err)
+			}
+		case ALONG_TRACK:
+			_, err = query.SetDataBuffer(name, pd.Beam_array.AlongTrack)
+			if err != nil {
+				return errors.Join(ErrWriteBdTdb, err)
+			}
+		case TRAVEL_TIME:
+			_, err = query.SetDataBuffer(name, pd.Beam_array.TravelTime)
+			if err != nil {
+				return errors.Join(ErrWriteBdTdb, err)
+			}
+		case BEAM_ANGLE:
+			_, err = query.SetDataBuffer(name, pd.Beam_array.BeamAngle)
+			if err != nil {
+				return errors.Join(ErrWriteBdTdb, err)
+			}
+		case MEAN_CAL_AMPLITUDE:
+			_, err = query.SetDataBuffer(name, pd.Beam_array.MeanCalAmplitude)
+			if err != nil {
+				return errors.Join(ErrWriteBdTdb, err)
+			}
+		case MEAN_REL_AMPLITUDE:
+			_, err = query.SetDataBuffer(name, pd.Beam_array.MeanRelAmplitude)
+			if err != nil {
+				return errors.Join(ErrWriteBdTdb, err)
+			}
+		case ECHO_WIDTH:
+			_, err = query.SetDataBuffer(name, pd.Beam_array.EchoWidth)
+			if err != nil {
+				return errors.Join(ErrWriteBdTdb, err)
+			}
+		case QUALITY_FACTOR:
+			_, err = query.SetDataBuffer(name, pd.Beam_array.QualityFactor)
+			if err != nil {
+				return errors.Join(ErrWriteBdTdb, err)
+			}
+		case RECEIVE_HEAVE:
+			_, err = query.SetDataBuffer(name, pd.Beam_array.RecieveHeave)
+			if err != nil {
+				return errors.Join(ErrWriteBdTdb, err)
+			}
+		case DEPTH_ERROR:
+			_, err = query.SetDataBuffer(name, pd.Beam_array.DepthError)
+			if err != nil {
+				return errors.Join(ErrWriteBdTdb, err)
+			}
+		case ACROSS_TRACK_ERROR:
+			_, err = query.SetDataBuffer(name, pd.Beam_array.AcrossTrackError)
+			if err != nil {
+				return errors.Join(ErrWriteBdTdb, err)
+			}
+		case ALONG_TRACK_ERROR:
+			_, err = query.SetDataBuffer(name, pd.Beam_array.AlongTrackError)
+			if err != nil {
+				return errors.Join(ErrWriteBdTdb, err)
+			}
+		case NOMINAL_DEPTH:
+			_, err = query.SetDataBuffer(name, pd.Beam_array.NominalDepth)
+			if err != nil {
+				return errors.Join(ErrWriteBdTdb, err)
+			}
+		case QUALITY_FLAGS:
+			_, err = query.SetDataBuffer(name, pd.Beam_array.QualityFlags)
+			if err != nil {
+				return errors.Join(ErrWriteBdTdb, err)
+			}
+		case BEAM_FLAGS:
+			_, err = query.SetDataBuffer(name, pd.Beam_array.BeamFlags)
+			if err != nil {
+				return errors.Join(ErrWriteBdTdb, err)
+			}
+		case SIGNAL_TO_NOISE:
+			_, err = query.SetDataBuffer(name, pd.Beam_array.SignalToNoise)
+			if err != nil {
+				return errors.Join(ErrWriteBdTdb, err)
+			}
+		case BEAM_ANGLE_FORWARD:
+			_, err = query.SetDataBuffer(name, pd.Beam_array.BeamAngleForward)
+			if err != nil {
+				return errors.Join(ErrWriteBdTdb, err)
+			}
+		case VERTICAL_ERROR:
+			_, err = query.SetDataBuffer(name, pd.Beam_array.VerticalError)
+			if err != nil {
+				return errors.Join(ErrWriteBdTdb, err)
+			}
+		case HORIZONTAL_ERROR:
+			_, err = query.SetDataBuffer(name, pd.Beam_array.HorizontalError)
+			if err != nil {
+				return errors.Join(ErrWriteBdTdb, err)
+			}
+		case INTENSITY_SERIES:
+			// offset buffer (intensity timeseries is variable length)
+			n_beams := uint64(len(pd.Lon_lat.Longitude))
+			arr_offset := make([]uint64, n_beams)
+			offset := uint64(0)
+			bytes_val := uint64(4) // may look confusing with uint64, so 4*bytes for float32
+			for i := uint64(0); i < n_beams; i++ {
+				arr_offset[i] = offset * bytes_val
+				offset += uint64(pd.Brb_intensity.sample_count[i]) * bytes_val
+			}
+
+			_, err = query.SetOffsetsBuffer("Sound_velocity", arr_offset)
+			if err != nil {
+				return errors.Join(ErrWriteBdTdb, err)
+			}
+
+			_, err = query.SetDataBuffer("TimeSeries", pd.Brb_intensity.TimeSeries)
+			if err != nil {
+				return errors.Join(ErrWriteBdTdb, err)
+			}
+
+			// other non-var-length fields
+			_, err = query.SetDataBuffer("BottomDetect", pd.Brb_intensity.BottomDetect)
+			if err != nil {
+				return errors.Join(ErrWriteBdTdb, err)
+			}
+
+			_, err = query.SetDataBuffer("BottomDetectIndex", pd.Brb_intensity.BottomDetectIndex)
+			if err != nil {
+				return errors.Join(ErrWriteBdTdb, err)
+			}
+
+			_, err = query.SetDataBuffer("StartRange", pd.Brb_intensity.StartRange)
+			if err != nil {
+				return errors.Join(ErrWriteBdTdb, err)
+			}
+		case SECTOR_NUMBER:
+			_, err = query.SetDataBuffer(name, pd.Beam_array.SectorNumber)
+			if err != nil {
+				return errors.Join(ErrWriteBdTdb, err)
+			}
+		case DETECTION_INFO:
+			_, err = query.SetDataBuffer(name, pd.Beam_array.DetectionInfo)
+			if err != nil {
+				return errors.Join(ErrWriteBdTdb, err)
+			}
+		case INCIDENT_BEAM_ADJ:
+			_, err = query.SetDataBuffer(name, pd.Beam_array.IncidentBeamAdj)
+			if err != nil {
+				return errors.Join(ErrWriteBdTdb, err)
+			}
+		case SYSTEM_CLEANING:
+			_, err = query.SetDataBuffer(name, pd.Beam_array.SystemCleaning)
+			if err != nil {
+				return errors.Join(ErrWriteBdTdb, err)
+			}
+		case DOPPLER_CORRECTION:
+			_, err = query.SetDataBuffer(name, pd.Beam_array.DopplerCorrection)
+			if err != nil {
+				return errors.Join(ErrWriteBdTdb, err)
+			}
+		case SONAR_VERT_UNCERTAINTY:
+			_, err = query.SetDataBuffer(name, pd.Beam_array.SonarVertUncertainty)
+			if err != nil {
+				return errors.Join(ErrWriteBdTdb, err)
+			}
+		case SONAR_HORZ_UNCERTAINTY:
+			_, err = query.SetDataBuffer(name, pd.Beam_array.SonarHorzUncertainty)
+			if err != nil {
+				return errors.Join(ErrWriteBdTdb, err)
+			}
+		case DETECTION_WINDOW:
+			_, err = query.SetDataBuffer(name, pd.Beam_array.DetectionWindow)
+			if err != nil {
+				return errors.Join(ErrWriteBdTdb, err)
+			}
+		case MEAN_ABS_COEF:
+			_, err = query.SetDataBuffer(name, pd.Beam_array.MeanAbsCoef)
+			if err != nil {
+				return errors.Join(ErrWriteBdTdb, err)
+			}
+		}
+	}
+
+	// ping and beam ids
+	_, err = query.SetDataBuffer("PingNumber", ping_beam_ids.PingNumber)
+	if err != nil {
+		return errors.Join(ErrWriteBdTdb, err)
+	}
+
+	_, err = query.SetDataBuffer("BeamNumber", ping_beam_ids.BeamNumber)
+	if err != nil {
+		return errors.Join(ErrWriteBdTdb, err)
+	}
+
+	// write the data and flush
+	err = query.Submit()
+	if err != nil {
+		return errors.Join(ErrWriteBdTdb, err)
+	}
+
+	// not applicable as layout is tiledb.TILEDB_UNORDERED
+	// (tiledb lib will reorder it)
+	// err = query.Finalize()
+	// if err != nil {
+	// 	return errors.Join(ErrWriteBdTdb, err)
+	// }
+
+	return nil
+}
+
+func (ph *PingHeaders) writePingHeaders(query *tiledb.Query) error {
+	// convert time.Time arrays to int64 UnixNano time
+	nrows := len(ph.Timestamp)
+	unix_time := make([]int64, nrows)
+	for i := 0; i < nrows; i++ {
+		unix_time[i] = ph.Timestamp[i].UnixNano()
+	}
+
+	// set buffers
+	_, err := query.SetDataBuffer("Timestamp", unix_time)
+	if err != nil {
+		return errors.Join(ErrWriteMdTdb, err)
+	}
+
+	_, err = query.SetDataBuffer("Longitude", ph.Longitude)
+	if err != nil {
+		return errors.Join(ErrWriteMdTdb, err)
+	}
+
+	_, err = query.SetDataBuffer("Latitude", ph.Latitude)
+	if err != nil {
+		return errors.Join(ErrWriteMdTdb, err)
+	}
+
+	_, err = query.SetDataBuffer("Number_beams", ph.Number_beams)
+	if err != nil {
+		return errors.Join(ErrWriteMdTdb, err)
+	}
+
+	_, err = query.SetDataBuffer("Centre_beam", ph.Centre_beam)
+	if err != nil {
+		return errors.Join(ErrWriteMdTdb, err)
+	}
+
+	_, err = query.SetDataBuffer("Tide_corrector", ph.Tide_corrector)
+	if err != nil {
+		return errors.Join(ErrWriteMdTdb, err)
+	}
+
+	_, err = query.SetDataBuffer("Depth_corrector", ph.Depth_corrector)
+	if err != nil {
+		return errors.Join(ErrWriteMdTdb, err)
+	}
+
+	_, err = query.SetDataBuffer("Heading", ph.Heading)
+	if err != nil {
+		return errors.Join(ErrWriteMdTdb, err)
+	}
+
+	_, err = query.SetDataBuffer("Pitch", ph.Pitch)
+	if err != nil {
+		return errors.Join(ErrWriteMdTdb, err)
+	}
+
+	_, err = query.SetDataBuffer("Roll", ph.Roll)
+	if err != nil {
+		return errors.Join(ErrWriteMdTdb, err)
+	}
+
+	_, err = query.SetDataBuffer("Heave", ph.Heave)
+	if err != nil {
+		return errors.Join(ErrWriteMdTdb, err)
+	}
+
+	_, err = query.SetDataBuffer("Course", ph.Course)
+	if err != nil {
+		return errors.Join(ErrWriteMdTdb, err)
+	}
+
+	_, err = query.SetDataBuffer("Speed", ph.Speed)
+	if err != nil {
+		return errors.Join(ErrWriteMdTdb, err)
+	}
+
+	_, err = query.SetDataBuffer("Height", ph.Height)
+	if err != nil {
+		return errors.Join(ErrWriteMdTdb, err)
+	}
+
+	_, err = query.SetDataBuffer("Separation", ph.Separation)
+	if err != nil {
+		return errors.Join(ErrWriteMdTdb, err)
+	}
+
+	_, err = query.SetDataBuffer("GPS_tide_corrector", ph.GPS_tide_corrector)
+	if err != nil {
+		return errors.Join(ErrWriteMdTdb, err)
+	}
+
+	_, err = query.SetDataBuffer("Ping_flags", ph.Ping_flags)
+	if err != nil {
+		return errors.Join(ErrWriteMdTdb, err)
+	}
+
+	return nil
+}
+
+// writeMetadataDense is a helper to serialise the PingHeaders,
+// sensor metadata and sensor imagery metadata (if intensity exists),
+// to a TileDB dense array.
+func (pd *PingData) writeMetadataDense(md_array *tiledb.Array, ctx *tiledb.Context, ping_start, ping_end uint64, sensor_id SubRecordID) error {
+	// query construction
+	query, err := tiledb.NewQuery(ctx, md_array)
+	if err != nil {
+		return errors.Join(ErrWriteMdTdb, err)
+	}
+	defer query.Free()
+
+	err = query.SetLayout(tiledb.TILEDB_ROW_MAJOR)
+	if err != nil {
+		return errors.Join(ErrWriteMdTdb, err)
+	}
+
+	// define the subarray (dim coordinates that we'll write into)
+	subarr, err := md_array.NewSubarray()
+	if err != nil {
+		return errors.Join(ErrWriteMdTdb, err)
+	}
+	defer subarr.Free()
+
+	rng := tiledb.MakeRange(ping_start, ping_end)
+	subarr.AddRangeByName("PING_ID", rng)
+	err = query.SetSubarray(subarr)
+	if err != nil {
+		return errors.Join(ErrWriteMdTdb, err)
+	}
+
+	// ping headers
+	err = pd.Ping_headers.writePingHeaders(query)
+
+	// sensor metadata
+
+	return nil
+}
+
+// ToTileDB is a helper routine to serialise the beam data and the ping metadata to
+// TileDB arrays.
+// The beam data consists of the BeamArray, BrbIntensity (if intensity exists),
+// and PingBeamNumbers.
+// The ping metadata consists of the PingHeaders, sensor metadata, and
+// sensor imagery (if intensity exists)
+func (pd *PingData) ToTileDB(bd_array, md_array *tiledb.Array, sparse_ctx, dense_ctx *tiledb.Context, ping_beam_ids *PingBeamNumbers, sensor_id SubRecordID) error {
+	// type PingData struct {
+	// 	Ping_headers             PingHeaders
+	// 	Beam_array               BeamArray
+	// 	Brb_intensity            BrbIntensity
+	// 	Sensor_metadata          SensorMetadata
+	// 	Sensory_imagery_metadata SensorImageryMetadata
+	// 	Lon_lat                  LonLat
+	// 	n_pings                  uint64
+	// 	ba_subrecords            []string
+	// }
+
+	// query
+	// set layout unordered
+	// convert any datetimes to unixnano
+	// set buffers (dims, and attrs)
+	// set offset buffers for var length
+	// subarray
+
+	err := pd.writeBeamSparse(bd_array, sparse_ctx, ping_beam_ids)
+	if err != nil {
+		return errors.Join(ErrWriteBdTdb, err)
+	}
+
+	ping_start := ping_beam_ids.PingNumber[0]
+	end_idx := len(ping_beam_ids.PingNumber) - 1
+	ping_end := ping_beam_ids.PingNumber[end_idx]
+
+	err = pd.writeMetadataDense(md_array, dense_ctx, ping_start, ping_end, sensor_id)
+	if err != nil {
+		return errors.Join(ErrWriteMdTdb, err)
+	}
+
+	return nil
+}
+
 // SbpToTileDB converts SwathBathymetryPing Records to TileDB arrays.
 // Beam array data will be converted to a sparse point cloud using
 // longitude and latitude (named as X and Y) dimensional axes.
@@ -1073,6 +1504,21 @@ func (g *GsfFile) SbpToTileDB(fi *FileInfo, dense_file_uri string, sparse_file_u
 	sensor_id := SubRecordID(fi.Metadata.Sensor_Info.Sensor_ID)
 
 	beam_names, md_names, err := fi.PingArrays(dense_file_uri, sparse_file_uri, dense_ctx, sparse_ctx)
+
+	// open the arrays for writing
+	bd_array, err := ArrayOpen(sparse_ctx, sparse_file_uri, tiledb.TILEDB_WRITE)
+	if err != nil {
+		return errors.Join(ErrWriteBdTdb, err)
+	}
+	defer bd_array.Free()
+	defer bd_array.Close()
+
+	md_array, err := ArrayOpen(dense_ctx, dense_file_uri, tiledb.TILEDB_WRITE)
+	if err != nil {
+		return errors.Join(ErrWriteMdTdb, err)
+	}
+	defer md_array.Free()
+	defer md_array.Close()
 
 	// setup the chunks to process
 	ngroups := int(math.Ceil(float64(total_pings) / float64(1000)))
