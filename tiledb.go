@@ -2,6 +2,7 @@ package gsf
 
 import (
 	"errors"
+	"reflect"
 
 	tiledb "github.com/TileDB-Inc/TileDB-Go"
 	stgpsr "github.com/yuin/stagparser"
@@ -397,4 +398,28 @@ func CreateAttr(
 	}
 
 	return nil
+}
+
+// sliceDimsType is a helper for determining the numver of dimensions
+// and the underlying type a slice contains.
+// This func is called elsewhere that is undertaking reflection on
+// a struct whose fields are slices.
+// Care needs to be taken in that the original caller must initialise the
+// int that the dims pointer points to, is zero.
+// The primary motivation was not to be explicitly calling each structs
+// field, for example EM4 which contains 53 fields, and would be a lot of code.
+// Multiply that for over a dozen different sensors, and that's a lot of code.
+// However, it would be more explicit, and easier to follow. I have found that
+// reflection is hard to follow, and I could have easily introduced more errors
+// through blind assumptions, than being explicit and calling each field by name
+// for serialisation.
+func sliceDimsType(typ reflect.Type, dims *int) reflect.Type {
+	if typ.Kind() == reflect.Slice {
+		*dims += 1
+		return sliceDimsType(typ.Elem(), dims)
+	}
+
+	// either not a slice, or we've buried deep enough to the underliying
+	// slice type; eg uint8, float32, time.Time etc
+	return typ
 }
