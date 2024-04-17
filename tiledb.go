@@ -3,12 +3,18 @@ package gsf
 import (
 	"errors"
 	"reflect"
+	"strconv"
+	"time"
 
 	tiledb "github.com/TileDB-Inc/TileDB-Go"
+	"github.com/samber/lo"
 	stgpsr "github.com/yuin/stagparser"
 )
 
 var ErrAddFilters = errors.New("Error Adding Filter To FilterList")
+var ErrDims = errors.New("Error Dims is > 2")                   // we should not have any slices > 2D
+var ErrDtype = errors.New("Error slice datatype is unexpected") // we should not have any slices > 2D
+var ErrSetBuff = errors.New("Error setting tiledb buffer")      // we should not have any slices > 2D
 
 // ArrayOpen is a helper func for opening a tiledb array.
 func ArrayOpen(ctx *tiledb.Context, uri string, mode tiledb.QueryType) (*tiledb.Array, error) {
@@ -422,4 +428,288 @@ func sliceDimsType(typ reflect.Type, dims *int) reflect.Type {
 	// either not a slice, or we've buried deep enough to the underliying
 	// slice type; eg uint8, float32, time.Time etc
 	return typ
+}
+
+// sliceOffsets is a helper func to calculate the 1D array offsets for fields
+// that are of variable length.
+func sliceOffsets[T any](s [][]T, byte_size uint64) (slc_offset []uint64) {
+	nrows := len(s)
+	slc_offset = make([]uint64, nrows)
+	offset := uint64(0)
+
+	for i := 0; i < nrows; i++ {
+		length := uint64(len(s[i]))
+		slc_offset[i] = offset * byte_size
+		offset += length * byte_size
+	}
+
+	return slc_offset
+}
+
+func setStructFieldBuffers(query *tiledb.Query, t any) error {
+	var (
+		err error
+	)
+
+	bytesize1 := uint64(1)
+	bytesize2 := uint64(2)
+	bytesize4 := uint64(4)
+	bytesize8 := uint64(8)
+
+	values := reflect.ValueOf(t).Elem()
+	for i := 0; i < values.NumField(); i++ {
+		fld := values.Field(i)
+		typ := fld.Type()
+
+		if typ.Field(i).IsExported() {
+			name := typ.Field(i).Name
+			dims := 0
+			stype := sliceDimsType(typ, &dims)
+
+			switch dims {
+			case 1:
+				switch stype.Name() {
+				case "int8":
+					slc := fld.Interface().([]int8)
+					_, err = query.SetDataBuffer(name, slc)
+					if err != nil {
+						return errors.Join(ErrSetBuff, err, errors.New(name))
+					}
+				case "uint8":
+					slc := fld.Interface().([]uint8)
+					_, err = query.SetDataBuffer(name, slc)
+					if err != nil {
+						return errors.Join(ErrSetBuff, err, errors.New(name))
+					}
+				case "int16":
+					slc := fld.Interface().([]int16)
+					_, err = query.SetDataBuffer(name, slc)
+					if err != nil {
+						return errors.Join(ErrSetBuff, err, errors.New(name))
+					}
+				case "uint16":
+					slc := fld.Interface().([]uint16)
+					_, err = query.SetDataBuffer(name, slc)
+					if err != nil {
+						return errors.Join(ErrSetBuff, err, errors.New(name))
+					}
+				case "int32":
+					slc := fld.Interface().([]int32)
+					_, err = query.SetDataBuffer(name, slc)
+					if err != nil {
+						return errors.Join(ErrSetBuff, err, errors.New(name))
+					}
+				case "uint32":
+					slc := fld.Interface().([]uint32)
+					_, err = query.SetDataBuffer(name, slc)
+					if err != nil {
+						return errors.Join(ErrSetBuff, err, errors.New(name))
+					}
+				case "int64":
+					slc := fld.Interface().([]int64)
+					_, err = query.SetDataBuffer(name, slc)
+					if err != nil {
+						return errors.Join(ErrSetBuff, err, errors.New(name))
+					}
+				case "uint64":
+					slc := fld.Interface().([]uint64)
+					_, err = query.SetDataBuffer(name, slc)
+					if err != nil {
+						return errors.Join(ErrSetBuff, err, errors.New(name))
+					}
+				case "float32":
+					slc := fld.Interface().([]float32)
+					_, err = query.SetDataBuffer(name, slc)
+					if err != nil {
+						return errors.Join(ErrSetBuff, err, errors.New(name))
+					}
+				case "float64":
+					slc := fld.Interface().([]float64)
+					_, err = query.SetDataBuffer(name, slc)
+					if err != nil {
+						return errors.Join(ErrSetBuff, err, errors.New(name))
+					}
+				case "Time":
+					slc := fld.Interface().([]time.Time)
+					_, err = query.SetDataBuffer(name, slc)
+					if err != nil {
+						return errors.Join(ErrSetBuff, err, errors.New(name))
+					}
+				default:
+					// some datatype we haven't accounted for
+					return errors.Join(ErrDtype, errors.New(stype.Name()))
+				}
+			case 2:
+				// these will be the variable length arrays
+				// this approach won't work for say the BrbIntensity.TimeSeries
+				// which is stored as a single 1D slice, and the count stored elsewhere
+				// on the struct (unless we change it)
+				// For var length arrays, the procedure is to create a flattened version
+				// of the 2D slice, calculate byte offsets, and set the buffers for
+				// both the flattened and byte offset slices
+				switch stype.Name() {
+				case "int8":
+					slc := fld.Interface().([][]int8)
+					flt := lo.Flatten(slc)
+					slc_offset := sliceOffsets(slc, bytesize1)
+
+					_, err = query.SetOffsetsBuffer(name, slc_offset)
+					if err != nil {
+						return errors.Join(err, errors.New(name))
+					}
+
+					_, err = query.SetDataBuffer(name, flt)
+					if err != nil {
+						return errors.Join(err, errors.New(name))
+					}
+				case "uint8":
+					slc := fld.Interface().([][]uint8)
+					flt := lo.Flatten(slc)
+					slc_offset := sliceOffsets(slc, bytesize1)
+
+					_, err = query.SetOffsetsBuffer(name, slc_offset)
+					if err != nil {
+						return errors.Join(err, errors.New(name))
+					}
+
+					_, err = query.SetDataBuffer(name, flt)
+					if err != nil {
+						return errors.Join(err, errors.New(name))
+					}
+				case "int16":
+					slc := fld.Interface().([][]int16)
+					flt := lo.Flatten(slc)
+					slc_offset := sliceOffsets(slc, bytesize2)
+
+					_, err = query.SetOffsetsBuffer(name, slc_offset)
+					if err != nil {
+						return errors.Join(err, errors.New(name))
+					}
+
+					_, err = query.SetDataBuffer(name, flt)
+					if err != nil {
+						return errors.Join(err, errors.New(name))
+					}
+				case "uint16":
+					slc := fld.Interface().([][]uint16)
+					flt := lo.Flatten(slc)
+					slc_offset := sliceOffsets(slc, bytesize2)
+
+					_, err = query.SetOffsetsBuffer(name, slc_offset)
+					if err != nil {
+						return errors.Join(err, errors.New(name))
+					}
+
+					_, err = query.SetDataBuffer(name, flt)
+					if err != nil {
+						return errors.Join(err, errors.New(name))
+					}
+				case "int32":
+					slc := fld.Interface().([][]int32)
+					flt := lo.Flatten(slc)
+					slc_offset := sliceOffsets(slc, bytesize4)
+
+					_, err = query.SetOffsetsBuffer(name, slc_offset)
+					if err != nil {
+						return errors.Join(err, errors.New(name))
+					}
+
+					_, err = query.SetDataBuffer(name, flt)
+					if err != nil {
+						return errors.Join(err, errors.New(name))
+					}
+				case "uint32":
+					slc := fld.Interface().([][]uint32)
+					flt := lo.Flatten(slc)
+					slc_offset := sliceOffsets(slc, bytesize4)
+
+					_, err = query.SetOffsetsBuffer(name, slc_offset)
+					if err != nil {
+						return errors.Join(err, errors.New(name))
+					}
+
+					_, err = query.SetDataBuffer(name, flt)
+					if err != nil {
+						return errors.Join(err, errors.New(name))
+					}
+				case "int64":
+					slc := fld.Interface().([][]int64)
+					flt := lo.Flatten(slc)
+					slc_offset := sliceOffsets(slc, bytesize8)
+
+					_, err = query.SetOffsetsBuffer(name, slc_offset)
+					if err != nil {
+						return errors.Join(err, errors.New(name))
+					}
+
+					_, err = query.SetDataBuffer(name, flt)
+					if err != nil {
+						return errors.Join(err, errors.New(name))
+					}
+				case "uint64":
+					slc := fld.Interface().([][]uint64)
+					flt := lo.Flatten(slc)
+					slc_offset := sliceOffsets(slc, bytesize8)
+
+					_, err = query.SetOffsetsBuffer(name, slc_offset)
+					if err != nil {
+						return errors.Join(err, errors.New(name))
+					}
+
+					_, err = query.SetDataBuffer(name, flt)
+					if err != nil {
+						return errors.Join(err, errors.New(name))
+					}
+				case "float32":
+					slc := fld.Interface().([][]float32)
+					flt := lo.Flatten(slc)
+					slc_offset := sliceOffsets(slc, bytesize4)
+
+					_, err = query.SetOffsetsBuffer(name, slc_offset)
+					if err != nil {
+						return errors.Join(err, errors.New(name))
+					}
+
+					_, err = query.SetDataBuffer(name, flt)
+					if err != nil {
+						return errors.Join(err, errors.New(name))
+					}
+				case "float64":
+					slc := fld.Interface().([][]float64)
+					flt := lo.Flatten(slc)
+					slc_offset := sliceOffsets(slc, bytesize8)
+
+					_, err = query.SetOffsetsBuffer(name, slc_offset)
+					if err != nil {
+						return errors.Join(err, errors.New(name))
+					}
+
+					_, err = query.SetDataBuffer(name, flt)
+					if err != nil {
+						return errors.Join(err, errors.New(name))
+					}
+				case "Time":
+					slc := fld.Interface().([][]time.Time)
+					flt := lo.Flatten(slc)
+					slc_offset := sliceOffsets(slc, bytesize8)
+
+					_, err = query.SetOffsetsBuffer(name, slc_offset)
+					if err != nil {
+						return errors.Join(err, errors.New(name))
+					}
+
+					_, err = query.SetDataBuffer(name, flt)
+					if err != nil {
+						return errors.Join(err, errors.New(name))
+					}
+				default:
+					// some datatype we haven't accounted for
+					return errors.Join(ErrDtype, errors.New(stype.Name()))
+				}
+			default:
+				return errors.Join(ErrDims, errors.New(strconv.Itoa(dims)))
+			}
+		}
+	}
+	return nil
 }
