@@ -97,8 +97,10 @@ func DecodeBrbIntensity(reader *bytes.Reader, nbeams uint16, sensor_id SubRecord
 		// DecodeReson8100Imagery
 	case EM122, EM302, EM710, EM2040:
 		// DecodeEM4Imagery
-		em4img, scl_off := DecodeEM4Imagery(reader)
+		em4img, scl__off := DecodeEM4Imagery(reader)
 		img_md.EM4_imagery = em4img
+		scl_off.Scale = scl__off.Scale
+		scl_off.Offset = scl__off.Offset
 		// nbytes += n_bytes
 	case KLEIN_5410_BSS:
 		// DecodeKlein5410BssImagery
