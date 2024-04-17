@@ -531,7 +531,15 @@ func setStructFieldBuffers(query *tiledb.Query, t any) error {
 					}
 				case "Time":
 					slc := fld.Interface().([]time.Time)
-					_, err = query.SetDataBuffer(name, slc)
+
+					// time arrays need an additional conversion for serialisation
+					nrows := len(slc)
+					timestamps := make([]int64, nrows)
+					for t := 0; t < nrows; t++ {
+						timestamps[t] = slc[t].UnixNano()
+					}
+
+					_, err = query.SetDataBuffer(name, timestamps)
 					if err != nil {
 						return errors.Join(ErrSetBuff, err, errors.New(name))
 					}
@@ -693,12 +701,18 @@ func setStructFieldBuffers(query *tiledb.Query, t any) error {
 					flt := lo.Flatten(slc)
 					slc_offset := sliceOffsets(slc, bytesize8)
 
+					// time arrays need an additional conversion for serialisation
+					nrows := len(flt)
+					timestamps := make([]int64, nrows)
+					for t := 0; t < nrows; t++ {
+						timestamps[t] = flt[t].UnixNano()
+					}
 					_, err = query.SetOffsetsBuffer(name, slc_offset)
 					if err != nil {
 						return errors.Join(err, errors.New(name))
 					}
 
-					_, err = query.SetDataBuffer(name, flt)
+					_, err = query.SetDataBuffer(name, timestamps)
 					if err != nil {
 						return errors.Join(err, errors.New(name))
 					}
