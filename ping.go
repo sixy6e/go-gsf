@@ -1518,7 +1518,10 @@ func (g *GsfFile) SbpToTileDB(fi *FileInfo, dense_file_uri string, sparse_file_u
 	contains_intensity := lo.Contains(sr_schema, SubRecordNames[INTENSITY_SERIES])
 	sensor_id := SubRecordID(fi.Metadata.Sensor_Info.Sensor_ID)
 
-	beam_names, md_names, err := fi.PingArrays(dense_file_uri, sparse_file_uri, dense_ctx, sparse_ctx)
+	// TODO; rework the schema setup to not return the attr names
+	// as they didn't end up being needed
+	// beam_names, md_names, err := fi.PingArrays(dense_file_uri, sparse_file_uri, dense_ctx, sparse_ctx)
+	_, _, err = fi.PingArrays(dense_file_uri, sparse_file_uri, dense_ctx, sparse_ctx)
 
 	// open the arrays for writing
 	bd_array, err := ArrayOpen(sparse_ctx, sparse_file_uri, tiledb.TILEDB_WRITE)
