@@ -1356,7 +1356,7 @@ func (ph *PingHeaders) writePingHeaders(query *tiledb.Query) error {
 // writeMetadataDense is a helper to serialise the PingHeaders,
 // sensor metadata and sensor imagery metadata (if intensity exists),
 // to a TileDB dense array.
-func (pd *PingData) writeMetadataDense(md_array *tiledb.Array, ctx *tiledb.Context, ping_start, ping_end uint64, sensor_id SubRecordID) error {
+func (pd *PingData) writeMetadataDense(md_array *tiledb.Array, ctx *tiledb.Context, ping_start, ping_end uint64, sensor_id SubRecordID, contains_intensity bool) error {
 	// query construction
 	query, err := tiledb.NewQuery(ctx, md_array)
 	if err != nil {
@@ -1385,19 +1385,34 @@ func (pd *PingData) writeMetadataDense(md_array *tiledb.Array, ctx *tiledb.Conte
 
 	// ping headers
 	err = pd.Ping_headers.writePingHeaders(query)
+	if err != nil {
+		return errors.Join(ErrWriteMdTdb, err)
+	}
 
 	// sensor metadata
+	err = pd.Sensor_metadata.writeSensorMetadata(query, sensor_id)
+	if err != nil {
+		return errors.Join(ErrWriteMdTdb, err)
+	}
+
+	// sensor imagery metadata
+	if contains_intensity {
+		err = pd.Sensory_imagery_metadata.writeSensorImageryMetadata(query, sensor_id)
+		if err != nil {
+			return errors.Join(ErrWriteMdTdb, err)
+		}
+	}
 
 	return nil
 }
 
-// ToTileDB is a helper routine to serialise the beam data and the ping metadata to
+// toTileDB is a helper routine to serialise the beam data and the ping metadata to
 // TileDB arrays.
 // The beam data consists of the BeamArray, BrbIntensity (if intensity exists),
 // and PingBeamNumbers.
 // The ping metadata consists of the PingHeaders, sensor metadata, and
 // sensor imagery (if intensity exists)
-func (pd *PingData) ToTileDB(bd_array, md_array *tiledb.Array, sparse_ctx, dense_ctx *tiledb.Context, ping_beam_ids *PingBeamNumbers, sensor_id SubRecordID) error {
+func (pd *PingData) toTileDB(bd_array, md_array *tiledb.Array, sparse_ctx, dense_ctx *tiledb.Context, ping_beam_ids *PingBeamNumbers, sensor_id SubRecordID, contains_intensity bool) error {
 	// type PingData struct {
 	// 	Ping_headers             PingHeaders
 	// 	Beam_array               BeamArray
@@ -1425,7 +1440,7 @@ func (pd *PingData) ToTileDB(bd_array, md_array *tiledb.Array, sparse_ctx, dense
 	end_idx := len(ping_beam_ids.PingNumber) - 1
 	ping_end := ping_beam_ids.PingNumber[end_idx]
 
-	err = pd.writeMetadataDense(md_array, dense_ctx, ping_start, ping_end, sensor_id)
+	err = pd.writeMetadataDense(md_array, dense_ctx, ping_start, ping_end, sensor_id, contains_intensity)
 	if err != nil {
 		return errors.Join(ErrWriteMdTdb, err)
 	}
@@ -1564,21 +1579,34 @@ func (g *GsfFile) SbpToTileDB(fi *FileInfo, dense_file_uri string, sparse_file_u
 			// read next ping ...
 			// once all pings for chunk are read, write to tiledb
 		}
+
 		// serialise chunk to the TileDB array
+		err = ping_data_chunk.toTileDB(
+			bd_array,
+			md_array,
+			sparse_ctx,
+			dense_ctx,
+			&ping_beam_ids,
+			sensor_id,
+			contains_intensity,
+		)
+		if err != nil {
+			return errors.Join(err, errors.New("Error writing PingData chunk"))
+		}
 	}
 
 	// process each chunk
-	for _, chunk := range chunks {
+	// for _, chunk := range chunks {
 
-		n_pings := len(chunk)
-		for _, idx := range chunk {
-			number_beams += uint64(fi.Ping_Info[idx].Number_Beams)
-		}
+	// 	n_pings := len(chunk)
+	// 	for _, idx := range chunk {
+	// 		number_beams += uint64(fi.Ping_Info[idx].Number_Beams)
+	// 	}
 
-		for _, idx := range chunk {
+	// 	for _, idx := range chunk {
 
-		}
-	}
+	// 	}
+	// }
 
 	return nil
 }
