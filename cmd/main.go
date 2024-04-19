@@ -62,6 +62,12 @@ func create_metadata(gsf_uri string, config_uri string, in_memory bool) error {
 		return err
 	}
 
+	log.Println("Reading and writing swath bathymetry ping data")
+	err = src.SbpToTileDB(&file_info, config_uri)
+	if err != nil {
+		return err
+	}
+
 	log.Println("Finished GSF:", gsf_uri)
 
 	return nil
