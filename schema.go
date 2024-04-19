@@ -15,6 +15,7 @@ var ErrCreateAttributeTdb = errors.New("Error Creating Attribute for TileDB Arra
 var ErrCreateMdDenseTdb = errors.New("Error Creating Dense Metadata TileDB Array")
 var ErrCreateBeamSparseTdb = errors.New("Error Creating Beam Sparse TileDB Array")
 var ErrCreateSchemaTdb = errors.New("Error Creating TileDB Schema")
+var ErrCreateDimTdb = errors.New("Error Creating TileDB Dimension")
 
 // pascalCase convert a string separated by underscores into
 // PascalCase. For example, ALPHA_BETA_GAMMA -> AlphaBetaGamma.
@@ -93,6 +94,10 @@ func schemaAttrs(t any, schema *tiledb.ArraySchema, ctx *tiledb.Context) error {
 	for i := 0; i < values.NumField(); i++ {
 		name := types.Field(i).Name
 
+		if !types.Field(i).IsExported() {
+			continue
+		}
+
 		field_filt_defs := filt_defs[name]
 
 		// a mapping just seemed easier to pull required defs
@@ -105,7 +110,8 @@ func schemaAttrs(t any, schema *tiledb.ArraySchema, ctx *tiledb.Context) error {
 		// pull the field type and ignore dimension fields
 		def, status = field_tdb_defs["ftype"]
 		if status == false {
-			return errors.Join(ErrCreateAttributeTdb, errors.New("ftype tag not found"))
+			errf := errors.New("Field: " + name)
+			return errors.Join(ErrCreateAttributeTdb, errors.New("ftype tag not found"), errf)
 		}
 		ftype, _ := def.Attribute("ftype")
 		if ftype == "dim" {
@@ -121,125 +127,10 @@ func schemaAttrs(t any, schema *tiledb.ArraySchema, ctx *tiledb.Context) error {
 	return nil
 }
 
-func mdSchemaAttrs(sensor_id SubRecordID, contains_intensity bool, schema *tiledb.ArraySchema, ctx *tiledb.Context) (err error) {
-	// names = make([]string, 0, 10)
-
-	switch sensor_id {
-
-	case SEABEAM:
-		// DecodeSeabeam
-	case EM12:
-		// DecodeEM12
-	case EM100:
-		// DecodeEM100
-	case EM950:
-		// DecodeEM950
-	case EM121A:
-		// DecodeEM121A
-	case EM121:
-		// DecodeEM121
-	case SASS: // obsolete
-		// DecodeSASS
-	case SEAMAP:
-		// DecodeSeaMap
-	case SEABAT:
-		// DecodeSeaBat
-	case EM1000:
-		// DecodeEM1000
-	case TYPEIII_SEABEAM: // obsolete
-		// DecodeTypeIII
-	case SB_AMP:
-		// DecodeSBAmp
-	case SEABAT_II:
-		// DecodeSeaBatII
-	case SEABAT_8101:
-		// DecodeSeaBat8101
-	case SEABEAM_2112:
-		// DecodeSeaBeam2112
-	case ELAC_MKII:
-		// DecodeElacMkII
-	case CMP_SAAS: // CMP (compressed), should be used in place of SASS
-		// DecodeCmpSass
-	case RESON_8101, RESON_8111, RESON_8124, RESON_8125, RESON_8150, RESON_8160:
-		// DecodeReson8100
-	case EM120, EM300, EM1002, EM2000, EM3000, EM3002, EM3000D, EM3002D, EM121A_SIS:
-		// DecodeEM3
-	case EM710, EM302, EM122, EM2040:
-		// DecodeEM4
-		// names = append(names, fieldNames(EM4{})...)
-		err = schemaAttrs(&EM4{}, schema, ctx)
-	case GEOSWATH_PLUS:
-		// DecodeGeoSwathPlus
-	case KLEIN_5410_BSS:
-		// DecodeKlein5410Bss
-	case RESON_7125:
-		// DecodeReson7100
-	case EM300_RAW, EM1002_RAW, EM2000_RAW, EM3000_RAW, EM120_RAW, EM3002_RAW, EM3000D_RAW, EM3002D_RAW, EM121A_SIS_RAW:
-		// DecodeEM3Raw
-	case DELTA_T:
-		// DecodeDeltaT
-	case R2SONIC_2022, R2SONIC_2024, R2SONIC_2020:
-		// DecodeR2Sonic
-	case SR_NOT_DEFINED: // the spec makes no mention of ID 154
-		panic("Subrecord ID 154 is not defined.")
-	case RESON_TSERIES:
-		// DecodeResonTSeries
-	case KMALL:
-		// DecodeKMALL
-
-		// single beam swath sensor specific subrecords
-	case SWATH_ECHOTRAC, SWATH_BATHY2000, SWATH_PDD:
-		// DecodeSBEchotrac
-	case SWATH_MGD77:
-		// DecodeSBMGD77
-	case SWATH_BDB:
-		// DecodeSBBDB
-	case SWATH_NOSHDB:
-		// DecodeSBNOSHDB
-	case SWATH_NAVISOUND:
-		// DecodeSBNavisound
-	}
-
-	if err != nil {
-		return err
-	}
-
-	// sensor imagery metadata
-	if contains_intensity {
-
-		switch sensor_id {
-
-		case EM120, EM120_RAW, EM300, EM300_RAW, EM1002, EM1002_RAW, EM2000, EM2000_RAW, EM3000, EM3000_RAW, EM3002, EM3002_RAW, EM3000D, EM3000D_RAW, EM3002D, EM3002D_RAW, EM121A_SIS, EM121A_SIS_RAW:
-			// DecodeEM3Imagery
-		case RESON_7125:
-			// DecodeReson7100Imagery
-		case RESON_TSERIES:
-			// DecodeResonTSeriesImagery
-		case RESON_8101, RESON_8111, RESON_8124, RESON_8125, RESON_8150, RESON_8160:
-			// DecodeReson8100Imagery
-		case EM122, EM302, EM710, EM2040:
-			// DecodeEM4Imagery
-			// img_md.EM4_imagery = DecodeEM4Imagery(reader)
-			// nbytes += n_bytes
-			// names = append(names, fieldNames(EM4Imagery{})...)
-			err = schemaAttrs(&EM4Imagery{}, schema, ctx)
-		case KLEIN_5410_BSS:
-			// DecodeKlein5410BssImagery
-		case KMALL:
-			// DecodeKMALLImagery
-		case R2SONIC_2020, R2SONIC_2022, R2SONIC_2024:
-			// DecodeR2SonicImagery
-		}
-	}
-
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func pingDenseSchema(ctx *tiledb.Context, sensor_id SubRecordID, npings uint64, contains_intensity bool) (*tiledb.ArraySchema, error) {
+// basePidSchema sets up a base schema using the Ping ID as the dimensional axis.
+// Doesn't attach any attriubtes. Used for the PingHeaders, SensorMetadata and
+// SensorImageryMetadata structures.
+func basePidSchema(ctx *tiledb.Context, npings uint64) (*tiledb.ArraySchema, error) {
 	// an arbitrary choice; maybe at a future date we evaluate a good number
 	tile_sz := uint64(math.Min(float64(50000), float64(npings)))
 
@@ -298,7 +189,6 @@ func pingDenseSchema(ctx *tiledb.Context, sensor_id SubRecordID, npings uint64, 
 	if err != nil {
 		return nil, errors.Join(ErrCreateAttributeTdb, err)
 	}
-	// defer schema.Free()
 
 	err = schema.SetDomain(domain)
 	if err != nil {
@@ -316,109 +206,16 @@ func pingDenseSchema(ctx *tiledb.Context, sensor_id SubRecordID, npings uint64, 
 		return nil, errors.Join(ErrCreateAttributeTdb, err)
 	}
 
-	// add the struct fields as tiledb attributes
-	// ping header, sensor_metadata, sensor_imagery_metadata
-	err = schemaAttrs(&PingHeaders{}, schema, ctx)
-	if err != nil {
-		return nil, errors.Join(ErrCreateAttributeTdb, err)
-	}
-
-	err = mdSchemaAttrs(sensor_id, contains_intensity, schema, ctx)
-	if err != nil {
-		return nil, errors.Join(ErrCreateAttributeTdb, err)
-	}
-
-	// TODO; look into returning schema and create array elsewhere
-	// finally, create the empty array on disk, object store, etc
-	// array, err := tiledb.NewArray(ctx, file_uri)
-	// if err != nil {
-	// 	return nil, errors.Join(ErrCreateAttributeTdb, err)
-	// }
-	// defer array.Free()
-
-	// err = array.Create(schema)
-	// if err != nil {
-	// 	return nil, errors.Join(ErrCreateAttributeTdb, err)
-	// }
-
 	return schema, nil
 }
 
-func beamArrayAttrs(contains_intensity bool, beam_subrecords []string, schema *tiledb.ArraySchema, ctx *tiledb.Context) (err error) {
-	var (
-		field_tdb_defs map[string]stgpsr.Definition
-		def            stgpsr.Definition
-		status         bool
-	)
-
-	ba := BeamArray{}
-	beam_names := make([]string, len(beam_subrecords))
-
-	// cleanup subrecord names to match the BeamArray fields names
-	for k, v := range beam_subrecords {
-		beam_names[k] = pascalCase(v)
-	}
-
-	// values := reflect.ValueOf(ba)
-	// types := values.Type()
-	filt_defs, _ := stgpsr.ParseStruct(ba, "filters")
-	tdb_defs, _ := stgpsr.ParseStruct(ba, "tiledb")
-
-	// processing the beam array subrecords
-	for _, name := range beam_names {
-
-		// ignore intensity series as it needs to be handled by a separate type
-		if name == "IntensitySeries" {
-			continue
-		}
-
-		field_filt_defs := filt_defs[name]
-
-		field_tdb_defs = make(map[string]stgpsr.Definition)
-		for _, v := range tdb_defs[name] {
-			field_tdb_defs[v.Name()] = v
-		}
-
-		// pull the field type and ignore dimension fields
-		def, status = field_tdb_defs["ftype"]
-		if status == false {
-			return errors.Join(ErrCreateAttributeTdb, errors.New("ftype tag not found"))
-		}
-		ftype, _ := def.Attribute("ftype")
-		if ftype == "dim" {
-			// ignore dimensions
-			continue
-		}
-
-		err := CreateAttr(name, field_filt_defs, field_tdb_defs, schema, ctx)
-		if err != nil {
-			return errors.Join(ErrCreateAttributeTdb, err)
-		}
-	}
-
-	// processing the brb intensity data
-	if contains_intensity {
-		err = schemaAttrs(&BrbIntensity{}, schema, ctx)
-		if err != nil {
-			return errors.Join(ErrCreateAttributeTdb, err)
-		}
-	}
-
-	// processing the basic ping info (ping id, beam id)
-	err = schemaAttrs(&PingBeamNumbers{}, schema, ctx)
-	if err != nil {
-		return errors.Join(ErrCreateAttributeTdb, err)
-	}
-
-	return nil
-}
-
-// beamSparseSchema sets up a sparse array schema for the beam array data
-// and if it exists, the brb intensity data.
-// Longitude and Latitude are the dimensional axes, denoted by X & Y.
+// baseLonLatSchema sets up a base schema using X and Y as the dimensional axes,
+// where X and Y are longitude and latitude coordinatges.
+// Doesn't attach any attributes.
+// Used for the beam array data and if it exists, the brb intensity data.
 // The schema is set to allow duplicates, hilbert for cell ordering, row-major
 // for tile ordering.
-func beamSparseSchema(contains_intensity bool, beam_subrecords []string, ctx *tiledb.Context) (schema *tiledb.ArraySchema, err error) {
+func baseLonLatSchema(ctx *tiledb.Context) (schema *tiledb.ArraySchema, err error) {
 	// array domain
 	domain, err := tiledb.NewDomain(ctx)
 	if err != nil {
@@ -426,19 +223,21 @@ func beamSparseSchema(contains_intensity bool, beam_subrecords []string, ctx *ti
 	}
 	defer domain.Free()
 
-	tile_sz := uint64(1000)
+	tile_sz := float64(1000)
 	min_f64 := math.MaxFloat64 * -1
 
 	// setup lon/lat (X/Y) dimensions
 	xdim, err := tiledb.NewDimension(ctx, "X", tiledb.TILEDB_FLOAT64, []float64{min_f64, math.MaxFloat64}, tile_sz)
 	if err != nil {
-		return nil, errors.Join(ErrCreateAttributeTdb, err)
+		errdim := errors.New("Error Creating Dimension X")
+		return nil, errors.Join(ErrCreateAttributeTdb, err, errdim)
 	}
 	defer xdim.Free()
 
 	ydim, err := tiledb.NewDimension(ctx, "Y", tiledb.TILEDB_FLOAT64, []float64{min_f64, math.MaxFloat64}, tile_sz)
 	if err != nil {
-		return nil, errors.Join(ErrCreateAttributeTdb, err)
+		errdim := errors.New("Error Creating Dimension Y")
+		return nil, errors.Join(ErrCreateAttributeTdb, err, errdim)
 	}
 	defer ydim.Free()
 
@@ -508,143 +307,231 @@ func beamSparseSchema(contains_intensity bool, beam_subrecords []string, ctx *ti
 		return nil, errors.Join(ErrCreateSchemaTdb, err)
 	}
 
-	err = beamArrayAttrs(contains_intensity, beam_subrecords, schema, ctx)
+	return schema, nil
+}
+
+func beamAttachAttrs(schema *tiledb.ArraySchema, ctx *tiledb.Context, beam_subrecords []string, contains_intensity bool) (err error) {
+	var (
+		field_tdb_defs map[string]stgpsr.Definition
+		def            stgpsr.Definition
+		status         bool
+	)
+
+	ba := BeamArray{}
+	beam_names := make([]string, len(beam_subrecords))
+
+	// cleanup subrecord names to match the BeamArray fields names
+	for k, v := range beam_subrecords {
+		beam_names[k] = pascalCase(v)
+	}
+
+	// values := reflect.ValueOf(ba)
+	// types := values.Type()
+	filt_defs, _ := stgpsr.ParseStruct(ba, "filters")
+	tdb_defs, _ := stgpsr.ParseStruct(ba, "tiledb")
+
+	// processing the beam array subrecords
+	for _, name := range beam_names {
+
+		// ignore intensity series as it needs to be handled by a separate type
+		if name == "IntensitySeries" {
+			continue
+		}
+
+		field_filt_defs := filt_defs[name]
+
+		field_tdb_defs = make(map[string]stgpsr.Definition)
+		for _, v := range tdb_defs[name] {
+			field_tdb_defs[v.Name()] = v
+		}
+
+		// pull the field type and ignore dimension fields
+		def, status = field_tdb_defs["ftype"]
+		if status == false {
+			return errors.Join(ErrCreateAttributeTdb, errors.New("ftype tag not found"))
+		}
+		ftype, _ := def.Attribute("ftype")
+		if ftype == "dim" {
+			// ignore dimensions
+			continue
+		}
+
+		err := CreateAttr(name, field_filt_defs, field_tdb_defs, schema, ctx)
+		if err != nil {
+			return errors.Join(ErrCreateAttributeTdb, err)
+		}
+	}
+
+	// processing the brb intensity data
+	if contains_intensity {
+		err = schemaAttrs(&BrbIntensity{}, schema, ctx)
+		if err != nil {
+			err_brb := errors.New("Error attaching BrbIntensity attributes")
+			return errors.Join(err, ErrCreateAttributeTdb, err_brb)
+		}
+	}
+
+	// processing the basic ping info (ping id, beam id)
+	err = schemaAttrs(&PingBeamNumbers{}, schema, ctx)
 	if err != nil {
-		return nil, errors.Join(ErrCreateAttributeTdb, err)
+		err_pbn := errors.New("Error attaching PingBeamNumbers attributes")
+		return errors.Join(err, ErrCreateAttributeTdb, err_pbn)
+	}
+
+	return nil
+}
+
+func phTdbArray(ctx *tiledb.Context, array_uri string, npings uint64) error {
+	schema, err := basePidSchema(ctx, npings)
+	if err != nil {
+		return err
+	}
+	defer schema.Free()
+
+	err = schemaAttrs(&PingHeaders{}, schema, ctx)
+	if err != nil {
+		err_ph := errors.New("Error creating PingHeaders attributes")
+		return errors.Join(err, err_ph)
 	}
 
 	err = schema.Check()
 	if err != nil {
-		return nil, errors.Join(ErrCreateAttributeTdb, err)
+		err_ph := errors.New("Error checking PingHeaders schema")
+		return errors.Join(err, err_ph)
 	}
 
-	return schema, nil
+	array, err := tiledb.NewArray(ctx, array_uri)
+	if err != nil {
+		err_sen := errors.New("Error creating PingHeaders array")
+		return errors.Join(err_sen, err)
+	}
+	defer array.Free()
+
+	return nil
 }
 
-func (fi *FileInfo) pingSchemas(dense_ctx, sparse_ctx *tiledb.Context) (md_dense_schema, beam_sparse_schema *tiledb.ArraySchema, err error) {
+func senTdbArray(ctx *tiledb.Context, array_uri string, npings uint64, sensor_id SubRecordID) error {
+	schema, err := basePidSchema(ctx, npings)
+	if err != nil {
+		err_sen := errors.New("Error creating base schema for SensorMetadata")
+		return errors.Join(err, err_sen)
+	}
+	defer schema.Free()
+
+	smd := SensorMetadata{}
+	err = smd.attachAttrs(schema, ctx, sensor_id)
+	if err != nil {
+		return err
+	}
+
+	err = schema.Check()
+	if err != nil {
+		err_sen := errors.New("Error checking SensorMetadata TileDB schema")
+		return errors.Join(err, err_sen)
+	}
+
+	array, err := tiledb.NewArray(ctx, array_uri)
+	if err != nil {
+		err_sen := errors.New("Error creating SensorMetadata TileDB array")
+		return errors.Join(err_sen, err)
+	}
+	defer array.Free()
+
+	return nil
+}
+
+func senImgTdbArray(ctx *tiledb.Context, array_uri string, npings uint64, sensor_id SubRecordID) error {
+	schema, err := basePidSchema(ctx, npings)
+	if err != nil {
+		err_sen := errors.New("Error creating base schema for SensorImageryMetadata")
+		return errors.Join(err, err_sen)
+	}
+	defer schema.Free()
+
+	simd := SensorImageryMetadata{}
+	err = simd.attachAttrs(schema, ctx, sensor_id)
+	if err != nil {
+		return err
+	}
+
+	err = schema.Check()
+	if err != nil {
+		err_sen := errors.New("Error checking SensorImageryMetadata TileDB schema")
+		return errors.Join(err, err_sen)
+	}
+
+	array, err := tiledb.NewArray(ctx, array_uri)
+	if err != nil {
+		err_sen := errors.New("Error creating SensorImageryMetadata TileDB array")
+		return errors.Join(err_sen, err)
+	}
+	defer array.Free()
+
+	return nil
+}
+
+func beamTdbArray(ctx *tiledb.Context, array_uri string, beam_subrecords []string, contains_intensity bool) error {
+	schema, err := baseLonLatSchema(ctx)
+	if err != nil {
+		err_ba := errors.New("Error creating base schema for beam array")
+		return errors.Join(err, err_ba)
+	}
+	defer schema.Free()
+
+	err = beamAttachAttrs(schema, ctx, beam_subrecords, contains_intensity)
+	if err != nil {
+		err_ba := errors.New("Error attaching beam data attributes")
+		return errors.Join(err, err_ba)
+	}
+
+	err = schema.Check()
+	if err != nil {
+		err_ba := errors.New("Error checking beam array TileDB schema")
+		return errors.Join(err, err_ba)
+	}
+
+	array, err := tiledb.NewArray(ctx, array_uri)
+	if err != nil {
+		err_ba := errors.New("Error creating TileDB beam array")
+		return errors.Join(err, err_ba)
+	}
+	defer array.Free()
+
+	return nil
+}
+
+func (fi *FileInfo) pingTdbArrays(ph_ctx, s_md_ctx, si_md_ctx, bd_ctx *tiledb.Context, ph_uri, s_md_uri, si_md_uri, bd_uri string) (err error) {
 	beam_subrecords := fi.SubRecord_Schema
 	contains_intensity := lo.Contains(beam_subrecords, SubRecordNames[INTENSITY_SERIES])
-
 	rec_name := RecordNames[SWATH_BATHYMETRY_PING]
 	npings := fi.Record_Counts[rec_name]
-
-	// cleanup subrecord names to match the BeamArray fields names
-	// for k, v := range beam_names {
-	// 	beam_names[k] = pascalCase(v)
-	// }
-
-	// if contains_intensity {
-	// 	btype := reflect.TypeOf(BrbIntensity{})
-	// 	for i := 0; i < btype.NumField(); i++ {
-	// 		if btype.Field(i).IsExported() {
-	// 			beam_names = append(beam_names, btype.Field(i).Name)
-	// 		}
-	// 	}
-	// }
-
 	sensor_id := SubRecordID(fi.Metadata.Sensor_Info.Sensor_ID)
 
-	// ping dense array
-	md_dense_schema, err = pingDenseSchema(dense_ctx, sensor_id, npings, contains_intensity)
+	err = phTdbArray(ph_ctx, ph_uri, npings)
 	if err != nil {
-		return nil, nil, err
-	}
-	// defer dense_schema.Free()
-	// md_names = md_fields(sensor_id, contains_intensity, schema, ctx)
-
-	beam_sparse_schema, err = beamSparseSchema(contains_intensity, beam_subrecords, sparse_ctx)
-	if err != nil {
-		return nil, nil, err
+		err_ph := errors.New("Error creating PingHeaders TileDB array")
+		return errors.Join(err, err_ph)
 	}
 
-	return md_dense_schema, beam_sparse_schema, nil
-}
-
-func (fi *FileInfo) PingArrays(dense_file_uri, sparse_file_uri string, dense_ctx, sparse_ctx *tiledb.Context) (beam_names, md_names []string, err error) {
-	var (
-	// config *tiledb.Config
-	)
-
-	// get a generic config if no path provided
-	// if config_uri == "" {
-	// 	config, err = tiledb.NewConfig()
-	// 	if err != nil {
-	// 		return nil, nil, err
-	// 	}
-	// } else {
-	// 	config, err = tiledb.LoadConfig(config_uri)
-	// 	if err != nil {
-	// 		return nil, nil, err
-	// 	}
-	// }
-
-	// defer config.Free()
-
-	// // contexts for both the sparse and dense arrays
-	// dense_ctx, err := tiledb.NewContext(config)
-	// if err != nil {
-	// 	return nil, nil, err
-	// }
-	// defer dense_ctx.Free()
-
-	// sparse_ctx, err := tiledb.NewContext(config)
-	// if err != nil {
-	// 	return nil, nil, err
-	// }
-	// defer sparse_ctx.Free()
-
-	md_dense_schema, beam_sparse_schema, err := fi.pingSchemas(dense_ctx, sparse_ctx)
+	err = senTdbArray(s_md_ctx, s_md_uri, npings, sensor_id)
 	if err != nil {
-		return nil, nil, err
-	}
-	defer md_dense_schema.Free()
-	defer beam_sparse_schema.Free()
-
-	// create the empty arrays on disk, object store, etc
-	md_dense_array, err := tiledb.NewArray(dense_ctx, dense_file_uri)
-	if err != nil {
-		return nil, nil, errors.Join(ErrCreateMdDenseTdb, err)
-	}
-	defer md_dense_array.Free()
-
-	err = md_dense_array.Create(md_dense_schema)
-	if err != nil {
-		return nil, nil, errors.Join(ErrCreateMdDenseTdb, err)
+		err_s := errors.New("Error creating SensorMetadata TileDB array")
+		return errors.Join(err, err_s)
 	}
 
-	beam_sparse_array, err := tiledb.NewArray(sparse_ctx, sparse_file_uri)
-	if err != nil {
-		return nil, nil, errors.Join(ErrCreateBeamSparseTdb, err)
-	}
-	defer beam_sparse_array.Free()
-
-	err = beam_sparse_array.Create(beam_sparse_schema)
-	if err != nil {
-		return nil, nil, errors.Join(ErrCreateBeamSparseTdb, err)
-	}
-
-	// field names for each array schema
-	// sensor metadata
-	attrs, err := md_dense_schema.Attributes()
-	md_names = make([]string, len(attrs))
-	for k, v := range attrs {
-		name, err := v.Name()
+	if contains_intensity {
+		err = senImgTdbArray(si_md_ctx, si_md_uri, npings, sensor_id)
 		if err != nil {
-			return nil, nil, err
+			err_si := errors.New("Error creating SensorImageryMetadata TileDB array")
+			return errors.Join(err, err_si)
 		}
-		md_names[k] = name
 	}
 
-	// beam sparse
-	attrs, err = beam_sparse_schema.Attributes()
-	beam_names = make([]string, len(attrs))
-	for k, v := range attrs {
-		name, err := v.Name()
-		if err != nil {
-			return nil, nil, err
-		}
-		beam_names[k] = name
+	err = beamTdbArray(bd_ctx, bd_uri, beam_subrecords, contains_intensity)
+	if err != nil {
+		err_ba := errors.New("Error creating TileDB beam array")
+		return errors.Join(err, err_ba)
 	}
 
-	return beam_names, md_names, nil
+	return nil
 }
