@@ -538,7 +538,7 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 		// read the whole subrecord and form a new reader
 		// i think this is easier than passing around how many
 		// bytes are read from each func associated with decoding a subrecord
-		sr_buff = make([]byte, sub_rec.Datasize-1)
+		sr_buff = make([]byte, sub_rec.Datasize)
 		err := binary.Read(reader, binary.BigEndian, &sr_buff)
 		if err != nil {
 			// i've come across a subrecord, specifically INTENSITY_SERIES,
