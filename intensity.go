@@ -63,10 +63,10 @@ func DecodeBrbIntensity(reader *bytes.Reader, nbeams uint16, sensor_id SubRecord
 			Start_range   uint16
 			Spare         [3]uint16 // 6 bytes
 		} // 12 bytes
-		count        []uint16
-		detect       []uint16
-		st_rng       []uint16
-		detect_val   []float32
+		count  []uint16
+		detect []uint16
+		st_rng []uint16
+		// detect_val   []float32
 		timeseries   []float32
 		samples_u1   []uint8
 		samples_u2   []uint16

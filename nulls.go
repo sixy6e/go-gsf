@@ -110,7 +110,7 @@ func (pd *PingData) fillNulls(singlePing *PingData) error {
 			// maybe a single value of 0? Also means, the sample count is 1 (needed for var array)
 			for i := uint16(0); i < nbeams; i++ {
 				pd.Brb_intensity.TimeSeries = append(pd.Brb_intensity.TimeSeries, NULL_FLOAT32_ZERO)
-				pd.Brb_intensity.BottomDetect = append(pd.Brb_intensity.BottomDetect, NULL_FLOAT32_ZERO)
+				// pd.Brb_intensity.BottomDetect = append(pd.Brb_intensity.BottomDetect, NULL_FLOAT32_ZERO)
 				pd.Brb_intensity.BottomDetectIndex = append(pd.Brb_intensity.BottomDetectIndex, NULL_UINT16_ZERO)
 				pd.Brb_intensity.StartRange = append(pd.Brb_intensity.StartRange, NULL_UINT16_ZERO)
 				pd.Brb_intensity.sample_count = append(pd.Brb_intensity.sample_count, uint16(1))
