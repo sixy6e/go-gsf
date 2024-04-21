@@ -2,6 +2,7 @@ package gsf
 
 import (
 	"errors"
+	"reflect"
 	"strconv"
 
 	tiledb "github.com/TileDB-Inc/TileDB-Go"
@@ -51,13 +52,14 @@ func (sm *SensorMetadata) writeSensorMetadata(ctx *tiledb.Context, array *tiledb
 	subarr.AddRangeByName("PING_ID", rng)
 	err = query.SetSubarray(subarr)
 	if err != nil {
-		errn := errors.New("Error setting subarray query for wrting SensorImageryMetadata")
+		errn := errors.New("Error setting subarray query for wrting SensorMetadata")
 		return errors.Join(err, errn)
 	}
 
 	switch sensor_id {
 	case EM710, EM302, EM122, EM2040:
-		err := setStructFieldBuffers(query, sm.EM_4)
+		// EM4
+		err := setStructFieldBuffers(query, &sm.EM_4)
 		if err != nil {
 			errn := errors.New("Error writing SensorMetadata")
 			return errors.Join(err, errn)
@@ -65,6 +67,7 @@ func (sm *SensorMetadata) writeSensorMetadata(ctx *tiledb.Context, array *tiledb
 	default:
 		return errors.Join(ErrSensor, errors.New(strconv.Itoa(int(sensor_id))))
 	}
+
 	return nil
 }
 
@@ -152,6 +155,29 @@ func (sm *SensorMetadata) attachAttrs(schema *tiledb.ArraySchema, ctx *tiledb.Co
 	return nil
 }
 
+func (sm *SensorMetadata) appendSensorMetadata(sp *SensorMetadata, sensor_id SubRecordID) error {
+	// sp refers to a single pings worth of SensorMetadata
+	// whereas sm should be pointing back to the chunks of pings
+	switch sensor_id {
+	case EM710, EM302, EM122, EM2040:
+		// EM4
+		rf_pd := reflect.ValueOf(&sm.EM_4).Elem()
+		rf_sp := reflect.ValueOf(&sp.EM_4).Elem()
+		types := rf_pd.Type()
+
+		for i := 0; i < rf_pd.NumField(); i++ {
+			name := types.Field(i).Name
+			field_pd := rf_pd.FieldByName(name)
+			field_sp := rf_sp.FieldByName(name)
+			field_pd.Set(reflect.AppendSlice(field_pd, field_sp))
+		}
+	default:
+		return errors.Join(ErrSensor, errors.New(strconv.Itoa(int(sensor_id))))
+	}
+
+	return nil
+}
+
 // newSensorMetadata is a helper func for initialising SensorMetadata where
 // the specific sensor will contain slices initialised to the number of pings
 // required.
@@ -213,13 +239,13 @@ func (sim *SensorImageryMetadata) writeSensorImageryMetadata(ctx *tiledb.Context
 
 	switch sensor_id {
 	case EM710, EM302, EM122, EM2040:
-		err := setStructFieldBuffers(query, sim.EM4_imagery)
+		err := setStructFieldBuffers(query, &sim.EM4_imagery)
 		if err != nil {
 			errn := errors.New("Error writing SensorImageryMetadata")
 			return errors.Join(err, errn)
 		}
 	case EM120, EM300, EM1002, EM2000, EM3000, EM3002, EM3000D, EM3002D, EM121A_SIS:
-		err := setStructFieldBuffers(query, sim.EM3_imagery)
+		err := setStructFieldBuffers(query, &sim.EM3_imagery)
 		if err != nil {
 			errn := errors.New("Error writing SensorImageryMetadata")
 			return errors.Join(err, errn)
@@ -227,6 +253,7 @@ func (sim *SensorImageryMetadata) writeSensorImageryMetadata(ctx *tiledb.Context
 	default:
 		return errors.Join(ErrSensor, errors.New(strconv.Itoa(int(sensor_id))))
 	}
+
 	return nil
 }
 
@@ -257,6 +284,41 @@ func (sim *SensorImageryMetadata) attachAttrs(schema *tiledb.ArraySchema, ctx *t
 		// DecodeKMALLImagery
 	case R2SONIC_2020, R2SONIC_2022, R2SONIC_2024:
 		// DecodeR2SonicImagery
+	}
+
+	return nil
+}
+
+func (sim *SensorImageryMetadata) appendSensorImageryMetadata(sp *SensorImageryMetadata, sensor_id SubRecordID) error {
+	// sp refers to a single pings worth of SensorImageryMetadata
+	// whereas sim should be pointing back to the chunks of pings
+	switch sensor_id {
+	case EM710, EM302, EM122, EM2040:
+		// EM4
+		rf_pd := reflect.ValueOf(&sim.EM4_imagery).Elem()
+		rf_sp := reflect.ValueOf(&sp.EM4_imagery).Elem()
+		types := rf_pd.Type()
+
+		for i := 0; i < rf_pd.NumField(); i++ {
+			name := types.Field(i).Name
+			field_pd := rf_pd.FieldByName(name)
+			field_sp := rf_sp.FieldByName(name)
+			field_pd.Set(reflect.AppendSlice(field_pd, field_sp))
+		}
+	case EM120, EM300, EM1002, EM2000, EM3000, EM3002, EM3000D, EM3002D, EM121A_SIS:
+		// EM3
+		rf_pd := reflect.ValueOf(&sim.EM3_imagery).Elem()
+		rf_sp := reflect.ValueOf(&sp.EM3_imagery).Elem()
+		types := rf_pd.Type()
+
+		for i := 0; i < rf_pd.NumField(); i++ {
+			name := types.Field(i).Name
+			field_pd := rf_pd.FieldByName(name)
+			field_sp := rf_sp.FieldByName(name)
+			field_pd.Set(reflect.AppendSlice(field_pd, field_sp))
+		}
+	default:
+		return errors.Join(ErrSensor, errors.New(strconv.Itoa(int(sensor_id))))
 	}
 
 	return nil
