@@ -457,12 +457,13 @@ func setStructFieldBuffers(query *tiledb.Query, t any) error {
 	bytesize8 := uint64(8)
 
 	values := reflect.ValueOf(t).Elem()
+	types := reflect.TypeOf(t).Elem()
 	for i := 0; i < values.NumField(); i++ {
 		fld := values.Field(i)
 		typ := fld.Type()
 
-		if typ.Field(i).IsExported() {
-			name := typ.Field(i).Name
+		if types.Field(i).IsExported() {
+			name := types.Field(i).Name
 			dims := 0
 			stype := sliceDimsType(typ, &dims)
 
