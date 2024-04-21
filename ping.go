@@ -6,6 +6,7 @@ import (
 	"encoding/binary"
 	"errors"
 	"reflect"
+	"strconv"
 	"time"
 
 	"math"
@@ -185,14 +186,14 @@ type PingInfo struct {
 }
 
 type PingData struct {
-	Ping_headers             PingHeaders
-	Beam_array               BeamArray
-	Brb_intensity            BrbIntensity
-	Sensor_metadata          SensorMetadata
-	Sensory_imagery_metadata SensorImageryMetadata
-	Lon_lat                  LonLat
-	n_pings                  uint64
-	ba_subrecords            []string
+	Ping_headers            PingHeaders
+	Beam_array              BeamArray
+	Brb_intensity           BrbIntensity
+	Sensor_metadata         SensorMetadata
+	Sensor_imagery_metadata SensorImageryMetadata
+	Lon_lat                 LonLat
+	n_pings                 uint64
+	ba_subrecords           []string
 }
 
 // appendPingData is used when combining chunks of pings together into
@@ -203,11 +204,11 @@ type PingData struct {
 // A separate method will need to be used to append null data for the ping
 // missing required beam array records defined as a Set of all Sub_Records
 // from all SWATH_BATHYMETRY_PING records.
-func (pd *PingData) appendPingData(singlePing *PingData, contains_intensity bool) error {
+func (pd *PingData) appendPingData(singlePing *PingData, contains_intensity bool, sensor_id SubRecordID, beam_names []string) error {
 	// TODO; look into functionalising the appending mechanism where we use reflect
 	// Ping_headers
-	rf_pd := reflect.ValueOf(pd.Ping_headers).Elem()
-	rf_sp := reflect.ValueOf(singlePing.Ping_headers).Elem()
+	rf_pd := reflect.ValueOf(&pd.Ping_headers).Elem()
+	rf_sp := reflect.ValueOf(&singlePing.Ping_headers).Elem()
 	types := rf_pd.Type()
 
 	for i := 0; i < rf_pd.NumField(); i++ {
@@ -218,10 +219,10 @@ func (pd *PingData) appendPingData(singlePing *PingData, contains_intensity bool
 	}
 
 	// Beam_array
-	rf_pd = reflect.ValueOf(pd.Beam_array).Elem()
-	rf_sp = reflect.ValueOf(singlePing.Beam_array).Elem()
+	rf_pd = reflect.ValueOf(&pd.Beam_array).Elem()
+	rf_sp = reflect.ValueOf(&singlePing.Beam_array).Elem()
 
-	for _, name := range singlePing.ba_subrecords {
+	for _, name := range beam_names {
 		if name == "IntensitySeries" {
 			continue
 		}
@@ -235,15 +236,9 @@ func (pd *PingData) appendPingData(singlePing *PingData, contains_intensity bool
 	pd.Lon_lat.Latitude = append(pd.Lon_lat.Latitude, singlePing.Lon_lat.Latitude...)
 
 	// Sensor_metadata
-	rf_pd = reflect.ValueOf(pd.Sensor_metadata).Elem()
-	rf_sp = reflect.ValueOf(singlePing.Sensor_metadata).Elem()
-	types = rf_pd.Type()
-
-	for i := 0; i < rf_pd.NumField(); i++ {
-		name := types.Field(i).Name
-		field_pd := rf_pd.FieldByName(name)
-		field_sp := rf_sp.FieldByName(name)
-		field_pd.Set(reflect.AppendSlice(field_pd, field_sp))
+	err := pd.Sensor_metadata.appendSensorMetadata(&singlePing.Sensor_metadata, sensor_id)
+	if err != nil {
+		return errors.Join(err, errors.New("Error appending SensorMetadata"))
 	}
 
 	if contains_intensity {
@@ -254,16 +249,10 @@ func (pd *PingData) appendPingData(singlePing *PingData, contains_intensity bool
 		pd.Brb_intensity.StartRange = append(singlePing.Brb_intensity.StartRange, singlePing.Brb_intensity.StartRange...)
 		pd.Brb_intensity.sample_count = append(singlePing.Brb_intensity.sample_count, singlePing.Brb_intensity.sample_count...)
 
-		// Sensory_imagery_metadata
-		rf_pd = reflect.ValueOf(pd.Sensory_imagery_metadata).Elem()
-		rf_sp = reflect.ValueOf(singlePing.Sensory_imagery_metadata).Elem()
-		types := rf_pd.Type()
-
-		for i := 0; i < rf_pd.NumField(); i++ {
-			name := types.Field(i).Name
-			field_pd := rf_pd.FieldByName(name)
-			field_sp := rf_sp.FieldByName(name)
-			field_pd.Set(reflect.AppendSlice(field_pd, field_sp))
+		// Sensor_imagery_metadata
+		err := pd.Sensor_imagery_metadata.appendSensorImageryMetadata(&singlePing.Sensor_imagery_metadata, sensor_id)
+		if err != nil {
+			return errors.Join(err, errors.New("Error appending SensorImageryMetadata"))
 		}
 	}
 
@@ -294,7 +283,7 @@ func newPingData(npings int, number_beams uint64, sensor_id SubRecordID, beam_na
 	pdata.Beam_array = beam_array
 	pdata.Brb_intensity = brb
 	pdata.Sensor_metadata = sen_md
-	pdata.Sensory_imagery_metadata = sen_img_md
+	pdata.Sensor_imagery_metadata = sen_img_md
 	pdata.Lon_lat = lonlat
 	pdata.n_pings = uint64(npings)
 	pdata.ba_subrecords = beam_names
@@ -511,7 +500,7 @@ func ping_info(reader *bytes.Reader, rec RecordHdr) PingInfo {
 // Another instance was a duplicate ping. Same timestamp, location, depth, but zero values
 // for supporting attributes/sub-records/fields (heading, course, +others). Again, this
 // appeared to have never been encountered before (or never looked).
-func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor_id SubRecordID) PingData {
+func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor_id SubRecordID) (PingData, error) {
 	var (
 		idx        int64 = 0
 		beam_data  []float32
@@ -523,6 +512,7 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 		sr_reader  *bytes.Reader
 		sen_md     SensorMetadata
 		ba_read    []string // keep track of which beam array records have been read
+		err        error
 		// nbytes    int64
 		// sf map[SubRecordID]ScaleFactor
 		// beams     BeamArray
@@ -534,26 +524,39 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 
 	hdr := decode_ping_hdr(reader)
 	idx += 56 // 56 bytes read for ping header
-	offset := rec.Byte_index + idx
 
 	for (int64(rec.Datasize) - idx) > 4 {
 
 		// subrecord header
-		// _, _ = reader.Seek(idx, 0) // shouldn't be needed
-		sub_rec := SubRecHdr(reader, offset)
+		// offset is used to track the start of the subrecord from the start
+		// of the file as given by Record.Byte_index
+		// Incase we wish to serialise the subrecord info along with the record info
+		sub_rec := SubRecHdr(reader, rec.Byte_index+idx)
 		idx += 4
 
 		// read the whole subrecord and form a new reader
 		// i think this is easier than passing around how many
 		// bytes are read from each func associated with decoding a subrecord
-		sr_buff = make([]byte, sub_rec.Datasize)
-		_ = binary.Read(reader, binary.BigEndian, &sr_buff)
+		sr_buff = make([]byte, sub_rec.Datasize-1)
+		err := binary.Read(reader, binary.BigEndian, &sr_buff)
+		if err != nil {
+			// i've come across a subrecord, specifically INTENSITY_SERIES,
+			// where the subrecord would read read past the full record size
+			// by one byte. i.e. subrecord size is 10471, record size is 18332
+			// and current position is 7862.
+			// 7862 + 10471 = 18333
+			errn := errors.Join(
+				errors.New("Binary Read Failed"),
+				errors.New("Attempting to read SubRecord: "+SubRecordNames[sub_rec.Id]),
+				errors.New("SubRecord Datasize: "+strconv.Itoa(int(sub_rec.Datasize))),
+				errors.New("Current byte location: "+strconv.Itoa(int(idx))),
+				errors.New("Record index: "+strconv.Itoa(int(rec.Byte_index))),
+				errors.New("SubRecord index: "+strconv.Itoa(int(sub_rec.Byte_index))),
+			)
+			err = errors.Join(err, errn)
+		}
 		sr_reader = bytes.NewReader(sr_buff)
 
-		// offset is used to track the start of the subrecord from the start
-		// of the file as given by Record.Byte_index
-		// Incase we wish to serialise the subrecord info along with the record info
-		offset += int64(sub_rec.Datasize)
 		idx += int64(sub_rec.Datasize)
 
 		// only relevant for the ping sub-record arrays and not the sensor specific
@@ -626,7 +629,7 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 				sr_reader,
 				pinfo.Number_Beams,
 				pinfo.scale_factors[sub_rec.Id],
-				FIELD_SIZE_TWO,
+				BYTES_PER_BEAM_TWO,
 				true,
 			)
 			beam_array.BeamAngle = beam_data
@@ -670,7 +673,7 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 				sr_reader,
 				pinfo.Number_Beams,
 				pinfo.scale_factors[sub_rec.Id],
-				FIELD_SIZE_ONE,
+				BYTES_PER_BEAM_ONE,
 				false,
 			)
 			beam_array.QualityFactor = beam_data
@@ -681,7 +684,7 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 				sr_reader,
 				pinfo.Number_Beams,
 				pinfo.scale_factors[sub_rec.Id],
-				FIELD_SIZE_ONE,
+				BYTES_PER_BEAM_ONE,
 				true,
 			)
 			beam_array.RecieveHeave = beam_data
@@ -692,7 +695,7 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 				sr_reader,
 				pinfo.Number_Beams,
 				pinfo.scale_factors[sub_rec.Id],
-				FIELD_SIZE_TWO,
+				BYTES_PER_BEAM_TWO,
 				false,
 			)
 			beam_array.DepthError = beam_data
@@ -703,7 +706,7 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 				sr_reader,
 				pinfo.Number_Beams,
 				pinfo.scale_factors[sub_rec.Id],
-				FIELD_SIZE_TWO,
+				BYTES_PER_BEAM_TWO,
 				false,
 			)
 			beam_array.AcrossTrackError = beam_data
@@ -714,7 +717,7 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 				sr_reader,
 				pinfo.Number_Beams,
 				pinfo.scale_factors[sub_rec.Id],
-				FIELD_SIZE_TWO,
+				BYTES_PER_BEAM_TWO,
 				false,
 			)
 			beam_array.AlongTrackError = beam_data
@@ -747,7 +750,7 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 				sr_reader,
 				pinfo.Number_Beams,
 				pinfo.scale_factors[sub_rec.Id],
-				FIELD_SIZE_ONE,
+				BYTES_PER_BEAM_ONE,
 				true,
 			)
 			beam_array.SignalToNoise = beam_data
@@ -758,8 +761,8 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 				sr_reader,
 				pinfo.Number_Beams,
 				pinfo.scale_factors[sub_rec.Id],
-				FIELD_SIZE_TWO,
-				false,
+				BYTES_PER_BEAM_TWO,
+				true, // c-code says unsigned, lib-pdf says signed???
 			)
 			beam_array.BeamAngleForward = beam_data
 			ba_read = append(ba_read, pascalCase(SubRecordNames[BEAM_ANGLE_FORWARD]))
@@ -769,7 +772,7 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 				sr_reader,
 				pinfo.Number_Beams,
 				pinfo.scale_factors[sub_rec.Id],
-				FIELD_SIZE_TWO,
+				BYTES_PER_BEAM_TWO,
 				false,
 			)
 			beam_array.VerticalError = beam_data
@@ -780,7 +783,7 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 				sr_reader,
 				pinfo.Number_Beams,
 				pinfo.scale_factors[sub_rec.Id],
-				FIELD_SIZE_TWO,
+				BYTES_PER_BEAM_TWO,
 				false,
 			)
 			beam_array.HorizontalError = beam_data
@@ -791,26 +794,22 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 			ba_read = append(ba_read, pascalCase(SubRecordNames[INTENSITY_SERIES]))
 			// idx += nbytes
 		case SECTOR_NUMBER:
-			// should be fine to just use DecodeSubRecArray and specify
-			// 1-byte per beam
 			beam_data = sub_rec.DecodeSubRecArray(
 				sr_reader,
 				pinfo.Number_Beams,
 				pinfo.scale_factors[sub_rec.Id],
-				FIELD_SIZE_ONE,
+				BYTES_PER_BEAM_ONE,
 				false,
 			)
 			beam_array.SectorNumber = beam_data
 			ba_read = append(ba_read, pascalCase(SubRecordNames[SECTOR_NUMBER]))
 			// idx += nbytes
 		case DETECTION_INFO:
-			// should be fine to just use DecodeSubRecArray and specify
-			// 1-byte per beam
 			beam_data = sub_rec.DecodeSubRecArray(
 				sr_reader,
 				pinfo.Number_Beams,
 				pinfo.scale_factors[sub_rec.Id],
-				FIELD_SIZE_ONE,
+				BYTES_PER_BEAM_ONE,
 				false,
 			)
 			beam_array.DetectionInfo = beam_data
@@ -821,20 +820,18 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 				sr_reader,
 				pinfo.Number_Beams,
 				pinfo.scale_factors[sub_rec.Id],
-				FIELD_SIZE_ONE,
+				BYTES_PER_BEAM_ONE,
 				true,
 			)
 			beam_array.IncidentBeamAdj = beam_data
 			ba_read = append(ba_read, pascalCase(SubRecordNames[INCIDENT_BEAM_ADJ]))
 			// idx += nbytes
 		case SYSTEM_CLEANING:
-			// should be fine to just use DecodeSubRecArray and specify
-			// 1-byte per beam
 			beam_data = sub_rec.DecodeSubRecArray(
 				sr_reader,
 				pinfo.Number_Beams,
 				pinfo.scale_factors[sub_rec.Id],
-				FIELD_SIZE_ONE,
+				BYTES_PER_BEAM_ONE,
 				false,
 			)
 			beam_array.SystemCleaning = beam_data
@@ -845,7 +842,7 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 				sr_reader,
 				pinfo.Number_Beams,
 				pinfo.scale_factors[sub_rec.Id],
-				FIELD_SIZE_ONE,
+				BYTES_PER_BEAM_ONE,
 				true,
 			)
 			beam_array.DopplerCorrection = beam_data
@@ -856,7 +853,7 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 				sr_reader,
 				pinfo.Number_Beams,
 				pinfo.scale_factors[sub_rec.Id],
-				FIELD_SIZE_TWO,
+				BYTES_PER_BEAM_TWO,
 				false,
 			)
 			beam_array.SonarVertUncertainty = beam_data
@@ -867,7 +864,7 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 				sr_reader,
 				pinfo.Number_Beams,
 				pinfo.scale_factors[sub_rec.Id],
-				FIELD_SIZE_TWO,
+				BYTES_PER_BEAM_TWO,
 				false,
 			)
 			beam_array.SonarHorzUncertainty = beam_data
@@ -999,13 +996,13 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 	ping_data.Ping_headers = ping_headers
 	ping_data.Beam_array = beam_array
 	ping_data.Brb_intensity = intensity
-	ping_data.Sensory_imagery_metadata = img_md
+	ping_data.Sensor_imagery_metadata = img_md
 	ping_data.Sensor_metadata = sen_md
 	ping_data.Lon_lat = lonlat
 	ping_data.n_pings = uint64(1)
 	ping_data.ba_subrecords = ba_read
 
-	return ping_data
+	return ping_data, err
 }
 
 // writeBeamData serialises the beam data to a sparse TileDB array
@@ -1156,7 +1153,7 @@ func (pd *PingData) writeBeamData(ctx *tiledb.Context, array *tiledb.Array, ping
 				offset += uint64(pd.Brb_intensity.sample_count[i]) * bytes_val
 			}
 
-			_, err = query.SetOffsetsBuffer("Sound_velocity", arr_offset)
+			_, err = query.SetOffsetsBuffer("TimeSeries", arr_offset)
 			if err != nil {
 				return errors.Join(ErrWriteBdTdb, err)
 			}
@@ -1306,7 +1303,7 @@ func (pd *PingData) toTileDB(ph_array, s_md_array, si_md_array, bd_array *tiledb
 	// 	Beam_array               BeamArray
 	// 	Brb_intensity            BrbIntensity
 	// 	Sensor_metadata          SensorMetadata
-	// 	Sensory_imagery_metadata SensorImageryMetadata
+	// 	Sensor_imagery_metadata SensorImageryMetadata
 	// 	Lon_lat                  LonLat
 	// 	n_pings                  uint64
 	// 	ba_subrecords            []string
@@ -1326,7 +1323,8 @@ func (pd *PingData) toTileDB(ph_array, s_md_array, si_md_array, bd_array *tiledb
 	// PingHeaders
 	err := pd.Ping_headers.writePingHeaders(ph_ctx, ph_array, ping_start, ping_end)
 	if err != nil {
-		return errors.Join(ErrWriteBdTdb, err)
+		errn := errors.New("Error writing PingHeaders")
+		return errors.Join(err, errn)
 	}
 
 	// SensorMetadata
@@ -1338,7 +1336,7 @@ func (pd *PingData) toTileDB(ph_array, s_md_array, si_md_array, bd_array *tiledb
 
 	// SensorImageryMetadata
 	if contains_intensity {
-		err = pd.Sensory_imagery_metadata.writeSensorImageryMetadata(si_md_ctx, si_md_array, sensor_id, ping_start, ping_end)
+		err = pd.Sensor_imagery_metadata.writeSensorImageryMetadata(si_md_ctx, si_md_array, sensor_id, ping_start, ping_end)
 		if err != nil {
 			errn := errors.New("Error writing SensorImageryMetadata")
 			return errors.Join(err, errn)
@@ -1390,10 +1388,16 @@ func (g *GsfFile) SbpToTileDB(fi *FileInfo, config_uri string) error {
 	total_pings := fi.Record_Counts[rec_name]
 	ping_records := fi.Index.Record_Index[rec_name]
 
+	// schema and cleanup subrecord names to match the BeamArray fields names
 	sr_schema := make([]string, 0, len(fi.SubRecord_Schema))
 	for _, v := range fi.SubRecord_Schema {
 		sr_schema = append(sr_schema, v)
 	}
+	sr_schema_c := make([]string, len(sr_schema))
+	for k, v := range sr_schema {
+		sr_schema_c[k] = pascalCase(v)
+	}
+
 	contains_intensity := lo.Contains(sr_schema, SubRecordNames[INTENSITY_SERIES])
 	sensor_id := SubRecordID(fi.Metadata.Sensor_Info.Sensor_ID)
 
@@ -1455,7 +1459,7 @@ func (g *GsfFile) SbpToTileDB(fi *FileInfo, config_uri string) error {
 	// open the arrays for writing
 
 	// PingHeaders
-	ph_array, err := ArrayOpen(ph_ctx, bd_uri, tiledb.TILEDB_WRITE)
+	ph_array, err := ArrayOpen(ph_ctx, ph_uri, tiledb.TILEDB_WRITE)
 	if err != nil {
 		return errors.Join(err, ErrWriteBdTdb, errors.New("Error opening (w) PingHeaders TileDB array"))
 	}
@@ -1509,7 +1513,7 @@ func (g *GsfFile) SbpToTileDB(fi *FileInfo, config_uri string) error {
 
 		// initialise beam arrays, backscatter, lonlat
 		// arrays for ping and beam numbers
-		ping_data_chunk = newPingData(n_pings, number_beams, sensor_id, sr_schema, contains_intensity)
+		ping_data_chunk = newPingData(n_pings, number_beams, sensor_id, sr_schema_c, contains_intensity)
 		ping_beam_ids = newPingBeamNumbers(int(number_beams))
 
 		// loop over each ping for this chunk of pings
@@ -1517,13 +1521,20 @@ func (g *GsfFile) SbpToTileDB(fi *FileInfo, config_uri string) error {
 			rec := ping_records[idx]
 			pinfo := fi.Ping_Info[idx]
 
+			// seek to record
+			_, _ = g.Stream.Seek(rec.Byte_index, 0)
+
 			buffer := make([]byte, rec.Datasize)
 			_ = binary.Read(g.Stream, binary.BigEndian, &buffer)
-			ping_data = SwathBathymetryPingRec(buffer, rec, pinfo, sensor_id)
+			ping_data, err = SwathBathymetryPingRec(buffer, rec, pinfo, sensor_id)
+			if err != nil {
+				errn := errors.New("Error reading ping: " + strconv.Itoa(int(idx)))
+				return errors.Join(err, errn)
+			}
 
 			// appending and null filling
 			_ = ping_beam_ids.appendPingBeam(idx, pinfo.Number_Beams)
-			_ = ping_data_chunk.appendPingData(&ping_data, contains_intensity)
+			_ = ping_data_chunk.appendPingData(&ping_data, contains_intensity, sensor_id, sr_schema_c)
 			_ = ping_data_chunk.fillNulls(&ping_data)
 
 			// newPingData (initialise arrays)
@@ -1551,19 +1562,6 @@ func (g *GsfFile) SbpToTileDB(fi *FileInfo, config_uri string) error {
 			return errors.Join(err, errors.New("Error writing PingData chunk"))
 		}
 	}
-
-	// process each chunk
-	// for _, chunk := range chunks {
-
-	// 	n_pings := len(chunk)
-	// 	for _, idx := range chunk {
-	// 		number_beams += uint64(fi.Ping_Info[idx].Number_Beams)
-	// 	}
-
-	// 	for _, idx := range chunk {
-
-	// 	}
-	// }
 
 	return nil
 }
