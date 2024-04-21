@@ -12,7 +12,7 @@ import (
 // SWATH_BATHYMETRY_PING records, we need to fill in the blanks for the attributes
 // missing from the newly read ping.
 // Assuming that the Lon_lat field won't have nulls, as they're computed upon reading the
-// ping. Sensor_metadata and Sensory_imagery_metadata fields are also assumed to be
+// ping. Sensor_metadata and Sensor_imagery_metadata fields are also assumed to be
 // always populated with content. Haven't investigated whether the schema of each can
 // differ between pings though.
 // If issues arise later, or a case of inconsistencies in schemas occur for these
