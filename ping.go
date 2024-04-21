@@ -950,7 +950,13 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 		case R2SONIC_2022, R2SONIC_2024, R2SONIC_2020:
 			// DecodeR2Sonic
 		case SR_NOT_DEFINED: // the spec makes no mention of ID 154
-			panic("Subrecord ID 154 is not defined.")
+			errn := errors.Join(
+				errors.New("Error, Subrecord ID 154 is not defined."),
+				errors.New("Record index: "+strconv.Itoa(int(rec.Byte_index))),
+				errors.New("Subrecord index: "+strconv.Itoa(int(sub_rec.Byte_index))),
+				errors.New("Current byte location (relative to current record): "+strconv.Itoa(int(idx))),
+			)
+			panic(errn)
 		case RESON_TSERIES:
 			// DecodeResonTSeries
 		case KMALL:
