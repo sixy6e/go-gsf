@@ -9,11 +9,19 @@ import (
 	// stgpsr "github.com/yuin/stagparser"
 )
 
+// Removing BrbIntensity.BottomDetect for now. Need to get more info on what the
+// BottomDetectIndex means. I thought it would be the index location of the TimeSeries
+// slice, but index values have included values that are outside the array.
+// i.e TimeSeries samples = 6, BottomDetectIndex = 6
+// This would be ok if it is 1-based indexing stored in the GSF file for this particular
+// piece of data, except that the BottomDetectIndex also contains values of 0.
+
+// BrbIntensity
 type BrbIntensity struct {
-	TimeSeries        []float32 `tiledb:"dtype=float32,ftype=attr,var" filters:"zstd(level=16)"`
-	BottomDetect      []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
-	BottomDetectIndex []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
-	StartRange        []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	TimeSeries []float32 `tiledb:"dtype=float32,ftype=attr,var" filters:"zstd(level=16)"`
+	// BottomDetect      []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	BottomDetectIndex []uint16 `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	StartRange        []uint16 `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
 	sample_count      []uint16
 	// timeseries        [][]float32
 }
@@ -30,7 +38,7 @@ type BrbIntensity struct {
 func newBrbIntensity(number_beams int) (brb_int BrbIntensity) {
 	brb_int = BrbIntensity{
 		make([]float32, 0, number_beams*66), // 66 ... just becasuse
-		make([]float32, 0, number_beams),
+		// make([]float32, 0, number_beams),
 		make([]uint16, 0, number_beams),
 		make([]uint16, 0, number_beams),
 		make([]uint16, 0, number_beams),
@@ -74,7 +82,7 @@ func DecodeBrbIntensity(reader *bytes.Reader, nbeams uint16, sensor_id SubRecord
 
 	count = make([]uint16, 0, nbeams)
 	detect = make([]uint16, 0, nbeams)
-	detect_val = make([]float32, 0, nbeams)
+	// detect_val = make([]float32, 0, nbeams)
 	st_rng = make([]uint16, 0, nbeams)
 	timeseries = make([]float32, 0, nbeams*66) // 66 ... just becasuse
 	// timeseries = make([][]float32, nbeams)
@@ -207,13 +215,13 @@ func DecodeBrbIntensity(reader *bytes.Reader, nbeams uint16, sensor_id SubRecord
 			}
 		}
 		// append
-		detect_val = append(detect_val, samples_f32[base2.Detect_sample])
+		// detect_val = append(detect_val, samples_f32[base2.Detect_sample])
 		// timeseries[i] = samples_f32
 		timeseries = append(timeseries, samples_f32...)
 	}
 
 	intensity.TimeSeries = timeseries
-	intensity.BottomDetect = detect_val
+	// intensity.BottomDetect = detect_val
 	intensity.StartRange = st_rng
 	intensity.BottomDetectIndex = detect
 	intensity.sample_count = count
