@@ -244,7 +244,7 @@ func (pd *PingData) appendPingData(singlePing *PingData, contains_intensity bool
 	if contains_intensity {
 		// Brb_intensity
 		pd.Brb_intensity.TimeSeries = append(singlePing.Brb_intensity.TimeSeries, singlePing.Brb_intensity.TimeSeries...)
-		pd.Brb_intensity.BottomDetect = append(singlePing.Brb_intensity.BottomDetect, singlePing.Brb_intensity.BottomDetect...)
+		// pd.Brb_intensity.BottomDetect = append(singlePing.Brb_intensity.BottomDetect, singlePing.Brb_intensity.BottomDetect...)
 		pd.Brb_intensity.BottomDetectIndex = append(singlePing.Brb_intensity.BottomDetectIndex, singlePing.Brb_intensity.BottomDetectIndex...)
 		pd.Brb_intensity.StartRange = append(singlePing.Brb_intensity.StartRange, singlePing.Brb_intensity.StartRange...)
 		pd.Brb_intensity.sample_count = append(singlePing.Brb_intensity.sample_count, singlePing.Brb_intensity.sample_count...)
@@ -1164,10 +1164,10 @@ func (pd *PingData) writeBeamData(ctx *tiledb.Context, array *tiledb.Array, ping
 			}
 
 			// other non-var-length fields
-			_, err = query.SetDataBuffer("BottomDetect", pd.Brb_intensity.BottomDetect)
-			if err != nil {
-				return errors.Join(ErrWriteBdTdb, err)
-			}
+			// _, err = query.SetDataBuffer("BottomDetect", pd.Brb_intensity.BottomDetect)
+			// if err != nil {
+			// 	return errors.Join(ErrWriteBdTdb, err)
+			// }
 
 			_, err = query.SetDataBuffer("BottomDetectIndex", pd.Brb_intensity.BottomDetectIndex)
 			if err != nil {
