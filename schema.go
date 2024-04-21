@@ -390,22 +390,28 @@ func phTdbArray(ctx *tiledb.Context, array_uri string, npings uint64) error {
 
 	err = schemaAttrs(&PingHeaders{}, schema, ctx)
 	if err != nil {
-		err_ph := errors.New("Error creating PingHeaders attributes")
-		return errors.Join(err, err_ph)
+		errn := errors.New("Error creating PingHeaders attributes")
+		return errors.Join(err, errn)
 	}
 
 	err = schema.Check()
 	if err != nil {
-		err_ph := errors.New("Error checking PingHeaders schema")
-		return errors.Join(err, err_ph)
+		errn := errors.New("Error checking PingHeaders schema")
+		return errors.Join(err, errn)
 	}
 
 	array, err := tiledb.NewArray(ctx, array_uri)
 	if err != nil {
-		err_sen := errors.New("Error creating PingHeaders array")
-		return errors.Join(err_sen, err)
+		errn := errors.New("Error creating PingHeaders array")
+		return errors.Join(err, errn)
 	}
 	defer array.Free()
+
+	err = array.Create(schema)
+	if err != nil {
+		errn := errors.New("Error creating PingHeaders array")
+		return errors.Join(err, errn)
+	}
 
 	return nil
 }
@@ -413,8 +419,8 @@ func phTdbArray(ctx *tiledb.Context, array_uri string, npings uint64) error {
 func senTdbArray(ctx *tiledb.Context, array_uri string, npings uint64, sensor_id SubRecordID) error {
 	schema, err := basePidSchema(ctx, npings)
 	if err != nil {
-		err_sen := errors.New("Error creating base schema for SensorMetadata")
-		return errors.Join(err, err_sen)
+		errn := errors.New("Error creating base schema for SensorMetadata")
+		return errors.Join(err, errn)
 	}
 	defer schema.Free()
 
@@ -426,17 +432,22 @@ func senTdbArray(ctx *tiledb.Context, array_uri string, npings uint64, sensor_id
 
 	err = schema.Check()
 	if err != nil {
-		err_sen := errors.New("Error checking SensorMetadata TileDB schema")
-		return errors.Join(err, err_sen)
+		errn := errors.New("Error checking SensorMetadata TileDB schema")
+		return errors.Join(err, errn)
 	}
 
 	array, err := tiledb.NewArray(ctx, array_uri)
 	if err != nil {
-		err_sen := errors.New("Error creating SensorMetadata TileDB array")
-		return errors.Join(err_sen, err)
+		errn := errors.New("Error creating SensorMetadata TileDB array")
+		return errors.Join(err, errn)
 	}
 	defer array.Free()
 
+	err = array.Create(schema)
+	if err != nil {
+		errn := errors.New("Error creating SensorMetadata TileDB array")
+		return errors.Join(err, errn)
+	}
 	return nil
 }
 
@@ -456,47 +467,57 @@ func senImgTdbArray(ctx *tiledb.Context, array_uri string, npings uint64, sensor
 
 	err = schema.Check()
 	if err != nil {
-		err_sen := errors.New("Error checking SensorImageryMetadata TileDB schema")
-		return errors.Join(err, err_sen)
+		errn := errors.New("Error checking SensorImageryMetadata TileDB schema")
+		return errors.Join(err, errn)
 	}
 
 	array, err := tiledb.NewArray(ctx, array_uri)
 	if err != nil {
-		err_sen := errors.New("Error creating SensorImageryMetadata TileDB array")
-		return errors.Join(err_sen, err)
+		errn := errors.New("Error creating SensorImageryMetadata TileDB array")
+		return errors.Join(err, errn)
 	}
 	defer array.Free()
 
+	err = array.Create(schema)
+	if err != nil {
+		errn := errors.New("Error creating SensorImageryMetadata TileDB array")
+		return errors.Join(err, errn)
+	}
 	return nil
 }
 
 func beamTdbArray(ctx *tiledb.Context, array_uri string, beam_subrecords []string, contains_intensity bool) error {
 	schema, err := baseLonLatSchema(ctx)
 	if err != nil {
-		err_ba := errors.New("Error creating base schema for beam array")
-		return errors.Join(err, err_ba)
+		errn := errors.New("Error creating base schema for beam array")
+		return errors.Join(err, errn)
 	}
 	defer schema.Free()
 
 	err = beamAttachAttrs(schema, ctx, beam_subrecords, contains_intensity)
 	if err != nil {
-		err_ba := errors.New("Error attaching beam data attributes")
-		return errors.Join(err, err_ba)
+		errn := errors.New("Error attaching beam data attributes")
+		return errors.Join(err, errn)
 	}
 
 	err = schema.Check()
 	if err != nil {
-		err_ba := errors.New("Error checking beam array TileDB schema")
-		return errors.Join(err, err_ba)
+		errn := errors.New("Error checking beam array TileDB schema")
+		return errors.Join(err, errn)
 	}
 
 	array, err := tiledb.NewArray(ctx, array_uri)
 	if err != nil {
-		err_ba := errors.New("Error creating TileDB beam array")
-		return errors.Join(err, err_ba)
+		errn := errors.New("Error creating TileDB beam array")
+		return errors.Join(err, errn)
 	}
 	defer array.Free()
 
+	err = array.Create(schema)
+	if err != nil {
+		errn := errors.New("Error creating TileDB beam array")
+		return errors.Join(err, errn)
+	}
 	return nil
 }
 
