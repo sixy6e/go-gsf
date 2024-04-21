@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"errors"
+	"log"
 	"reflect"
 	"strconv"
 	"time"
@@ -953,7 +954,9 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 			errn := errors.Join(
 				errors.New("Error, Subrecord ID 154 is not defined."),
 				errors.New("Record index: "+strconv.Itoa(int(rec.Byte_index))),
-				errors.New("Subrecord index: "+strconv.Itoa(int(sub_rec.Byte_index))),
+				errors.New("Record datasize: "+strconv.Itoa(int(rec.Datasize))),
+				errors.New("SubRecord index: "+strconv.Itoa(int(sub_rec.Byte_index))),
+				errors.New("SubRecord datasize: "+strconv.Itoa(int(sub_rec.Datasize))),
 				errors.New("Current byte location (relative to current record): "+strconv.Itoa(int(idx))),
 			)
 			panic(errn)
@@ -1524,6 +1527,7 @@ func (g *GsfFile) SbpToTileDB(fi *FileInfo, config_uri string) error {
 
 		// loop over each ping for this chunk of pings
 		for _, idx := range chunk {
+			log.Println("PingID: ", idx)
 			rec := ping_records[idx]
 			pinfo := fi.Ping_Info[idx]
 
