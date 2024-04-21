@@ -199,9 +199,14 @@ const (
 
 // Field sizes for ping subarrays
 const (
-	FIELD_SIZE_ONE  uint32 = 0x10
-	FIELD_SIZE_TWO  uint32 = 0x20
-	FIELD_SIZE_FOUR uint32 = 0x40
+	FIELD_SIZE_DEFAULT     uint32 = 0x00
+	FIELD_SIZE_ONE         uint32 = 0x10
+	FIELD_SIZE_TWO         uint32 = 0x20
+	FIELD_SIZE_FOUR        uint32 = 0x40
+	BYTES_PER_BEAM_DEFAULT uint32 = 1
+	BYTES_PER_BEAM_ONE     uint32 = 1
+	BYTES_PER_BEAM_TWO     uint32 = 2
+	BYTES_PER_BEAM_FOUR    uint32 = 4
 )
 
 // Subrecord labels. Used for defining the output schema
