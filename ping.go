@@ -509,11 +509,11 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 		beam_array BeamArray
 		img_md     SensorImageryMetadata
 		intensity  BrbIntensity
-		sr_buff    []byte
-		sr_reader  *bytes.Reader
-		sen_md     SensorMetadata
-		ba_read    []string // keep track of which beam array records have been read
-		err        error
+		// sr_buff    []byte
+		// sr_reader  *bytes.Reader
+		sen_md  SensorMetadata
+		ba_read []string // keep track of which beam array records have been read
+		err     error
 		// nbytes    int64
 		// sf map[SubRecordID]ScaleFactor
 		// beams     BeamArray
@@ -526,7 +526,8 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 	hdr := decode_ping_hdr(reader)
 	idx += 56 // 56 bytes read for ping header
 
-	for (int64(rec.Datasize) - idx) > 4 {
+	// for (int64(rec.Datasize) - idx) > 4 {
+	for reader.Len() > 4 {
 
 		// subrecord header
 		// offset is used to track the start of the subrecord from the start
@@ -535,28 +536,37 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 		sub_rec := SubRecHdr(reader, rec.Byte_index+idx)
 		idx += 4
 
+		pos, _ := Tell(reader)
+		log.Println("sub_rec.Datasize: ", sub_rec.Datasize, ", sub_rec.Id: ", sub_rec.Id, ", current idx: ", idx, ", current pos: ", pos)
+
 		// read the whole subrecord and form a new reader
 		// i think this is easier than passing around how many
 		// bytes are read from each func associated with decoding a subrecord
-		sr_buff = make([]byte, sub_rec.Datasize)
-		err := binary.Read(reader, binary.BigEndian, &sr_buff)
-		if err != nil {
-			// i've come across a subrecord, specifically INTENSITY_SERIES,
-			// where the subrecord would read read past the full record size
-			// by one byte. i.e. subrecord size is 10471, record size is 18332
-			// and current position is 7862.
-			// 7862 + 10471 = 18333
-			errn := errors.Join(
-				errors.New("Binary Read Failed"),
-				errors.New("Attempting to read SubRecord: "+SubRecordNames[sub_rec.Id]),
-				errors.New("SubRecord Datasize: "+strconv.Itoa(int(sub_rec.Datasize))),
-				errors.New("Current byte location: "+strconv.Itoa(int(idx))),
-				errors.New("Record index: "+strconv.Itoa(int(rec.Byte_index))),
-				errors.New("SubRecord index: "+strconv.Itoa(int(sub_rec.Byte_index))),
-			)
-			err = errors.Join(err, errn)
-		}
-		sr_reader = bytes.NewReader(sr_buff)
+		// if sub_rec.Id == SubRecordID(21) {
+		// 	sr_buff = make([]byte, sub_rec.Datasize-1)
+		// } else {
+		// 	sr_buff = make([]byte, sub_rec.Datasize)
+		// }
+		// sr_buff = make([]byte, sub_rec.Datasize)
+		// err := binary.Read(reader, binary.BigEndian, &sr_buff)
+		// if err != nil {
+		// 	// i've come across a subrecord, specifically INTENSITY_SERIES,
+		// 	// where the subrecord would read read past the full record size
+		// 	// by one byte. i.e. subrecord size is 10471, record size is 18332
+		// 	// and current position is 7862.
+		// 	// 7862 + 10471 = 18333
+		// 	errn := errors.Join(
+		// 		errors.New("Binary Read Failed"),
+		// 		errors.New("Attempting to read SubRecord: "+SubRecordNames[sub_rec.Id]),
+		// 		errors.New("SubRecord Datasize: "+strconv.Itoa(int(sub_rec.Datasize))),
+		// 		errors.New("Record Datasize: "+strconv.Itoa(int(rec.Datasize))),
+		// 		errors.New("Current byte location: "+strconv.Itoa(int(idx))),
+		// 		errors.New("Record byte location: "+strconv.Itoa(int(rec.Byte_index))),
+		// 		errors.New("SubRecord byte location: "+strconv.Itoa(int(sub_rec.Byte_index))),
+		// 	)
+		// 	return ping_data, errors.Join(err, errn)
+		// }
+		// sr_reader = bytes.NewReader(sr_buff)
 
 		idx += int64(sub_rec.Datasize)
 
@@ -571,13 +581,13 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 		case SCALE_FACTORS:
 			// read and structure the scale factors
 			// however, we'll rely on the scale factors from PingInfo.scale_factors
-			_, _ = scale_factors_rec(sr_reader)
+			_, _ = scale_factors_rec(reader)
 			// idx += nbytes
 
 		// beam array subrecords
 		case DEPTH:
 			beam_data = sub_rec.DecodeSubRecArray(
-				sr_reader,
+				reader,
 				pinfo.Number_Beams,
 				pinfo.scale_factors[sub_rec.Id],
 				bytes_per_beam,
@@ -594,7 +604,7 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 			// idx += nbytes
 		case ACROSS_TRACK:
 			beam_data = sub_rec.DecodeSubRecArray(
-				sr_reader,
+				reader,
 				pinfo.Number_Beams,
 				pinfo.scale_factors[sub_rec.Id],
 				bytes_per_beam,
@@ -605,7 +615,7 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 			// idx += nbytes
 		case ALONG_TRACK:
 			beam_data = sub_rec.DecodeSubRecArray(
-				sr_reader,
+				reader,
 				pinfo.Number_Beams,
 				pinfo.scale_factors[sub_rec.Id],
 				bytes_per_beam,
@@ -616,7 +626,7 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 			// idx += nbytes
 		case TRAVEL_TIME:
 			beam_data = sub_rec.DecodeSubRecArray(
-				sr_reader,
+				reader,
 				pinfo.Number_Beams,
 				pinfo.scale_factors[sub_rec.Id],
 				bytes_per_beam,
@@ -627,7 +637,7 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 			// idx += nbytes
 		case BEAM_ANGLE:
 			beam_data = sub_rec.DecodeSubRecArray(
-				sr_reader,
+				reader,
 				pinfo.Number_Beams,
 				pinfo.scale_factors[sub_rec.Id],
 				BYTES_PER_BEAM_TWO,
@@ -638,7 +648,7 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 			// idx += nbytes
 		case MEAN_CAL_AMPLITUDE:
 			beam_data = sub_rec.DecodeSubRecArray(
-				sr_reader,
+				reader,
 				pinfo.Number_Beams,
 				pinfo.scale_factors[sub_rec.Id],
 				bytes_per_beam,
@@ -649,7 +659,7 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 			// idx += nbytes
 		case MEAN_REL_AMPLITUDE:
 			beam_data = sub_rec.DecodeSubRecArray(
-				sr_reader,
+				reader,
 				pinfo.Number_Beams,
 				pinfo.scale_factors[sub_rec.Id],
 				bytes_per_beam,
@@ -660,7 +670,7 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 			// idx += nbytes
 		case ECHO_WIDTH:
 			beam_data = sub_rec.DecodeSubRecArray(
-				sr_reader,
+				reader,
 				pinfo.Number_Beams,
 				pinfo.scale_factors[sub_rec.Id],
 				bytes_per_beam,
@@ -671,7 +681,7 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 			// idx += nbytes
 		case QUALITY_FACTOR:
 			beam_data = sub_rec.DecodeSubRecArray(
-				sr_reader,
+				reader,
 				pinfo.Number_Beams,
 				pinfo.scale_factors[sub_rec.Id],
 				BYTES_PER_BEAM_ONE,
@@ -682,7 +692,7 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 			// idx += nbytes
 		case RECEIVE_HEAVE:
 			beam_data = sub_rec.DecodeSubRecArray(
-				sr_reader,
+				reader,
 				pinfo.Number_Beams,
 				pinfo.scale_factors[sub_rec.Id],
 				BYTES_PER_BEAM_ONE,
@@ -693,7 +703,7 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 			// idx += nbytes
 		case DEPTH_ERROR:
 			beam_data = sub_rec.DecodeSubRecArray(
-				sr_reader,
+				reader,
 				pinfo.Number_Beams,
 				pinfo.scale_factors[sub_rec.Id],
 				BYTES_PER_BEAM_TWO,
@@ -704,7 +714,7 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 			// idx += nbytes
 		case ACROSS_TRACK_ERROR:
 			beam_data = sub_rec.DecodeSubRecArray(
-				sr_reader,
+				reader,
 				pinfo.Number_Beams,
 				pinfo.scale_factors[sub_rec.Id],
 				BYTES_PER_BEAM_TWO,
@@ -715,7 +725,7 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 			// idx += nbytes
 		case ALONG_TRACK_ERROR:
 			beam_data = sub_rec.DecodeSubRecArray(
-				sr_reader,
+				reader,
 				pinfo.Number_Beams,
 				pinfo.scale_factors[sub_rec.Id],
 				BYTES_PER_BEAM_TWO,
@@ -726,7 +736,7 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 			// idx += nbytes
 		case NOMINAL_DEPTH:
 			beam_data = sub_rec.DecodeSubRecArray(
-				sr_reader,
+				reader,
 				pinfo.Number_Beams,
 				pinfo.scale_factors[sub_rec.Id],
 				bytes_per_beam,
@@ -741,14 +751,14 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 			panic("QUALITY_FLAGS subrecord has been superceded")
 		case BEAM_FLAGS:
 			beam_array.BeamFlags = DecodeBeamFlagsArray(
-				sr_reader,
+				reader,
 				pinfo.Number_Beams,
 			)
 			ba_read = append(ba_read, pascalCase(SubRecordNames[BEAM_FLAGS]))
 			// idx += nbytes
 		case SIGNAL_TO_NOISE:
 			beam_data = sub_rec.DecodeSubRecArray(
-				sr_reader,
+				reader,
 				pinfo.Number_Beams,
 				pinfo.scale_factors[sub_rec.Id],
 				BYTES_PER_BEAM_ONE,
@@ -759,7 +769,7 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 			// idx += nbytes
 		case BEAM_ANGLE_FORWARD:
 			beam_data = sub_rec.DecodeSubRecArray(
-				sr_reader,
+				reader,
 				pinfo.Number_Beams,
 				pinfo.scale_factors[sub_rec.Id],
 				BYTES_PER_BEAM_TWO,
@@ -770,7 +780,7 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 			// idx += nbytes
 		case VERTICAL_ERROR:
 			beam_data = sub_rec.DecodeSubRecArray(
-				sr_reader,
+				reader,
 				pinfo.Number_Beams,
 				pinfo.scale_factors[sub_rec.Id],
 				BYTES_PER_BEAM_TWO,
@@ -781,7 +791,7 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 			// idx += nbytes
 		case HORIZONTAL_ERROR:
 			beam_data = sub_rec.DecodeSubRecArray(
-				sr_reader,
+				reader,
 				pinfo.Number_Beams,
 				pinfo.scale_factors[sub_rec.Id],
 				BYTES_PER_BEAM_TWO,
@@ -791,12 +801,20 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 			ba_read = append(ba_read, pascalCase(SubRecordNames[HORIZONTAL_ERROR]))
 			// idx += nbytes
 		case INTENSITY_SERIES:
-			intensity, img_md = DecodeBrbIntensity(sr_reader, pinfo.Number_Beams, sensor_id)
+			// pos, _ := Tell(sr_reader)
+			// log.Println("sr_reader pos: ", pos)
+			// pos, _ = Tell(reader)
+			// log.Println("reader pos: ", pos)
+			// log.Println("sub_rec.Datasize: ", sub_rec.Datasize)
+			// log.Println("rec.Datasize: ", rec.Datasize)
+			// log.Println("reader.Len(): ", reader.Len())
+			intensity, img_md = DecodeBrbIntensity(reader, pinfo.Number_Beams, sensor_id)
 			ba_read = append(ba_read, pascalCase(SubRecordNames[INTENSITY_SERIES]))
+			// log.Println("intensity, img_md = DecodeBrbIntensity: ", intensity.sample_count)
 			// idx += nbytes
 		case SECTOR_NUMBER:
 			beam_data = sub_rec.DecodeSubRecArray(
-				sr_reader,
+				reader,
 				pinfo.Number_Beams,
 				pinfo.scale_factors[sub_rec.Id],
 				BYTES_PER_BEAM_ONE,
@@ -807,7 +825,7 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 			// idx += nbytes
 		case DETECTION_INFO:
 			beam_data = sub_rec.DecodeSubRecArray(
-				sr_reader,
+				reader,
 				pinfo.Number_Beams,
 				pinfo.scale_factors[sub_rec.Id],
 				BYTES_PER_BEAM_ONE,
@@ -818,7 +836,7 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 			// idx += nbytes
 		case INCIDENT_BEAM_ADJ:
 			beam_data = sub_rec.DecodeSubRecArray(
-				sr_reader,
+				reader,
 				pinfo.Number_Beams,
 				pinfo.scale_factors[sub_rec.Id],
 				BYTES_PER_BEAM_ONE,
@@ -829,7 +847,7 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 			// idx += nbytes
 		case SYSTEM_CLEANING:
 			beam_data = sub_rec.DecodeSubRecArray(
-				sr_reader,
+				reader,
 				pinfo.Number_Beams,
 				pinfo.scale_factors[sub_rec.Id],
 				BYTES_PER_BEAM_ONE,
@@ -840,7 +858,7 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 			// idx += nbytes
 		case DOPPLER_CORRECTION:
 			beam_data = sub_rec.DecodeSubRecArray(
-				sr_reader,
+				reader,
 				pinfo.Number_Beams,
 				pinfo.scale_factors[sub_rec.Id],
 				BYTES_PER_BEAM_ONE,
@@ -851,7 +869,7 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 			// idx += nbytes
 		case SONAR_VERT_UNCERTAINTY:
 			beam_data = sub_rec.DecodeSubRecArray(
-				sr_reader,
+				reader,
 				pinfo.Number_Beams,
 				pinfo.scale_factors[sub_rec.Id],
 				BYTES_PER_BEAM_TWO,
@@ -862,7 +880,7 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 			// idx += nbytes
 		case SONAR_HORZ_UNCERTAINTY:
 			beam_data = sub_rec.DecodeSubRecArray(
-				sr_reader,
+				reader,
 				pinfo.Number_Beams,
 				pinfo.scale_factors[sub_rec.Id],
 				BYTES_PER_BEAM_TWO,
@@ -873,7 +891,7 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 			// idx += nbytes
 		case DETECTION_WINDOW:
 			beam_data = sub_rec.DecodeSubRecArray(
-				sr_reader,
+				reader,
 				pinfo.Number_Beams,
 				pinfo.scale_factors[sub_rec.Id],
 				bytes_per_beam,
@@ -884,7 +902,7 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 			// idx += nbytes
 		case MEAN_ABS_COEF:
 			beam_data = sub_rec.DecodeSubRecArray(
-				sr_reader,
+				reader,
 				pinfo.Number_Beams,
 				pinfo.scale_factors[sub_rec.Id],
 				bytes_per_beam,
@@ -935,7 +953,7 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 			// DecodeEM3
 		case EM710, EM302, EM122, EM2040:
 			// DecodeEM4
-			sen_md.EM_4 = DecodeEM4Specific(sr_reader)
+			sen_md.EM_4 = DecodeEM4Specific(reader)
 			// ping_data.Sensor_metadata.EM_4 = DecodeEM4Specific(sr_reader)  // COMMENTED for now, TODO; check it isn't needed
 			// idx += nbytes
 		case GEOSWATH_PLUS:
@@ -979,6 +997,12 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 		}
 	}
 
+	log.Println("reader.Len(): ", reader.Len())
+	pos, _ := Tell(reader)
+	log.Println("Tell(reader): ", pos)
+	log.Println("idx: ", idx)
+	log.Println("rec.Datasize: ", rec.Datasize)
+
 	geocoef := NewCoefWgs84()
 	lonlat := beam_array.BeamsLonLat(hdr.Longitude, hdr.Latitude, hdr.Heading, geocoef)
 
@@ -1020,13 +1044,15 @@ func (pd *PingData) writeBeamData(ctx *tiledb.Context, array *tiledb.Array, ping
 	// query construction
 	query, err := tiledb.NewQuery(ctx, array)
 	if err != nil {
-		return errors.Join(ErrWriteBdTdb, err)
+		errn := errors.New("Error creating TileDB query")
+		return errors.Join(err, errn)
 	}
 	defer query.Free()
 
 	err = query.SetLayout(tiledb.TILEDB_UNORDERED)
 	if err != nil {
-		return errors.Join(ErrWriteBdTdb, err)
+		errn := errors.New("Error setting TileDB layout")
+		return errors.Join(err, errn)
 	}
 
 	// should make for simpler code, if reflect is used to get the type's
@@ -1038,138 +1064,173 @@ func (pd *PingData) writeBeamData(ctx *tiledb.Context, array *tiledb.Array, ping
 	// dimensional axes buffers
 	_, err = query.SetDataBuffer("X", pd.Lon_lat.Longitude)
 	if err != nil {
-		return errors.Join(ErrWriteBdTdb, err)
+		errn := errors.New("Error setting TileDB data buffer for dimension: X")
+		return errors.Join(err, errn)
 	}
 
 	_, err = query.SetDataBuffer("Y", pd.Lon_lat.Latitude)
 	if err != nil {
-		return errors.Join(ErrWriteBdTdb, err)
+		errn := errors.New("Error setting TileDB data buffer for dimension: Y")
+		return errors.Join(err, errn)
 	}
 
 	// beam array buffers
 	for _, name := range pd.ba_subrecords {
-		subr_id := InvSubRecordNames[name]
+		// subr_id := InvSubRecordNames[name]
+		subr_id := BeamDataName2SubRecordID[name]
+		log.Println("SubRecord name: ", name)
+		log.Println("InvSubRecord name: ", subr_id)
 
 		switch subr_id {
 		case DEPTH:
 			_, err = query.SetDataBuffer(name, pd.Beam_array.Z)
 			if err != nil {
-				return errors.Join(ErrWriteBdTdb, err)
+				errn := errors.New("Error setting TileDB data buffer for attribute: Z")
+				return errors.Join(err, errn)
 			}
 		case ACROSS_TRACK:
 			_, err = query.SetDataBuffer(name, pd.Beam_array.AcrossTrack)
 			if err != nil {
-				return errors.Join(ErrWriteBdTdb, err)
+				errn := errors.New("Error setting TileDB data buffer for attribute: AcrossTrack")
+				return errors.Join(err, errn)
 			}
 		case ALONG_TRACK:
 			_, err = query.SetDataBuffer(name, pd.Beam_array.AlongTrack)
 			if err != nil {
-				return errors.Join(ErrWriteBdTdb, err)
+				errn := errors.New("Error setting TileDB data buffer for attribute: AlongTrack")
+				return errors.Join(err, errn)
 			}
 		case TRAVEL_TIME:
 			_, err = query.SetDataBuffer(name, pd.Beam_array.TravelTime)
 			if err != nil {
-				return errors.Join(ErrWriteBdTdb, err)
+				errn := errors.New("Error setting TileDB data buffer for attribute: TravelTime")
+				return errors.Join(err, errn)
 			}
 		case BEAM_ANGLE:
 			_, err = query.SetDataBuffer(name, pd.Beam_array.BeamAngle)
 			if err != nil {
-				return errors.Join(ErrWriteBdTdb, err)
+				errn := errors.New("Error setting TileDB data buffer for attribute: BeamAngle")
+				return errors.Join(err, errn)
 			}
 		case MEAN_CAL_AMPLITUDE:
 			_, err = query.SetDataBuffer(name, pd.Beam_array.MeanCalAmplitude)
 			if err != nil {
-				return errors.Join(ErrWriteBdTdb, err)
+				errn := errors.New("Error setting TileDB data buffer for attribute: MeanCalAmplitude")
+				return errors.Join(err, errn)
 			}
 		case MEAN_REL_AMPLITUDE:
 			_, err = query.SetDataBuffer(name, pd.Beam_array.MeanRelAmplitude)
 			if err != nil {
-				return errors.Join(ErrWriteBdTdb, err)
+				errn := errors.New("Error setting TileDB data buffer for attribute: MeanRelAmplitude")
+				return errors.Join(err, errn)
 			}
 		case ECHO_WIDTH:
 			_, err = query.SetDataBuffer(name, pd.Beam_array.EchoWidth)
 			if err != nil {
-				return errors.Join(ErrWriteBdTdb, err)
+				errn := errors.New("Error setting TileDB data buffer for attribute: EchoWidth")
+				return errors.Join(err, errn)
 			}
 		case QUALITY_FACTOR:
 			_, err = query.SetDataBuffer(name, pd.Beam_array.QualityFactor)
 			if err != nil {
-				return errors.Join(ErrWriteBdTdb, err)
+				errn := errors.New("Error setting TileDB data buffer for attribute: QualityFactor")
+				return errors.Join(err, errn)
 			}
 		case RECEIVE_HEAVE:
 			_, err = query.SetDataBuffer(name, pd.Beam_array.RecieveHeave)
 			if err != nil {
-				return errors.Join(ErrWriteBdTdb, err)
+				errn := errors.New("Error setting TileDB data buffer for attribute: RecieveHeave")
+				return errors.Join(err, errn)
 			}
 		case DEPTH_ERROR:
 			_, err = query.SetDataBuffer(name, pd.Beam_array.DepthError)
 			if err != nil {
-				return errors.Join(ErrWriteBdTdb, err)
+				errn := errors.New("Error setting TileDB data buffer for attribute: DepthError")
+				return errors.Join(err, errn)
 			}
 		case ACROSS_TRACK_ERROR:
 			_, err = query.SetDataBuffer(name, pd.Beam_array.AcrossTrackError)
 			if err != nil {
-				return errors.Join(ErrWriteBdTdb, err)
+				errn := errors.New("Error setting TileDB data buffer for attribute: AcrossTrackError")
+				return errors.Join(err, errn)
 			}
 		case ALONG_TRACK_ERROR:
 			_, err = query.SetDataBuffer(name, pd.Beam_array.AlongTrackError)
 			if err != nil {
-				return errors.Join(ErrWriteBdTdb, err)
+				errn := errors.New("Error setting TileDB data buffer for attribute: AlongTrackError")
+				return errors.Join(err, errn)
 			}
 		case NOMINAL_DEPTH:
 			_, err = query.SetDataBuffer(name, pd.Beam_array.NominalDepth)
 			if err != nil {
-				return errors.Join(ErrWriteBdTdb, err)
+				errn := errors.New("Error setting TileDB data buffer for attribute: NominalDepth")
+				return errors.Join(err, errn)
 			}
 		case QUALITY_FLAGS:
 			_, err = query.SetDataBuffer(name, pd.Beam_array.QualityFlags)
 			if err != nil {
-				return errors.Join(ErrWriteBdTdb, err)
+				errn := errors.New("Error setting TileDB data buffer for attribute: QualityFlags")
+				return errors.Join(err, errn)
 			}
 		case BEAM_FLAGS:
 			_, err = query.SetDataBuffer(name, pd.Beam_array.BeamFlags)
 			if err != nil {
-				return errors.Join(ErrWriteBdTdb, err)
+				errn := errors.New("Error setting TileDB data buffer for attribute: BeamFlags")
+				return errors.Join(err, errn)
 			}
 		case SIGNAL_TO_NOISE:
 			_, err = query.SetDataBuffer(name, pd.Beam_array.SignalToNoise)
 			if err != nil {
-				return errors.Join(ErrWriteBdTdb, err)
+				errn := errors.New("Error setting TileDB data buffer for attribute: SignalToNoise")
+				return errors.Join(err, errn)
 			}
 		case BEAM_ANGLE_FORWARD:
 			_, err = query.SetDataBuffer(name, pd.Beam_array.BeamAngleForward)
 			if err != nil {
-				return errors.Join(ErrWriteBdTdb, err)
+				errn := errors.New("Error setting TileDB data buffer for attribute: BeamAngleForward")
+				return errors.Join(err, errn)
 			}
 		case VERTICAL_ERROR:
 			_, err = query.SetDataBuffer(name, pd.Beam_array.VerticalError)
 			if err != nil {
-				return errors.Join(ErrWriteBdTdb, err)
+				errn := errors.New("Error setting TileDB data buffer for attribute: VerticalError")
+				return errors.Join(err, errn)
 			}
 		case HORIZONTAL_ERROR:
 			_, err = query.SetDataBuffer(name, pd.Beam_array.HorizontalError)
 			if err != nil {
-				return errors.Join(ErrWriteBdTdb, err)
+				errn := errors.New("Error setting TileDB data buffer for attribute: HorizontalError")
+				return errors.Join(err, errn)
 			}
 		case INTENSITY_SERIES:
 			// offset buffer (intensity timeseries is variable length)
-			n_beams := uint64(len(pd.Lon_lat.Longitude))
-			arr_offset := make([]uint64, n_beams)
+			n_obs := uint64(len(pd.Lon_lat.Longitude))
+			arr_offset := make([]uint64, n_obs)
 			offset := uint64(0)
 			bytes_val := uint64(4) // may look confusing with uint64, so 4*bytes for float32
-			for i := uint64(0); i < n_beams; i++ {
+			log.Println("n_obs: ", n_obs)
+			// log.Println("pd.Brb_intensity.sample_count: ", pd.Brb_intensity.sample_count)
+			// log.Println("pd.Brb_intensity.BottomDetectIndex: ", pd.Brb_intensity.BottomDetectIndex)
+			// log.Println("pd.Beam_array.Z", pd.Beam_array.Z)
+			log.Println("len(pd.Brb_intensity.sample_count): ", len(pd.Brb_intensity.sample_count))
+			log.Println("len(pd.Brb_intensity.BottomDetectIndex): ", len(pd.Brb_intensity.BottomDetectIndex))
+			log.Println("len(pd.Beam_array.Z): ", len(pd.Beam_array.Z))
+			log.Println("pd.Brb_intensity.sample_count[0]: ", pd.Brb_intensity.sample_count[0])
+			for i := uint64(0); i < n_obs; i++ {
 				arr_offset[i] = offset * bytes_val
 				offset += uint64(pd.Brb_intensity.sample_count[i]) * bytes_val
 			}
 
 			_, err = query.SetOffsetsBuffer("TimeSeries", arr_offset)
 			if err != nil {
-				return errors.Join(ErrWriteBdTdb, err)
+				errn := errors.New("Error setting TileDB offsets data buffer for attribute: TimeSeries")
+				return errors.Join(err, errn)
 			}
 
 			_, err = query.SetDataBuffer("TimeSeries", pd.Brb_intensity.TimeSeries)
 			if err != nil {
-				return errors.Join(ErrWriteBdTdb, err)
+				errn := errors.New("Error setting TileDB data buffer for attribute: TimeSeries")
+				return errors.Join(err, errn)
 			}
 
 			// other non-var-length fields
@@ -1180,57 +1241,68 @@ func (pd *PingData) writeBeamData(ctx *tiledb.Context, array *tiledb.Array, ping
 
 			_, err = query.SetDataBuffer("BottomDetectIndex", pd.Brb_intensity.BottomDetectIndex)
 			if err != nil {
-				return errors.Join(ErrWriteBdTdb, err)
+				errn := errors.New("Error setting TileDB data buffer for attribute: BottomDetectIndex")
+				return errors.Join(err, errn)
 			}
 
 			_, err = query.SetDataBuffer("StartRange", pd.Brb_intensity.StartRange)
 			if err != nil {
-				return errors.Join(ErrWriteBdTdb, err)
+				errn := errors.New("Error setting TileDB data buffer for attribute: StartRange")
+				return errors.Join(err, errn)
 			}
 		case SECTOR_NUMBER:
 			_, err = query.SetDataBuffer(name, pd.Beam_array.SectorNumber)
 			if err != nil {
-				return errors.Join(ErrWriteBdTdb, err)
+				errn := errors.New("Error setting TileDB data buffer for attribute: SectorNumber")
+				return errors.Join(err, errn)
 			}
 		case DETECTION_INFO:
 			_, err = query.SetDataBuffer(name, pd.Beam_array.DetectionInfo)
 			if err != nil {
-				return errors.Join(ErrWriteBdTdb, err)
+				errn := errors.New("Error setting TileDB data buffer for attribute: DetectionInfo")
+				return errors.Join(err, errn)
 			}
 		case INCIDENT_BEAM_ADJ:
 			_, err = query.SetDataBuffer(name, pd.Beam_array.IncidentBeamAdj)
 			if err != nil {
-				return errors.Join(ErrWriteBdTdb, err)
+				errn := errors.New("Error setting TileDB data buffer for attribute: IncidentBeamAdj")
+				return errors.Join(err, errn)
 			}
 		case SYSTEM_CLEANING:
 			_, err = query.SetDataBuffer(name, pd.Beam_array.SystemCleaning)
 			if err != nil {
-				return errors.Join(ErrWriteBdTdb, err)
+				errn := errors.New("Error setting TileDB data buffer for attribute: SystemCleaning")
+				return errors.Join(err, errn)
 			}
 		case DOPPLER_CORRECTION:
 			_, err = query.SetDataBuffer(name, pd.Beam_array.DopplerCorrection)
 			if err != nil {
-				return errors.Join(ErrWriteBdTdb, err)
+				errn := errors.New("Error setting TileDB data buffer for attribute: DopplerCorrection")
+				return errors.Join(err, errn)
 			}
 		case SONAR_VERT_UNCERTAINTY:
 			_, err = query.SetDataBuffer(name, pd.Beam_array.SonarVertUncertainty)
 			if err != nil {
-				return errors.Join(ErrWriteBdTdb, err)
+				errn := errors.New("Error setting TileDB data buffer for attribute: SonarVertUncertainty")
+				return errors.Join(err, errn)
 			}
 		case SONAR_HORZ_UNCERTAINTY:
 			_, err = query.SetDataBuffer(name, pd.Beam_array.SonarHorzUncertainty)
 			if err != nil {
-				return errors.Join(ErrWriteBdTdb, err)
+				errn := errors.New("Error setting TileDB data buffer for attribute: SonarHorzUncertainty")
+				return errors.Join(err, errn)
 			}
 		case DETECTION_WINDOW:
 			_, err = query.SetDataBuffer(name, pd.Beam_array.DetectionWindow)
 			if err != nil {
-				return errors.Join(ErrWriteBdTdb, err)
+				errn := errors.New("Error setting TileDB data buffer for attribute: DetectionWindow")
+				return errors.Join(err, errn)
 			}
 		case MEAN_ABS_COEF:
 			_, err = query.SetDataBuffer(name, pd.Beam_array.MeanAbsCoef)
 			if err != nil {
-				return errors.Join(ErrWriteBdTdb, err)
+				errn := errors.New("Error setting TileDB data buffer for attribute: MeanAbsCoef")
+				return errors.Join(err, errn)
 			}
 		}
 	}
@@ -1238,26 +1310,30 @@ func (pd *PingData) writeBeamData(ctx *tiledb.Context, array *tiledb.Array, ping
 	// ping and beam ids
 	_, err = query.SetDataBuffer("PingNumber", ping_beam_ids.PingNumber)
 	if err != nil {
-		return errors.Join(ErrWriteBdTdb, err)
+		errn := errors.New("Error setting TileDB data buffer for attribute: PingNumber")
+		return errors.Join(err, errn)
 	}
 
 	_, err = query.SetDataBuffer("BeamNumber", ping_beam_ids.BeamNumber)
 	if err != nil {
-		return errors.Join(ErrWriteBdTdb, err)
+		errn := errors.New("Error setting TileDB data buffer for attribute: BeamNumber")
+		return errors.Join(err, errn)
 	}
 
 	// write the data and flush
 	err = query.Submit()
 	if err != nil {
-		return errors.Join(ErrWriteBdTdb, err)
+		errn := errors.New("Error submitting TileDB query")
+		return errors.Join(err, errn)
 	}
 
 	// not applicable, as layout is tiledb.TILEDB_UNORDERED
 	// (tiledb lib will reorder it)
-	// err = query.Finalize()
-	// if err != nil {
-	// 	return errors.Join(ErrWriteBdTdb, err)
-	// }
+	err = query.Finalize()
+	if err != nil {
+		errn := errors.New("Error finalising TileDB query")
+		return errors.Join(err, errn)
+	}
 
 	return nil
 }
@@ -1524,12 +1600,18 @@ func (g *GsfFile) SbpToTileDB(fi *FileInfo, config_uri string) error {
 		// arrays for ping and beam numbers
 		ping_data_chunk = newPingData(n_pings, number_beams, sensor_id, sr_schema_c, contains_intensity)
 		ping_beam_ids = newPingBeamNumbers(int(number_beams))
+		// log.Println(ping_data_chunk.ba_subrecords)
+		// log.Println("sr_schema_c: ", sr_schema_c)
 
 		// loop over each ping for this chunk of pings
 		for _, idx := range chunk {
 			log.Println("PingID: ", idx)
 			rec := ping_records[idx]
 			pinfo := fi.Ping_Info[idx]
+			// log.Println("SubRecords: ", pinfo.Sub_Records)
+			// if idx == uint64(13) {
+			// 	log.Println("SubRecords: ", pinfo.Sub_Records)
+			// }
 
 			// seek to record
 			_, _ = g.Stream.Seek(rec.Byte_index, 0)
@@ -1539,8 +1621,14 @@ func (g *GsfFile) SbpToTileDB(fi *FileInfo, config_uri string) error {
 			ping_data, err = SwathBathymetryPingRec(buffer, rec, pinfo, sensor_id)
 			if err != nil {
 				errn := errors.New("Error reading ping: " + strconv.Itoa(int(idx)))
-				return errors.Join(err, errn)
+				// return errors.Join(err, errn)
+				log.Println(errors.Join(err, errn))
+				log.Println("Skipping PingID: ", idx)
+				continue
 			}
+
+			// log.Println("ping_data, err = SwathBathymetryPingRec: ", ping_data.Brb_intensity.TimeSeries)
+			// log.Println("ping_data, err = SwathBathymetryPingRec[0]: ", ping_data.Brb_intensity.TimeSeries[0])
 
 			// appending and null filling
 			_ = ping_beam_ids.appendPingBeam(idx, pinfo.Number_Beams)
@@ -1552,25 +1640,33 @@ func (g *GsfFile) SbpToTileDB(fi *FileInfo, config_uri string) error {
 			// read ping copy results into PingData
 			// read next ping ...
 			// once all pings for chunk are read, write to tiledb
+			// log.Println(ping_data.Brb_intensity.sample_count)
+
+			if idx == uint64(13) {
+				log.Println("ping_data.Brb_intensity.BottomDetectIndex: ", ping_data.Brb_intensity.BottomDetectIndex)
+				log.Println("ping_data.Brb_intensity.TimeSeries: ", ping_data.Brb_intensity.TimeSeries)
+				log.Println("ping_data.Brb_intensity.sample_count: ", ping_data.Brb_intensity.sample_count)
+				panic("stopping here")
+			}
 		}
 
 		// serialise chunk to the TileDB array
-		err = ping_data_chunk.toTileDB(
-			ph_array,
-			s_md_array,
-			si_md_array,
-			bd_array,
-			ph_ctx,
-			s_md_ctx,
-			si_md_ctx,
-			bd_ctx,
-			&ping_beam_ids,
-			sensor_id,
-			contains_intensity,
-		)
-		if err != nil {
-			return errors.Join(err, errors.New("Error writing PingData chunk"))
-		}
+		// err = ping_data_chunk.toTileDB(
+		// 	ph_array,
+		// 	s_md_array,
+		// 	si_md_array,
+		// 	bd_array,
+		// 	ph_ctx,
+		// 	s_md_ctx,
+		// 	si_md_ctx,
+		// 	bd_ctx,
+		// 	&ping_beam_ids,
+		// 	sensor_id,
+		// 	contains_intensity,
+		// )
+		// if err != nil {
+		// 	return errors.Join(err, errors.New("Error writing PingData chunk"))
+		// }
 	}
 
 	return nil

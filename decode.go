@@ -330,3 +330,37 @@ var RecordNames = map[RecordID]string{
 	HV_NAVIGATION_ERROR:    "HV_NAVIGATION_ERROR", // replaces navigation error
 	ATTITUDE:               "ATTITUDE",            // 12
 }
+
+// Schema mapping for beam data; TODO; rework this back and forth mapping
+var BeamDataName2SubRecordID = map[string]SubRecordID{
+	"Z":                    DEPTH,
+	"AcrossTrack":          ACROSS_TRACK,
+	"AlongTrack":           ALONG_TRACK,
+	"TravelTime":           TRAVEL_TIME,
+	"BeamAngle":            BEAM_ANGLE,
+	"MeanCalAmplitude":     MEAN_CAL_AMPLITUDE,
+	"MeanRelAmplitude":     MEAN_REL_AMPLITUDE,
+	"EchoWidth":            ECHO_WIDTH,
+	"QualityFactor":        QUALITY_FACTOR,
+	"ReceiveHeave":         RECEIVE_HEAVE,
+	"DepthError":           DEPTH_ERROR,        // obsolete
+	"AcrossTrackError":     ACROSS_TRACK_ERROR, // obsolete
+	"AlongTrackError":      ALONG_TRACK_ERROR,  // obsolete
+	"NominalDepth":         NOMINAL_DEPTH,
+	"QualityFlags":         QUALITY_FLAGS,
+	"BeamFlags":            BEAM_FLAGS,
+	"SignalToNoise":        SIGNAL_TO_NOISE,
+	"BeamAngleForward":     BEAM_ANGLE_FORWARD,
+	"VerticalError":        VERTICAL_ERROR,   // replaces depth error
+	"HorizontalError":      HORIZONTAL_ERROR, // replaces across track error
+	"IntensitySeries":      INTENSITY_SERIES,
+	"SectorNumber":         SECTOR_NUMBER,
+	"DetectionInfo":        DETECTION_INFO,
+	"IncidentBeamAdj":      INCIDENT_BEAM_ADJ,
+	"SystemCleaning":       SYSTEM_CLEANING,
+	"DopplerCorrection":    DOPPLER_CORRECTION,
+	"SonarVertUncertainty": SONAR_VERT_UNCERTAINTY,
+	"SonarHorzUncertainty": SONAR_HORZ_UNCERTAINTY,
+	"DetectionWindow":      DETECTION_WINDOW,
+	"MeanAbsCoef":          MEAN_ABS_COEF, // 30, general subrecords
+}

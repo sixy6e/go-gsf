@@ -74,7 +74,7 @@ func chunkedBeamArray(t any, length int, beam_names []string) error {
 	for _, v := range beam_names {
 		field := values.FieldByName(v)
 		ftype := field.Type()
-		field.Set(reflect.MakeSlice(ftype, 0, 6))
+		field.Set(reflect.MakeSlice(ftype, 0, length))
 	}
 	return nil
 }

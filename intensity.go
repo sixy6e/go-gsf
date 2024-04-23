@@ -4,6 +4,7 @@ import (
 	// "os"
 	"bytes"
 	"encoding/binary"
+	"log"
 	// "reflect"
 	// "fmt"
 	// stgpsr "github.com/yuin/stagparser"
@@ -119,6 +120,9 @@ func DecodeBrbIntensity(reader *bytes.Reader, nbeams uint16, sensor_id SubRecord
 	}
 
 	bytes_per_sample := base.Bits_per_sample / 8
+	log.Println("base.Bits_per_sample: ", base.Bits_per_sample)
+	log.Println("bytes_per_sample: ", bytes_per_sample)
+	log.Println("nbeams: ", nbeams)
 
 	for i := uint16(0); i < nbeams; i++ {
 		_ = binary.Read(reader, binary.BigEndian, &base2)
@@ -190,9 +194,14 @@ func DecodeBrbIntensity(reader *bytes.Reader, nbeams uint16, sensor_id SubRecord
 				samples_u4 = make([]uint32, base2.Sample_count)
 				_ = binary.Read(reader, binary.BigEndian, samples_u4)
 				// n_bytes += 4 * int64(base2.Sample_count)
+				// log.Println("samples_u4[0]: ", samples_u4[0])
 				for k, v := range samples_u4 {
 					samples_f32[k] = float32(v)
 				}
+				// log.Println("samples_f32[0]: ", samples_f32[0])
+				// log.Println("scl_off.Offset: ", scl_off.Offset)
+				// tst := (float32(samples_u4[0]) - scl_off.Offset) / float32(10)
+				// log.Println("tst: ", tst)
 			}
 
 		}
@@ -213,6 +222,8 @@ func DecodeBrbIntensity(reader *bytes.Reader, nbeams uint16, sensor_id SubRecord
 			for k, v := range samples_f32 {
 				samples_f32[k] = (v - scl_off.Offset) / float32(10)
 			}
+			// log.Println("samples_f32[0]: ", samples_f32[0])
+			// log.Println("float number: ", float32(-10.75657575))
 		}
 		// append
 		// detect_val = append(detect_val, samples_f32[base2.Detect_sample])
@@ -220,6 +231,9 @@ func DecodeBrbIntensity(reader *bytes.Reader, nbeams uint16, sensor_id SubRecord
 		timeseries = append(timeseries, samples_f32...)
 	}
 
+	// log.Println("timeseries[0]: ", timeseries[0])
+	// log.Println("samples_u4[0]: ", samples_u4[0])
+	// log.Println("scl_off.Offset: ", scl_off.Offset)
 	intensity.TimeSeries = timeseries
 	// intensity.BottomDetect = detect_val
 	intensity.StartRange = st_rng
