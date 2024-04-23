@@ -1642,12 +1642,16 @@ func (g *GsfFile) SbpToTileDB(fi *FileInfo, config_uri string) error {
 			// once all pings for chunk are read, write to tiledb
 			// log.Println(ping_data.Brb_intensity.sample_count)
 
-			if idx == uint64(13) {
-				log.Println("ping_data.Brb_intensity.BottomDetectIndex: ", ping_data.Brb_intensity.BottomDetectIndex)
-				log.Println("ping_data.Brb_intensity.TimeSeries: ", ping_data.Brb_intensity.TimeSeries)
-				log.Println("ping_data.Brb_intensity.sample_count: ", ping_data.Brb_intensity.sample_count)
-				panic("stopping here")
-			}
+			// commenting out the disk writes
+			// the main focus of this branch is to log the discrepancies in the reported
+			// datasize for the intensity subrecord.
+
+			// if idx == uint64(13) {
+			// 	log.Println("ping_data.Brb_intensity.BottomDetectIndex: ", ping_data.Brb_intensity.BottomDetectIndex)
+			// 	log.Println("ping_data.Brb_intensity.TimeSeries: ", ping_data.Brb_intensity.TimeSeries)
+			// 	log.Println("ping_data.Brb_intensity.sample_count: ", ping_data.Brb_intensity.sample_count)
+			// 	panic("stopping here")
+			// }
 		}
 
 		// serialise chunk to the TileDB array
