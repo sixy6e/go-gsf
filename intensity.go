@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"log"
+	"math"
 	// "reflect"
 	// "fmt"
 	// stgpsr "github.com/yuin/stagparser"
@@ -203,8 +204,8 @@ func DecodeBrbIntensity(reader *bytes.Reader, nbeams uint16, sensor_id SubRecord
 				// tst := (float32(samples_u4[0]) - scl_off.Offset) / float32(10)
 				// log.Println("tst: ", tst)
 			}
-
 		}
+
 		// apply scale and offset
 		// The gsf spec mentions that the scale factor is 2 for EM3 and
 		// 10 for EM4 based sensors. Ideally the stored value should be
@@ -225,6 +226,16 @@ func DecodeBrbIntensity(reader *bytes.Reader, nbeams uint16, sensor_id SubRecord
 			// log.Println("samples_f32[0]: ", samples_f32[0])
 			// log.Println("float number: ", float32(-10.75657575))
 		}
+
+		// need to handle the case where base2.Sample_count == 0
+		// not recording a value will upset the variable length offsets
+		// as well as the beam locations
+		// NaN should be fine to indicate a missing observation
+		if base2.Sample_count == 0 {
+			samples_f32 = make([]float32, 1)
+			samples_f32[0] = float32(math.NaN())
+		}
+
 		// append
 		// detect_val = append(detect_val, samples_f32[base2.Detect_sample])
 		// timeseries[i] = samples_f32
