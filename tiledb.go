@@ -439,7 +439,7 @@ func sliceOffsets[T any](s [][]T, byte_size uint64) (slc_offset []uint64) {
 
 	for i := 0; i < nrows; i++ {
 		length := uint64(len(s[i]))
-		slc_offset[i] = offset * byte_size
+		slc_offset[i] = offset
 		offset += length * byte_size
 	}
 
