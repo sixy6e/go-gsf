@@ -66,28 +66,24 @@ func OpenGSF(gsf_uri string, config_uri string, in_memory bool) GsfFile {
 		}
 	}
 
-	// defer config.Free()
 	gsf.config = config
 
 	ctx, err := tiledb.NewContext(config)
 	if err != nil {
 		panic(err)
 	}
-	// defer ctx.Free()
 	gsf.ctx = ctx
 
 	vfs, err := tiledb.NewVFS(ctx, config)
 	if err != nil {
 		panic(err)
 	}
-	// defer vfs.Free()
 	gsf.vfs = vfs
 
 	handler, err := vfs.Open(gsf_uri, tiledb.TILEDB_VFS_READ)
 	if err != nil {
 		panic(err)
 	}
-	// defer handler.Close()
 	gsf.handler = handler
 
 	filesize, _ := vfs.FileSize(gsf_uri)
@@ -134,16 +130,6 @@ func (g *GsfFile) ProcInfo(fi *FileInfo) (proc_info ProcessingInfo) {
 
 	return proc_info
 }
-
-// func (g *GsfFile) AttInfo(fi *FileInfo) (Attitude, Attitude) {
-//     buffer := g.RecBuf(fi.Index.Record_Index["ATTITUDE"][0])
-//     at1 := DecodeAttitude(buffer)
-//     last := fi.Metadata.Record_Counts["ATTITUDE"] - 1
-//     buffer = g.RecBuf(fi.Index.Record_Index["ATTITUDE"][last])
-//     at2 := DecodeAttitude(buffer)
-//
-//     return at1, at2
-// }
 
 type GsfDetails struct {
 	GSF_URI     string
@@ -204,16 +190,13 @@ func (g *GsfFile) Info() FileInfo {
 		pinfo              PingInfo
 		pings              []PingInfo
 		finfo              FileInfo
-		// err error
-		crs         Crs
-		buffer      []byte
-		reader      *bytes.Reader
-		version     Header
-		swath_sum   SwathBathySummary
-		params      map[string]interface{}
-		meas_counts map[string]uint64
-		// att_measurements uint64
-		// att_time []time.Time
+		crs                Crs
+		buffer             []byte
+		reader             *bytes.Reader
+		version            Header
+		swath_sum          SwathBathySummary
+		params             map[string]interface{}
+		meas_counts        map[string]uint64
 	)
 
 	rec_idx = make(map[string][]RecordHdr)

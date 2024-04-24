@@ -11,14 +11,6 @@ import (
 var ErrSensor = errors.New("Sensor not supported")
 var ErrWriteSensorMd = errors.New("Error writing sensor metadata")
 
-// type ImageryMetadata interface {
-// 	Serialise() bool
-// }
-//
-// type SensorMetadata interface {
-// 	Append() error
-// }
-
 type SensorMetadata struct {
 	EM_4 EM4
 }
@@ -114,7 +106,6 @@ func (sm *SensorMetadata) attachAttrs(schema *tiledb.ArraySchema, ctx *tiledb.Co
 		// DecodeEM3
 	case EM710, EM302, EM122, EM2040:
 		// DecodeEM4
-		// names = append(names, fieldNames(EM4{})...)
 		err = schemaAttrs(&sm.EM_4, schema, ctx)
 		if err != nil {
 			err_md := errors.New("Error creating SensorMetadata.EM_4 attributes")
@@ -269,10 +260,6 @@ func (sim *SensorImageryMetadata) attachAttrs(schema *tiledb.ArraySchema, ctx *t
 	case RESON_8101, RESON_8111, RESON_8124, RESON_8125, RESON_8150, RESON_8160:
 		// DecodeReson8100Imagery
 	case EM122, EM302, EM710, EM2040:
-		// DecodeEM4Imagery
-		// img_md.EM4_imagery = DecodeEM4Imagery(reader)
-		// nbytes += n_bytes
-		// names = append(names, fieldNames(EM4Imagery{})...)
 		err = schemaAttrs(&EM4Imagery{}, schema, ctx)
 		if err != nil {
 			err_md := errors.New("Error creating SensorImageryMetadata.EM4_imagery attributes")

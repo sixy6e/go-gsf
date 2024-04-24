@@ -1,14 +1,9 @@
 package gsf
 
 import (
-	// "os"
 	"bytes"
 	"encoding/binary"
-	"log"
 	"math"
-	// "reflect"
-	// "fmt"
-	// stgpsr "github.com/yuin/stagparser"
 )
 
 // Removing BrbIntensity.BottomDetect for now. Need to get more info on what the
@@ -87,13 +82,8 @@ func DecodeBrbIntensity(reader *bytes.Reader, nbeams uint16, sensor_id SubRecord
 	// detect_val = make([]float32, 0, nbeams)
 	st_rng = make([]uint16, 0, nbeams)
 	timeseries = make([]float32, 0, nbeams*66) // 66 ... just becasuse
-	// timeseries = make([][]float32, nbeams)
-	// nbytes = 0
-
-	// reader := bytes.NewReader(buffer)
 
 	_ = binary.Read(reader, binary.BigEndian, &base)
-	// nbytes += 21
 
 	switch sensor_id {
 
@@ -111,7 +101,6 @@ func DecodeBrbIntensity(reader *bytes.Reader, nbeams uint16, sensor_id SubRecord
 		img_md.EM4_imagery = em4img
 		scl_off.Scale = scl__off.Scale
 		scl_off.Offset = scl__off.Offset
-		// nbytes += n_bytes
 	case KLEIN_5410_BSS:
 		// DecodeKlein5410BssImagery
 	case KMALL:
@@ -121,13 +110,9 @@ func DecodeBrbIntensity(reader *bytes.Reader, nbeams uint16, sensor_id SubRecord
 	}
 
 	bytes_per_sample := base.Bits_per_sample / 8
-	log.Println("base.Bits_per_sample: ", base.Bits_per_sample)
-	log.Println("bytes_per_sample: ", bytes_per_sample)
-	log.Println("nbeams: ", nbeams)
 
 	for i := uint16(0); i < nbeams; i++ {
 		_ = binary.Read(reader, binary.BigEndian, &base2)
-		// nbytes += 12
 
 		count = append(count, base2.Sample_count)
 		detect = append(detect, base2.Detect_sample)
@@ -143,7 +128,6 @@ func DecodeBrbIntensity(reader *bytes.Reader, nbeams uint16, sensor_id SubRecord
 			// 3 bytes of data are bit compacted and decompress into 2 samples
 			for j := uint16(0); j < nbeams; j += 2 {
 				_ = binary.Read(reader, binary.BigEndian, &three_bytes)
-				// nbytes += 3
 
 				// unpacking the first sample
 
@@ -180,29 +164,21 @@ func DecodeBrbIntensity(reader *bytes.Reader, nbeams uint16, sensor_id SubRecord
 			case 1:
 				samples_u1 = make([]uint8, base2.Sample_count)
 				_ = binary.Read(reader, binary.BigEndian, samples_u1)
-				// n_bytes += 1 * int64(base2.Sample_count)
 				for k, v := range samples_u1 {
 					samples_f32[k] = float32(v)
 				}
 			case 2:
 				samples_u2 = make([]uint16, base2.Sample_count)
 				_ = binary.Read(reader, binary.BigEndian, samples_u2)
-				// n_bytes += 2 * int64(base2.Sample_count)
 				for k, v := range samples_u2 {
 					samples_f32[k] = float32(v)
 				}
 			case 4:
 				samples_u4 = make([]uint32, base2.Sample_count)
 				_ = binary.Read(reader, binary.BigEndian, samples_u4)
-				// n_bytes += 4 * int64(base2.Sample_count)
-				// log.Println("samples_u4[0]: ", samples_u4[0])
 				for k, v := range samples_u4 {
 					samples_f32[k] = float32(v)
 				}
-				// log.Println("samples_f32[0]: ", samples_f32[0])
-				// log.Println("scl_off.Offset: ", scl_off.Offset)
-				// tst := (float32(samples_u4[0]) - scl_off.Offset) / float32(10)
-				// log.Println("tst: ", tst)
 			}
 		}
 
@@ -214,17 +190,15 @@ func DecodeBrbIntensity(reader *bytes.Reader, nbeams uint16, sensor_id SubRecord
 		// generated the file.
 		switch sensor_id {
 		case EM120, EM120_RAW, EM300, EM300_RAW, EM1002, EM1002_RAW, EM2000, EM2000_RAW, EM3000, EM3000_RAW, EM3002, EM3002_RAW, EM3000D, EM3000D_RAW, EM3002D, EM3002D_RAW, EM121A_SIS, EM121A_SIS_RAW:
-			// TODO; loop over length, as range will copy the array
+			// TODO; loop over length, as range may copy the array
 			for k, v := range samples_f32 {
 				samples_f32[k] = (v - float32(img_md.EM3_imagery.offset[0])) / float32(2)
 			}
 		case EM122, EM302, EM710, EM2040:
-			// TODO; loop over length, as range will copy the array
+			// TODO; loop over length, as range may copy the array
 			for k, v := range samples_f32 {
 				samples_f32[k] = (v - scl_off.Offset) / float32(10)
 			}
-			// log.Println("samples_f32[0]: ", samples_f32[0])
-			// log.Println("float number: ", float32(-10.75657575))
 		}
 
 		// need to handle the case where base2.Sample_count == 0
@@ -238,18 +212,14 @@ func DecodeBrbIntensity(reader *bytes.Reader, nbeams uint16, sensor_id SubRecord
 
 		// append
 		// detect_val = append(detect_val, samples_f32[base2.Detect_sample])
-		// timeseries[i] = samples_f32
 		timeseries = append(timeseries, samples_f32...)
 	}
 
-	// log.Println("timeseries[0]: ", timeseries[0])
-	// log.Println("samples_u4[0]: ", samples_u4[0])
-	// log.Println("scl_off.Offset: ", scl_off.Offset)
 	intensity.TimeSeries = timeseries
 	// intensity.BottomDetect = detect_val
 	intensity.StartRange = st_rng
 	intensity.BottomDetectIndex = detect
 	intensity.sample_count = count
 
-	return intensity, img_md // , n_bytes
+	return intensity, img_md
 }

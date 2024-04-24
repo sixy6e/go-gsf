@@ -1,14 +1,11 @@
 package gsf
 
 import (
-	// "os"
 	"bytes"
 	"encoding/binary"
 	"errors"
 	"reflect"
 	"time"
-
-	// "fmt"
 
 	tiledb "github.com/TileDB-Inc/TileDB-Go"
 	stgpsr "github.com/yuin/stagparser"
@@ -92,10 +89,6 @@ func svp_header(reader *bytes.Reader) (hdr svp_hdr) {
 // ping timestamp (within some acceptable tolerance).
 func DecodeSoundVelocityProfile(buffer []byte) SoundVelocityProfile {
 	var (
-		// base struct {
-		//     Depth []int32
-		//     Sound_velocity []int32
-		// }
 		base      []int32
 		depth_f32 []float32
 		svp_f32   []float32
@@ -105,7 +98,6 @@ func DecodeSoundVelocityProfile(buffer []byte) SoundVelocityProfile {
 
 	reader := bytes.NewReader(buffer)
 
-	// _ = binary.Read(reader, binary.BigEndian, &base1)
 	hdr := svp_header(reader)
 
 	// 7 * 4bytes have now been read
@@ -119,7 +111,6 @@ func DecodeSoundVelocityProfile(buffer []byte) SoundVelocityProfile {
 	base = make([]int32, 2*hdr.N_points)
 
 	reader = bytes.NewReader(buffer[idx:])
-	// err := binary.Read(reader, binary.BigEndian, &base.Depth)
 	err := binary.Read(reader, binary.BigEndian, &base)
 	if err != nil {
 		panic(err)

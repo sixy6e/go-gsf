@@ -21,7 +21,6 @@ func (pd *PingData) fillNulls(singlePing *PingData) error {
 	nbeams := singlePing.Ping_headers.Number_beams[0]
 	left, _ := lo.Difference(pd.ba_subrecords, singlePing.ba_subrecords)
 	for _, name := range left {
-		// subr_id := InvSubRecordNames[name]
 		subr_id := BeamDataName2SubRecordID[name]
 
 		switch subr_id {

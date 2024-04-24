@@ -123,7 +123,6 @@ func (g *GsfFile) AttitudeRecords(fi *FileInfo) (attitude Attitude) {
 	for _, rec := range fi.Record_Index["ATTITUDE"] {
 		buffer = g.RecBuf(rec)
 		att := DecodeAttitude(buffer)
-		// attitude = append(attitude, att)
 
 		timestamp = append(timestamp, att.Timestamp...)
 		pitch = append(pitch, att.Pitch...)

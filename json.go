@@ -2,6 +2,7 @@ package gsf
 
 import (
 	"encoding/json"
+
 	tiledb "github.com/TileDB-Inc/TileDB-Go"
 )
 
@@ -43,11 +44,9 @@ func WriteJson(file_uri string, config_uri string, data any) (int, error) {
 		panic(err)
 	}
 	defer stream.Close()
-	// defer stream.Free()
 
 	jsn, err := json.MarshalIndent(data, "", "    ")
 	if err != nil {
-		// panic(err)
 		return 0, err
 	}
 

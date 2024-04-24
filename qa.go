@@ -1,8 +1,9 @@
 package gsf
 
 import (
-	"github.com/samber/lo"
 	"time"
+
+	"github.com/samber/lo"
 )
 
 type QualityInfo struct {
@@ -19,13 +20,11 @@ func (fi *FileInfo) QInfo() {
 		nbeams     []uint16
 		timestamps []time.Time
 		qa         QualityInfo
-		// sub_rec_counts_str map[string]uint64
 	)
 
 	coincident_pings := false
 	dup_pings := false
 	npings := len(fi.Ping_Info)
-	// sub_rec_counts_str = make(map[string]uint64)
 
 	// there have been instances where the number of beams was inconsistent between pings
 	// the general idea is to know whether we're dealing with a consistent number of beams
@@ -70,7 +69,6 @@ func (fi *FileInfo) QInfo() {
 	// consistent schema; we've had cases where the schema is inconsistent between pings
 	vals := make([]uint64, 0)
 	for key, val := range fi.SubRecord_Counts {
-		// sub_rec_counts_str[SubRecordNames[key]] = val
 		// scale factors are not required to be stored in every ping :(
 		if key != "SCALE_FACTORS" {
 			vals = append(vals, val)
@@ -91,7 +89,6 @@ func (fi *FileInfo) QInfo() {
 
 		// we may have a dual sensor configuration (dual swath, or dual head)
 		if len(duplicates) > 0 {
-			// qa.Coincident_Pings = true
 			coincident_pings = true
 		}
 	}

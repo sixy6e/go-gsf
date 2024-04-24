@@ -1,7 +1,6 @@
 package gsf
 
 import (
-	// "os"
 	"bytes"
 	"encoding/binary"
 	"time"

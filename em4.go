@@ -9,7 +9,6 @@ import (
 // float64 may be overkill
 // where scale factors are applied, float32 is used
 // where it's confident float32 is enough to represent the value
-// TODO; look into defining tiledb compression struct tags
 // TODO; align into 64bit chunks
 // the spec says binary integers are stored as either 1-byte unsigned, 2-byte signed or unsigned, or 4-byte signed
 type EM4 struct {
@@ -172,8 +171,6 @@ func DecodeEM4Specific(reader *bytes.Reader) (sensor_data EM4) {
 		} // 23 bytes
 	)
 
-	// n_bytes = 0
-
 	// first 46 bytes
 	_ = binary.Read(reader, binary.BigEndian, &buffer)
 	// n_bytes += 46
@@ -182,7 +179,6 @@ func DecodeEM4Specific(reader *bytes.Reader) (sensor_data EM4) {
 	// what if TransmitSectors == 0???
 	for i := int16(0); i < buffer.TransmitSectors; i++ {
 		_ = binary.Read(reader, binary.BigEndian, &sector_buffer_base)
-		// n_bytes += 40
 		sector_buffer.TiltAngle = append(
 			sector_buffer.TiltAngle,
 			float32(sector_buffer_base.TiltAngle)/float32(100),
@@ -223,15 +219,12 @@ func DecodeEM4Specific(reader *bytes.Reader) (sensor_data EM4) {
 
 	// spare 16 bytes
 	_ = binary.Read(reader, binary.BigEndian, &spare_buffer)
-	// n_bytes += 16
 
 	// next 63 bytes for the RunTime info
 	_ = binary.Read(reader, binary.BigEndian, &runtime_buffer)
-	// n_bytes += 63
 
 	// next 23 bytes for the processing unit info
 	_ = binary.Read(reader, binary.BigEndian, &proc_buffer)
-	// n_bytes += 23
 
 	// populate generic
 	sensor_data.ModelNumber = []int16{buffer.ModelNumber}
@@ -297,29 +290,6 @@ func DecodeEM4Specific(reader *bytes.Reader) (sensor_data EM4) {
 	sensor_data.ProcessorUnitAchievedStbdCoverage = []uint8{proc_buffer.ProcessorUnitAchievedStbdCoverage}
 	sensor_data.ProcessorUnitYawStabilization = []float32{float32(proc_buffer.ProcessorUnitYawStabilization) / float32(100)}
 
-	return sensor_data // , n_bytes
-}
-
-func (g *GsfFile) EM4SpecificRecords(fi *FileInfo, start uint64, stop uint64) (sensor_data EM4) {
-
-	// var (
-	//     // nrecs uint64
-	//     rec RecordHdr
-	//     recs []RecordHdr
-	// )
-
-	// nrecs = fi.Metadata.Record_Counts[RecordNames[SWATH_BATHYMETRY_PING]]
-	// recs = fi.Record_Index[RecordNames[SWATH_BATHYMETRY_PING]][start:stop]
-
-	// retrieve and process each ping
-	// for i := uint64(0); i < nrecs; i++ {
-	//
-	// }
-
-	// for idx, rec := range recs {
-	//
-	// }
-
 	return sensor_data
 }
 
@@ -343,10 +313,8 @@ func DecodeEM4Imagery(reader *bytes.Reader) (em4_md EM4Imagery, scl_off ScaleOff
 			Spare               [5]uint32 // 20 bytes spare
 		} // 50 bytes
 	)
-	// n_bytes = 0
 
 	_ = binary.Read(reader, binary.BigEndian, &base)
-	// n_bytes += 50
 
 	em4_md.SamplingFrequency = []float64{
 		float64(base.SamplingFrequency1) +
@@ -364,5 +332,5 @@ func DecodeEM4Imagery(reader *bytes.Reader) (em4_md EM4Imagery, scl_off ScaleOff
 
 	scl_off = ScaleOffset{float32(base.Scale), float32(base.Offset)}
 
-	return em4_md, scl_off // , n_bytes
+	return em4_md, scl_off
 }

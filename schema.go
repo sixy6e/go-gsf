@@ -280,7 +280,6 @@ func baseLonLatSchema(ctx *tiledb.Context) (schema *tiledb.ArraySchema, err erro
 	if err != nil {
 		return nil, errors.Join(ErrCreateSchemaTdb, err)
 	}
-	// defer schema.Free()
 
 	err = schema.SetDomain(domain)
 	if err != nil {
@@ -325,8 +324,6 @@ func beamAttachAttrs(schema *tiledb.ArraySchema, ctx *tiledb.Context, beam_subre
 		beam_names[k] = pascalCase(v)
 	}
 
-	// values := reflect.ValueOf(ba)
-	// types := values.Type()
 	filt_defs, _ := stgpsr.ParseStruct(ba, "filters")
 	tdb_defs, _ := stgpsr.ParseStruct(ba, "tiledb")
 
