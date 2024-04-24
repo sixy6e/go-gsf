@@ -480,7 +480,7 @@ func (s *SoundVelocityProfile) ToTileDB(file_uri string, config_uri string) erro
 	bytes_val = uint64(4) // may look confusing with uint64, so 4*bytes for float32
 	for i := uint64(0); i < nrows; i++ {
 		length := uint64(len(s.Depth[i]))
-		arr_offset[i] = offset * bytes_val
+		arr_offset[i] = offset
 		offset += length * bytes_val
 	}
 	_, err = query.SetOffsetsBuffer("Depth", arr_offset)
