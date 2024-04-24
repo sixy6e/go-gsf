@@ -244,11 +244,11 @@ func (pd *PingData) appendPingData(singlePing *PingData, contains_intensity bool
 
 	if contains_intensity {
 		// Brb_intensity
-		pd.Brb_intensity.TimeSeries = append(singlePing.Brb_intensity.TimeSeries, singlePing.Brb_intensity.TimeSeries...)
+		pd.Brb_intensity.TimeSeries = append(pd.Brb_intensity.TimeSeries, singlePing.Brb_intensity.TimeSeries...)
 		// pd.Brb_intensity.BottomDetect = append(singlePing.Brb_intensity.BottomDetect, singlePing.Brb_intensity.BottomDetect...)
-		pd.Brb_intensity.BottomDetectIndex = append(singlePing.Brb_intensity.BottomDetectIndex, singlePing.Brb_intensity.BottomDetectIndex...)
-		pd.Brb_intensity.StartRange = append(singlePing.Brb_intensity.StartRange, singlePing.Brb_intensity.StartRange...)
-		pd.Brb_intensity.sample_count = append(singlePing.Brb_intensity.sample_count, singlePing.Brb_intensity.sample_count...)
+		pd.Brb_intensity.BottomDetectIndex = append(pd.Brb_intensity.BottomDetectIndex, singlePing.Brb_intensity.BottomDetectIndex...)
+		pd.Brb_intensity.StartRange = append(pd.Brb_intensity.StartRange, singlePing.Brb_intensity.StartRange...)
+		pd.Brb_intensity.sample_count = append(pd.Brb_intensity.sample_count, singlePing.Brb_intensity.sample_count...)
 
 		// Sensor_imagery_metadata
 		err := pd.Sensor_imagery_metadata.appendSensorImageryMetadata(&singlePing.Sensor_imagery_metadata, sensor_id)
@@ -1208,17 +1208,17 @@ func (pd *PingData) writeBeamData(ctx *tiledb.Context, array *tiledb.Array, ping
 			arr_offset := make([]uint64, n_obs)
 			offset := uint64(0)
 			bytes_val := uint64(4) // may look confusing with uint64, so 4*bytes for float32
-			log.Println("n_obs: ", n_obs)
-			// log.Println("pd.Brb_intensity.sample_count: ", pd.Brb_intensity.sample_count)
-			// log.Println("pd.Brb_intensity.BottomDetectIndex: ", pd.Brb_intensity.BottomDetectIndex)
-			// log.Println("pd.Beam_array.Z", pd.Beam_array.Z)
-			log.Println("len(pd.Brb_intensity.sample_count): ", len(pd.Brb_intensity.sample_count))
-			log.Println("len(pd.Brb_intensity.BottomDetectIndex): ", len(pd.Brb_intensity.BottomDetectIndex))
-			log.Println("len(pd.Beam_array.Z): ", len(pd.Beam_array.Z))
-			log.Println("pd.Brb_intensity.sample_count[0]: ", pd.Brb_intensity.sample_count[0])
+
 			for i := uint64(0); i < n_obs; i++ {
-				arr_offset[i] = offset * bytes_val
-				offset += uint64(pd.Brb_intensity.sample_count[i]) * bytes_val
+				arr_offset[i] = offset
+				sample := uint64(pd.Brb_intensity.sample_count[i])
+
+				// handle case with no sample counts, as we've inserted a NaN
+				if sample == uint64(0) {
+					offset += uint64(1) * bytes_val
+				} else {
+					offset += sample * bytes_val
+				}
 			}
 
 			_, err = query.SetOffsetsBuffer("TimeSeries", arr_offset)
@@ -1650,27 +1650,30 @@ func (g *GsfFile) SbpToTileDB(fi *FileInfo, config_uri string) error {
 			// 	log.Println("ping_data.Brb_intensity.BottomDetectIndex: ", ping_data.Brb_intensity.BottomDetectIndex)
 			// 	log.Println("ping_data.Brb_intensity.TimeSeries: ", ping_data.Brb_intensity.TimeSeries)
 			// 	log.Println("ping_data.Brb_intensity.sample_count: ", ping_data.Brb_intensity.sample_count)
+
+			// 	log.Println("ping_data_chunk.Brb_intensity.sample_count: ", ping_data_chunk.Brb_intensity.sample_count)
 			// 	panic("stopping here")
 			// }
 		}
 
 		// serialise chunk to the TileDB array
-		// err = ping_data_chunk.toTileDB(
-		// 	ph_array,
-		// 	s_md_array,
-		// 	si_md_array,
-		// 	bd_array,
-		// 	ph_ctx,
-		// 	s_md_ctx,
-		// 	si_md_ctx,
-		// 	bd_ctx,
-		// 	&ping_beam_ids,
-		// 	sensor_id,
-		// 	contains_intensity,
-		// )
-		// if err != nil {
-		// 	return errors.Join(err, errors.New("Error writing PingData chunk"))
-		// }
+		err = ping_data_chunk.toTileDB(
+			ph_array,
+			s_md_array,
+			si_md_array,
+			bd_array,
+			ph_ctx,
+			s_md_ctx,
+			si_md_ctx,
+			bd_ctx,
+			&ping_beam_ids,
+			sensor_id,
+			contains_intensity,
+		)
+		if err != nil {
+			return errors.Join(err, errors.New("Error writing PingData chunk"))
+		}
+		// panic("stopping here")
 	}
 
 	return nil
