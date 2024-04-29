@@ -60,6 +60,19 @@ func (sm *SensorMetadata) writeSensorMetadata(ctx *tiledb.Context, array *tiledb
 		return errors.Join(ErrSensor, errors.New(strconv.Itoa(int(sensor_id))))
 	}
 
+	// write the data and flush
+	err = query.Submit()
+	if err != nil {
+		errn := errors.New("Error submitting TileDB query")
+		return errors.Join(err, errn)
+	}
+
+	err = query.Finalize()
+	if err != nil {
+		errn := errors.New("Error finalising TileDB query")
+		return errors.Join(err, errn)
+	}
+
 	return nil
 }
 
@@ -243,6 +256,19 @@ func (sim *SensorImageryMetadata) writeSensorImageryMetadata(ctx *tiledb.Context
 		}
 	default:
 		return errors.Join(ErrSensor, errors.New(strconv.Itoa(int(sensor_id))))
+	}
+
+	// write the data and flush
+	err = query.Submit()
+	if err != nil {
+		errn := errors.New("Error submitting TileDB query")
+		return errors.Join(err, errn)
+	}
+
+	err = query.Finalize()
+	if err != nil {
+		errn := errors.New("Error finalising TileDB query")
+		return errors.Join(err, errn)
 	}
 
 	return nil
