@@ -5,7 +5,6 @@ import (
 	"encoding/binary"
 	"errors"
 	"log"
-	"math"
 	"reflect"
 	"strconv"
 	"time"
@@ -1381,7 +1380,7 @@ func (pd *PingData) toTileDB(ph_array, s_md_array, si_md_array, bd_array *tiledb
 // the number of pings.
 // As there potentially are a lot of ping records, this process will be chunked
 // into roughly chunks of 1000 pings in size given by:
-// github.com/samber/lo.Chunk([]ping_records, math.Ceil(n_pings / 1000)).
+// github.com/samber/lo.Chunk([]ping_records, 1000).
 // In time (and interest), this chunk size can be made configurable.
 // There is potential to create the beam arrays as a 2D dense array using [ping, beam]
 // as the dimensional axes. The rationale is for input into algorithms that require
@@ -1512,12 +1511,11 @@ func (g *GsfFile) SbpToTileDB(fi *FileInfo, config_uri string) error {
 	defer bd_array.Close()
 
 	// setup the chunks to process
-	ngroups := int(math.Ceil(float64(total_pings) / float64(1000)))
 	idxs := make([]uint64, total_pings)
 	for i := uint64(0); i < total_pings; i++ {
 		idxs[i] = i
 	}
-	chunks := lo.Chunk(idxs, ngroups)
+	chunks := lo.Chunk(idxs, int(1000))
 
 	// need some info to initialise arrays that will get written into
 	// also need to cater for intensity, which at the moment are stored
