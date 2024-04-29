@@ -264,7 +264,7 @@ func newPingData(npings int, number_beams uint64, sensor_id SubRecordID, beam_na
 		sen_img_md SensorImageryMetadata
 	)
 	inumber_beams := int(number_beams)
-	ping_headers := newPingHeaders(inumber_beams)
+	ping_headers := newPingHeaders(npings)
 	beam_array := newBeamArray(inumber_beams, beam_names)
 	sen_md := newSensorMetadata(npings, sensor_id)
 	lonlat := LonLat{make([]float64, 0, number_beams), make([]float64, 0, number_beams)}
@@ -1310,6 +1310,19 @@ func (ph *PingHeaders) writePingHeaders(ctx *tiledb.Context, array *tiledb.Array
 	err = setStructFieldBuffers(query, ph)
 	if err != nil {
 		return errors.Join(err, errors.New("Error writing PingHeaders"))
+	}
+
+	// write the data flush
+	err = query.Submit()
+	if err != nil {
+		errn := errors.New("Error submitting TileDB query")
+		return errors.Join(err, errn)
+	}
+
+	err = query.Finalize()
+	if err != nil {
+		errn := errors.New("Error finalising TileDB query")
+		return errors.Join(err, errn)
 	}
 
 	return nil
