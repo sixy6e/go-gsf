@@ -410,6 +410,14 @@ func phTdbArray(ctx *tiledb.Context, array_uri string, npings uint64) error {
 		return errors.Join(err, errn)
 	}
 
+	// attach some metadata to preserve python pandas functionality
+	md := map[string]string{"PING_ID": "uint64"}
+	key := "__pandas_index_dims"
+	err = WriteArrayMetadata(ctx, array_uri, key, md)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -445,6 +453,15 @@ func senTdbArray(ctx *tiledb.Context, array_uri string, npings uint64, sensor_id
 		errn := errors.New("Error creating SensorMetadata TileDB array")
 		return errors.Join(err, errn)
 	}
+
+	// attach some metadata to preserve python pandas functionality
+	md := map[string]string{"PING_ID": "uint64"}
+	key := "__pandas_index_dims"
+	err = WriteArrayMetadata(ctx, array_uri, key, md)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -480,6 +497,15 @@ func senImgTdbArray(ctx *tiledb.Context, array_uri string, npings uint64, sensor
 		errn := errors.New("Error creating SensorImageryMetadata TileDB array")
 		return errors.Join(err, errn)
 	}
+
+	// attach some metadata to preserve python pandas functionality
+	md := map[string]string{"PING_ID": "uint64"}
+	key := "__pandas_index_dims"
+	err = WriteArrayMetadata(ctx, array_uri, key, md)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -515,6 +541,15 @@ func beamTdbArray(ctx *tiledb.Context, array_uri string, beam_subrecords []strin
 		errn := errors.New("Error creating TileDB beam array")
 		return errors.Join(err, errn)
 	}
+
+	// attach some metadata to preserve python pandas functionality
+	md := map[string]string{"X": "float64", "Y": "float64"}
+	key := "__pandas_index_dims"
+	err = WriteArrayMetadata(ctx, array_uri, key, md)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
