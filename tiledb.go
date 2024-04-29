@@ -728,3 +728,26 @@ func setStructFieldBuffers(query *tiledb.Query, t any) error {
 	}
 	return nil
 }
+
+// WriteArrayMetadata is a helper for attaching/writing metadata to a TileDB array.
+// The metadata is converted to JSON before writing to TileDB.
+func WriteArrayMetadata(ctx *tiledb.Context, array_uri, key string, md any) error {
+	array, err := ArrayOpen(ctx, array_uri, tiledb.TILEDB_WRITE)
+	if err != nil {
+		return errors.Join(err, errors.New("Error opening (w) TileDB array: "+array_uri))
+	}
+	defer array.Free()
+	defer array.Close()
+
+	jsn, err := JsonDumps(md)
+	if err != nil {
+		return errors.Join(err, errors.New("Error serialising metadata to JSON"))
+	}
+
+	err = array.PutMetadata(key, jsn)
+	if err != nil {
+		return errors.Join(err, errors.New("Error writing metadata to array: "+array_uri))
+	}
+
+	return nil
+}
