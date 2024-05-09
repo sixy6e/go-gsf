@@ -536,6 +536,153 @@ func DecodeSeabeam2112Specific(reader *bytes.Reader) (sensor_data Seabeam2112) {
 	return sensor_data
 }
 
+type ElacMkII struct {
+	Mode                  []int8
+	PingNumber            []int16
+	SurfaceSoundVelocity  []int16
+	PulseLength           []int16
+	ReceiverGainStarboard []int8
+	ReceiverGainPort      []int8
+}
+
+func DecodeElacMkIISpecific(reader *bytes.Reader) (sensor_data ElacMkII) {
+	var buffer struct {
+		Mode                  int8
+		PingNumber            int16
+		SurfaceSoundVelocity  int16
+		PulseLength           int16
+		ReceiverGainStarboard int8
+		ReceiverGainPort      int8
+		Spare                 int16
+	}
+	_ = binary.Read(reader, binary.BigEndian, &buffer)
+
+	sensor_data.Mode = []int8{buffer.Mode}
+	sensor_data.PingNumber = []int16{buffer.PingNumber}
+	sensor_data.SurfaceSoundVelocity = []int16{buffer.SurfaceSoundVelocity}
+	sensor_data.PulseLength = []int16{buffer.PulseLength}
+	sensor_data.ReceiverGainStarboard = []int8{buffer.ReceiverGainStarboard}
+	sensor_data.ReceiverGainPort = []int8{buffer.ReceiverGainPort}
+
+	return sensor_data
+}
+
+type CmpSass struct {
+	Lfreq  []float32
+	Lntens []float32
+}
+
+func DecodeCmpSass(reader *bytes.Reader) (sensor_data CmpSass) {
+	var buffer struct {
+		Lfreq  int16
+		Lntens int16
+	}
+	_ = binary.Read(reader, binary.BigEndian, &buffer)
+
+	sensor_data.Lfreq = []float32{float32(buffer.Lfreq) / 10.0}
+	sensor_data.Lntens = []float32{float32(buffer.Lntens) / 10.0}
+
+	return sensor_data
+}
+
+type Reson8100 struct {
+	Latency              []int16
+	PingNumber           []int32
+	SonarID              []int32
+	SonarModel           []int16
+	Frequency            []int16
+	SurfaceSoundVelocity []float32
+	SampleRate           []int16
+	PingRate             []int16
+	Mode                 []int16
+	Range                []int16
+	TransmitPower        []int16
+	ReceiveGain          []int16
+	PulseWidth           []int16
+	TvgSpreading         []int8
+	TvgAbsorption        []int8
+	ForeAftBandwidth     []float32
+	AthwartBandwidth     []float32
+	ProjectorType        []int8
+	ProjectorAngle       []int16
+	RangeFilterMin       []float32
+	RangeFilterMax       []float32
+	DepthFilterMin       []float32
+	DepthFilterMax       []float32
+	FiltersActive        []int8
+	Temperature          []int16
+	BeamSpacing          []float32
+}
+
+func DecodeReson8100(reader *bytes.Reader) (sensor_data Reson8100) {
+	var buffer struct {
+		Latency              int16
+		PingNumber           int32
+		SonarID              int32
+		SonarModel           int16
+		Frequency            int16
+		SurfaceSoundVelocity int16
+		SampleRate           int16
+		PingRate             int16
+		Mode                 int16
+		Range                int16
+		TransmitPower        int16
+		ReceiveGain          int16
+		PulseWidth           int16
+		TvgSpreading         int8
+		TvgAbsorption        int8
+		ForeAftBandwidth     int8
+		AthwartBandwidth     int8
+		ProjectorType        int8
+		ProjectorAngle       int16
+		RangeFilterMin       int16
+		RangeFilterMax       int16
+		DepthFilterMin       int16
+		DepthFilterMax       int16
+		FiltersActive        int8
+		Temperature          int16
+		BeamSpacing          int16
+		Spare                int16
+	}
+	_ = binary.Read(reader, binary.BigEndian, &buffer)
+
+	sensor_data.Latency = []int16{buffer.Latency}
+	sensor_data.PingNumber = []int32{buffer.PingNumber}
+	sensor_data.SonarID = []int32{buffer.SonarID}
+	sensor_data.SonarModel = []int16{buffer.SonarModel}
+	sensor_data.Frequency = []int16{buffer.Frequency}
+	sensor_data.SurfaceSoundVelocity = []float32{float32(buffer.SurfaceSoundVelocity) / 10.0}
+	sensor_data.SampleRate = []int16{buffer.SampleRate}
+	sensor_data.PingRate = []int16{buffer.PingRate}
+	sensor_data.Mode = []int16{buffer.Mode}
+	sensor_data.Range = []int16{buffer.Range}
+	sensor_data.TransmitPower = []int16{buffer.TransmitPower}
+	sensor_data.ReceiveGain = []int16{buffer.ReceiveGain}
+	sensor_data.PulseWidth = []int16{buffer.PulseWidth}
+	sensor_data.TvgSpreading = []int8{buffer.TvgSpreading}
+	sensor_data.TvgAbsorption = []int8{buffer.TvgAbsorption}
+	sensor_data.ForeAftBandwidth = []float32{float32(buffer.ForeAftBandwidth) / 10.0}
+	sensor_data.AthwartBandwidth = []float32{float32(buffer.AthwartBandwidth) / 10.0}
+	sensor_data.ProjectorType = []int8{buffer.ProjectorType}
+	sensor_data.ProjectorAngle = []int16{buffer.ProjectorAngle}
+	sensor_data.RangeFilterMin = []float32{float32(buffer.RangeFilterMin)}
+	sensor_data.RangeFilterMax = []float32{float32(buffer.RangeFilterMax)}
+	sensor_data.DepthFilterMin = []float32{float32(buffer.DepthFilterMin)}
+	sensor_data.DepthFilterMax = []float32{float32(buffer.DepthFilterMax)}
+	sensor_data.FiltersActive = []int8{buffer.FiltersActive}
+	sensor_data.Temperature = []int16{buffer.Temperature}
+	sensor_data.BeamSpacing = []float32{float32(buffer.BeamSpacing) / 10000.0}
+
+	return sensor_data
+}
+
+type Em3 struct {
+}
+
+func DecodeEm3(reader *bytes.Reader) (sensor_data Em3) {
+	return sensor_data
+}
+
 // float64 may be overkill
 // where scale factors are applied, float32 is used
 // where it's confident float32 is enough to represent the value
