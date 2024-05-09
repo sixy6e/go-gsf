@@ -3,7 +3,10 @@ package gsf
 import (
 	"bytes"
 	"encoding/binary"
+	"errors"
 	"fmt"
+	"strconv"
+	"strings"
 
 	tiledb "github.com/TileDB-Inc/TileDB-Go"
 )
@@ -135,6 +138,27 @@ type GsfDetails struct {
 	GSF_URI     string
 	GSF_Version string
 	Size        uint64
+}
+
+func (gd *GsfDetails) MajorMinor() (major, minor int) {
+	v := gd.GSF_Version[5:]
+	split := strings.Split(v, ".")
+
+	major, err := strconv.Atoi(split[0])
+	if err != nil {
+		// Something very wrong; best to panic
+		e := errors.Join(errors.New("Failed to interpret GSF major version"), err)
+		panic(e)
+	}
+
+	minor, err = strconv.Atoi(split[1])
+	if err != nil {
+		// Something very wrong; best to panic
+		e := errors.Join(errors.New("Failed to interpret GSF minor version"), err)
+		panic(e)
+	}
+
+	return major, minor
 }
 
 type SensorInfo struct {
