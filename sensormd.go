@@ -311,6 +311,231 @@ func DecodeSeabatSpecific(reader *bytes.Reader, gsfd GsfDetails) (sensor_data Se
 	return sensor_data
 }
 
+type Em1000 struct {
+	PingNumber           []int16
+	Mode                 []int8
+	Quality              []int8
+	ShipPitch            []float32
+	TransducerPitch      []float32
+	SurfaceSoundVelocity []float32
+}
+
+func DecodeEm1000Specific(reader *bytes.Reader) (sensor_data Em1000) {
+	var buffer struct {
+		PingNumber           int16
+		Mode                 int8
+		Quality              int8
+		ShipPitch            int16
+		TransducerPitch      int16
+		SurfaceSoundVelocity int16
+	}
+	_ = binary.Read(reader, binary.BigEndian, &buffer)
+
+	sensor_data.PingNumber = []int16{buffer.PingNumber}
+	sensor_data.Mode = []int8{buffer.Mode}
+	sensor_data.Quality = []int8{buffer.Quality}
+	sensor_data.ShipPitch = []float32{float32(buffer.ShipPitch) / SCALE2}
+	sensor_data.TransducerPitch = []float32{float32(buffer.TransducerPitch) / SCALE2}
+	sensor_data.SurfaceSoundVelocity = []float32{float32(buffer.SurfaceSoundVelocity) / 10.0}
+
+	return sensor_data
+}
+
+type TypeIIISeabeam struct {
+	LeftMostBeam       []int16
+	RightMostBeam      []int16
+	TotalNumverOfBeams []int16
+	NavigationMode     []int16
+	PingNumber         []int16
+	MissionNumber      []int16
+}
+
+func DecodeTypeIIISeabeamSpecific(reader *bytes.Reader) (sensor_data TypeIIISeabeam) {
+	var buffer struct {
+		LeftMostBeam       int16
+		RightMostBeam      int16
+		TotalNumverOfBeams int16
+		NavigationMode     int16
+		PingNumber         int16
+		MissionNumber      int16
+	}
+	_ = binary.Read(reader, binary.BigEndian, &buffer)
+
+	sensor_data.LeftMostBeam = []int16{buffer.LeftMostBeam}
+	sensor_data.RightMostBeam = []int16{buffer.RightMostBeam}
+	sensor_data.TotalNumverOfBeams = []int16{buffer.TotalNumverOfBeams}
+	sensor_data.NavigationMode = []int16{buffer.NavigationMode}
+	sensor_data.PingNumber = []int16{buffer.PingNumber}
+	sensor_data.MissionNumber = []int16{buffer.MissionNumber}
+
+	return sensor_data
+}
+
+type SbAmp struct {
+	Hour         []int8
+	Minute       []int8
+	Second       []int8
+	Hundredths   []int8
+	BlockNumber  []int32
+	AvgGateDepth []int16
+}
+
+func DecodeSbAmpSeabeamSpecific(reader *bytes.Reader) (sensor_data SbAmp) {
+	var buffer struct {
+		Hour         int8
+		Minute       int8
+		Second       int8
+		Hundredths   int8
+		BlockNumber  int32
+		AvgGateDepth int16
+	}
+	_ = binary.Read(reader, binary.BigEndian, &buffer)
+
+	sensor_data.Hour = []int8{buffer.Hour}
+	sensor_data.Minute = []int8{buffer.Minute}
+	sensor_data.Second = []int8{buffer.Second}
+	sensor_data.Hundredths = []int8{buffer.Hundredths}
+	sensor_data.BlockNumber = []int32{buffer.BlockNumber}
+	sensor_data.AvgGateDepth = []int16{buffer.AvgGateDepth}
+
+	return sensor_data
+}
+
+type SeabatII struct {
+	PingNumber           []int16
+	SurfaceSoundVelocity []float32
+	Mode                 []int16
+	SonarRange           []int16
+	TransmitPower        []int16
+	ReceiveGain          []int16
+	ForeAftBandwidth     []float32
+	AthwartBandwidth     []float32
+}
+
+func DecodeSeabatIISpecific(reader *bytes.Reader) (sensor_data SeabatII) {
+	var buffer struct {
+		PingNumber           int16
+		SurfaceSoundVelocity int16
+		Mode                 int16
+		SonarRange           int16
+		TransmitPower        int16
+		ReceiveGain          int16
+		ForeAftBandwidth     int8
+		AthwartBandwidth     int8
+		Spare                int32
+	}
+	_ = binary.Read(reader, binary.BigEndian, &buffer)
+
+	sensor_data.PingNumber = []int16{buffer.PingNumber}
+	sensor_data.SurfaceSoundVelocity = []float32{float32(buffer.SurfaceSoundVelocity) / 10.0}
+	sensor_data.Mode = []int16{buffer.Mode}
+	sensor_data.SonarRange = []int16{buffer.SonarRange}
+	sensor_data.TransmitPower = []int16{buffer.TransmitPower}
+	sensor_data.ReceiveGain = []int16{buffer.ReceiveGain}
+	sensor_data.ForeAftBandwidth = []float32{float32(buffer.ForeAftBandwidth) / 10.0}
+	sensor_data.AthwartBandwidth = []float32{float32(buffer.AthwartBandwidth) / 10.0}
+
+	return sensor_data
+}
+
+type Seabat8101 struct {
+	PingNumber           []int16
+	SurfaceSoundVelocity []float32
+	Mode                 []int16
+	Range                []int16
+	TransmitPower        []int16
+	RecieveGain          []int16
+	PulseWidth           []int16
+	TvgSpreading         []int8
+	TvgAbsorption        []int8
+	ForeAftBandwidth     []float32
+	AthwartBandwidth     []float32
+	RangeFilterMin       []float32
+	RangeFilterMax       []float32
+	DepthFilterMin       []float32
+	DepthFilterMax       []float32
+	ProjectorType        []int8
+}
+
+func DecodeSeabat8101Specific(reader *bytes.Reader) (sensor_data Seabat8101) {
+	var buffer struct {
+		PingNumber           int16
+		SurfaceSoundVelocity int16
+		Mode                 int16
+		Range                int16
+		TransmitPower        int16
+		RecieveGain          int16
+		PulseWidth           int16
+		TvgSpreading         int8
+		TvgAbsorption        int8
+		ForeAftBandwidth     int8
+		AthwartBandwidth     int8
+		RangeFilterMin       int16
+		RangeFilterMax       int16
+		DepthFilterMin       int16
+		DepthFilterMax       int16
+		ProjectorType        int8
+		Spare                int32
+	}
+	_ = binary.Read(reader, binary.BigEndian, &buffer)
+
+	sensor_data.PingNumber = []int16{buffer.PingNumber}
+	sensor_data.SurfaceSoundVelocity = []float32{float32(buffer.SurfaceSoundVelocity) / 10.0}
+	sensor_data.Mode = []int16{buffer.Mode}
+	sensor_data.Range = []int16{buffer.Range}
+	sensor_data.TransmitPower = []int16{buffer.TransmitPower}
+	sensor_data.RecieveGain = []int16{buffer.RecieveGain}
+	sensor_data.PulseWidth = []int16{buffer.PulseWidth}
+	sensor_data.TvgSpreading = []int8{buffer.TvgSpreading}
+	sensor_data.TvgAbsorption = []int8{buffer.TvgAbsorption}
+	sensor_data.ForeAftBandwidth = []float32{float32(buffer.ForeAftBandwidth) / 10.0}
+	sensor_data.AthwartBandwidth = []float32{float32(buffer.AthwartBandwidth) / 10.0}
+	sensor_data.RangeFilterMin = []float32{float32(buffer.RangeFilterMin)}
+	sensor_data.RangeFilterMax = []float32{float32(buffer.RangeFilterMax)}
+	sensor_data.DepthFilterMin = []float32{float32(buffer.DepthFilterMin)}
+	sensor_data.DepthFilterMax = []float32{float32(buffer.DepthFilterMax)}
+	sensor_data.ProjectorType = []int8{buffer.ProjectorType}
+
+	return sensor_data
+}
+
+type Seabeam2112 struct {
+	Mode                   []int8
+	SurfaceSoundVelocity   []float32
+	SsvSource              []int8
+	PingGain               []int8
+	PulseWidth             []int8
+	TransmitterAttenuation []int8
+	NumberAlgorithms       []int8
+	AlgorithmOrder         []string
+}
+
+func DecodeSeabeam2112Specific(reader *bytes.Reader) (sensor_data Seabeam2112) {
+	var buffer struct {
+		Mode                   int8
+		SurfaceSoundVelocity   float32
+		SsvSource              int8
+		PingGain               int8
+		PulseWidth             int8
+		TransmitterAttenuation int8
+		NumberAlgorithms       int8
+		AlgorithmOrder         [5]byte
+		Spare                  int16
+	}
+	_ = binary.Read(reader, binary.BigEndian, &buffer)
+
+	sensor_data.Mode = []int8{buffer.Mode}
+	sensor_data.SurfaceSoundVelocity = []float32{(float32(buffer.SurfaceSoundVelocity) + 130000.0) / 100.0}
+	sensor_data.SsvSource = []int8{buffer.SsvSource}
+	sensor_data.PingGain = []int8{buffer.PingGain}
+	sensor_data.PulseWidth = []int8{buffer.PulseWidth}
+	sensor_data.TransmitterAttenuation = []int8{buffer.TransmitterAttenuation}
+	sensor_data.NumberAlgorithms = []int8{buffer.NumberAlgorithms}
+	sensor_data.AlgorithmOrder = []string{string(buffer.AlgorithmOrder[:])}
+
+	return sensor_data
+}
+
 // float64 may be overkill
 // where scale factors are applied, float32 is used
 // where it's confident float32 is enough to represent the value
