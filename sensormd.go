@@ -1245,3 +1245,155 @@ func DecodeEm4Specific(reader *bytes.Reader) (sensor_data Em4) {
 
 	return sensor_data
 }
+
+// GeoSwathPlus TODO; change DataSource and Side types from uint16 to uint8.
+// Seems a waste to store 2 bytes for data that is only a 0 or 1.
+type GeoSwathPlus struct {
+	// (0 = CBF, 1 = RDF) why 2bytes? why not uint8? could convert to string ...
+	DataSource []uint16
+	// again why 2bytes for (0 port, 1 = stbd)
+	Side                  []uint16
+	ModelNumber           []uint16
+	Frequency             []float32
+	EchosounderType       []uint16
+	PingNumber            []uint32
+	NumNavSamples         []uint16
+	NumAttitudeSamples    []uint16
+	NumHeadingSamples     []uint16
+	NumMiniSvsSamples     []uint16
+	NumEchosounderSamples []uint16
+	NumRaaSamples         []uint16
+	MeanSv                []float32
+	SurfaceVelocity       []float32
+	ValidBeams            []uint16
+	SampleRate            []float32
+	PulseLength           []float32
+	PingLength            []uint16
+	TransmitPower         []uint16
+	SidescanGainChannel   []uint16
+	Stabilization         []uint16
+	GpsQuality            []uint16
+	RangeUncertainty      []float32
+	AngleUncertainty      []float32
+}
+
+func DecodeGeoSwathPlusSpecific(reader *bytes.Reader) (sensor_data GeoSwathPlus) {
+	var buffer struct {
+		DataSource            uint16
+		Side                  uint16
+		ModelNumber           uint16
+		Frequency             uint16
+		EchosounderType       uint16
+		PingNumber            uint32
+		NumNavSamples         uint16
+		NumAttitudeSamples    uint16
+		NumHeadingSamples     uint16
+		NumMiniSvsSamples     uint16
+		NumEchosounderSamples uint16
+		NumRaaSamples         uint16
+		MeanSv                uint16
+		SurfaceVelocity       uint16
+		ValidBeams            uint16
+		SampleRate            float32
+		PulseLength           float32
+		PingLength            uint16
+		TransmitPower         uint16
+		SidescanGainChannel   uint16
+		Stabilization         uint16
+		GpsQuality            uint16
+		RangeUncertainty      float32
+		AngleUncertainty      float32
+		Spare                 [4]int32
+	}
+	_ = binary.Read(reader, binary.BigEndian, &buffer)
+
+	sensor_data.DataSource = []uint16{buffer.DataSource}
+	sensor_data.Side = []uint16{buffer.Side}
+	sensor_data.ModelNumber = []uint16{buffer.ModelNumber}
+	sensor_data.Frequency = []float32{float32(buffer.Frequency) / 10.0}
+	sensor_data.EchosounderType = []uint16{buffer.EchosounderType}
+	sensor_data.PingNumber = []uint32{buffer.PingNumber}
+	sensor_data.NumNavSamples = []uint16{buffer.NumNavSamples}
+	sensor_data.NumAttitudeSamples = []uint16{buffer.NumAttitudeSamples}
+	sensor_data.NumHeadingSamples = []uint16{buffer.NumHeadingSamples}
+	sensor_data.NumMiniSvsSamples = []uint16{buffer.NumMiniSvsSamples}
+	sensor_data.NumEchosounderSamples = []uint16{buffer.NumEchosounderSamples}
+	sensor_data.NumRaaSamples = []uint16{buffer.NumRaaSamples}
+	sensor_data.MeanSv = []float32{float32(buffer.MeanSv) / 20.0}
+	sensor_data.SurfaceVelocity = []float32{float32(buffer.SurfaceVelocity) / 20.0}
+	sensor_data.ValidBeams = []uint16{buffer.ValidBeams}
+	sensor_data.SampleRate = []float32{float32(buffer.SampleRate) / 10.0}
+	sensor_data.PulseLength = []float32{float32(buffer.PulseLength)}
+	sensor_data.PingLength = []uint16{buffer.PingLength}
+	sensor_data.TransmitPower = []uint16{buffer.TransmitPower}
+	sensor_data.SidescanGainChannel = []uint16{buffer.SidescanGainChannel}
+	sensor_data.Stabilization = []uint16{buffer.Stabilization}
+	sensor_data.GpsQuality = []uint16{buffer.GpsQuality}
+	sensor_data.RangeUncertainty = []float32{float32(buffer.RangeUncertainty) / SCALE3}
+	sensor_data.AngleUncertainty = []float32{float32(buffer.AngleUncertainty) / SCALE2}
+
+	return sensor_data
+}
+
+// DecodeKlein5410Bss TODO; change DataSource and Side types from uint16 to uint8.
+// Seems a waste to store 2 bytes for data that is only a 0 or 1.
+type Klein5410Bss struct {
+	DataSource        []uint16
+	Side              []uint16
+	ModelNumber       []uint16
+	AcousticFrequency []float32
+	SamplingFrequency []float32
+	PingNumber        []uint32
+	NumSamples        []uint32
+	NumRaaSamples     []uint32
+	ErrorFlags        []uint32
+	Range             []uint32
+	FishDepth         []float32
+	FishAltitude      []float32
+	SoundSpeed        []float32
+	TransmitWaveform  []uint16
+	Altimeter         []uint16
+	RawDataConfig     []uint32
+}
+
+func DecodeKlein5410BssSpecific(reader *bytes.Reader) (sensor_data Klein5410Bss) {
+	var buffer struct {
+		DataSource        uint16
+		Side              uint16
+		ModelNumber       uint16
+		AcousticFrequency uint32
+		SamplingFrequency uint32
+		PingNumber        uint32
+		NumSamples        uint32
+		NumRaaSamples     uint32
+		ErrorFlags        uint32
+		Range             uint32
+		FishDepth         uint32
+		FishAltitude      uint32
+		SoundSpeed        uint32
+		TransmitWaveform  uint16
+		Altimeter         uint16
+		RawDataConfig     uint32
+		Spare             [4]int32
+	}
+	_ = binary.Read(reader, binary.BigEndian, &buffer)
+
+	sensor_data.DataSource = []uint16{buffer.DataSource}
+	sensor_data.Side = []uint16{buffer.Side}
+	sensor_data.ModelNumber = []uint16{buffer.ModelNumber}
+	sensor_data.AcousticFrequency = []float32{float32(buffer.AcousticFrequency) / SCALE3}
+	sensor_data.SamplingFrequency = []float32{float32(buffer.SamplingFrequency) / SCALE3}
+	sensor_data.PingNumber = []uint32{buffer.PingNumber}
+	sensor_data.NumSamples = []uint32{buffer.NumSamples}
+	sensor_data.NumRaaSamples = []uint32{buffer.NumRaaSamples}
+	sensor_data.ErrorFlags = []uint32{buffer.ErrorFlags}
+	sensor_data.Range = []uint32{buffer.Range}
+	sensor_data.FishDepth = []float32{float32(buffer.FishDepth) / SCALE3}
+	sensor_data.FishAltitude = []float32{float32(buffer.FishAltitude) / SCALE3}
+	sensor_data.SoundSpeed = []float32{float32(buffer.SoundSpeed) / SCALE3}
+	sensor_data.TransmitWaveform = []uint16{buffer.TransmitWaveform}
+	sensor_data.Altimeter = []uint16{buffer.Altimeter}
+	sensor_data.RawDataConfig = []uint32{buffer.RawDataConfig}
+
+	return sensor_data
+}
