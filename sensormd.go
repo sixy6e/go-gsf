@@ -982,16 +982,16 @@ func DecodeEm3(reader *bytes.Reader) (sensor_data Em3) {
 // TODO; align into 64bit chunks
 // the spec says binary integers are stored as either 1-byte unsigned, 2-byte signed or unsigned, or 4-byte signed
 type Em4 struct {
-	ModelNumber                       []int16     `tiledb:"dtype=int16,ftype=attr" filters:"zstd(level=16)"`
-	PingCounter                       []int16     `tiledb:"dtype=int16,ftype=attr" filters:"zstd(level=16)"`
-	SerialNumber                      []int16     `tiledb:"dtype=int16,ftype=attr" filters:"zstd(level=16)"`
+	ModelNumber                       []uint16    `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	PingCounter                       []uint16    `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	SerialNumber                      []uint16    `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
 	SurfaceVelocity                   []float32   `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
 	TransducerDepth                   []float64   `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
-	ValidDetections                   []int16     `tiledb:"dtype=int16,ftype=attr" filters:"zstd(level=16)"`
+	ValidDetections                   []uint16    `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
 	SamplingFrequency                 []float64   `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
-	DopplerCorrectionScale            []int32     `tiledb:"dtype=int32,ftype=attr" filters:"zstd(level=16)"`
+	DopplerCorrectionScale            []uint32    `tiledb:"dtype=uint32,ftype=attr" filters:"zstd(level=16)"`
 	VehicleDepth                      []float32   `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
-	TransmitSectors                   []int16     `tiledb:"dtype=int16,ftype=attr" filters:"zstd(level=16)"`
+	TransmitSectors                   []uint16    `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
 	TiltAngle                         [][]float32 `tiledb:"dtype=float32,ftype=attr,var" filters:"zstd(level=16)"`
 	FocusRange                        [][]float32 `tiledb:"dtype=float32,ftype=attr,var" filters:"zstd(level=16)"`
 	SignalLength                      [][]float64 `tiledb:"dtype=float64,ftype=attr,var" filters:"zstd(level=16)"`
@@ -1001,10 +1001,10 @@ type Em4 struct {
 	WaveformId                        [][]uint8   `tiledb:"dtype=uint8,ftype=attr,var" filters:"zstd(level=16)"`
 	SectorNumber                      [][]uint8   `tiledb:"dtype=uint8,ftype=attr,var" filters:"zstd(level=16)"`
 	SignalBandwith                    [][]float64 `tiledb:"dtype=float64,ftype=attr,var" filters:"zstd(level=16)"`
-	RunTimeModelNumber                []int16     `tiledb:"dtype=int16,ftype=attr" filters:"zstd(level=16)"`
+	RunTimeModelNumber                []uint16    `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
 	RunTimeDatagramTime               []time.Time `tiledb:"dtype=datetime_ns,ftype=attr" filters:"zstd(level=16)"`
-	RunTimePingCounter                []int16     `tiledb:"dtype=int16,ftype=attr" filters:"zstd(level=16)"`
-	RunTimeSerialNumber               []int16     `tiledb:"dtype=int16,ftype=attr" filters:"zstd(level=16)"`
+	RunTimePingCounter                []uint16    `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	RunTimeSerialNumber               []uint16    `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
 	RunTimeOperatorStationStatus      []uint8     `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
 	RunTimeProcessingUnitStatus       []uint8     `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
 	RunTimeBspStatus                  []uint8     `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
@@ -1027,7 +1027,7 @@ type Em4 struct {
 	RunTimeMaxPortCoverage            []uint8     `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
 	RunTimeStabilization              []uint8     `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
 	RunTimeMaxStbdCoverage            []uint8     `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
-	RunTimeMaxStdbSwathWidth          []int16     `tiledb:"dtype=int16,ftype=attr" filters:"zstd(level=16)"`
+	RunTimeMaxStdbSwathWidth          []uint16    `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
 	RunTimeTransmitAlongTilt          []float32   `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
 	RunTimeFilterId2                  []uint8     `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
 	ProcessorUnitCpuLoad              []uint8     `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
@@ -1037,22 +1037,22 @@ type Em4 struct {
 	ProcessorUnitYawStabilization     []float32   `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
 }
 
-func DecodeEm4Specific(reader *bytes.Reader) (sensor_data EM4) {
+func DecodeEm4Specific(reader *bytes.Reader) (sensor_data Em4) {
 
 	var (
 		buffer struct {
-			ModelNumber            int16
-			PingCounter            int16
-			SerialNumber           int16
-			SurfaceVelocity        int16
+			ModelNumber            uint16
+			PingCounter            uint16
+			SerialNumber           uint16
+			SurfaceVelocity        uint16
 			TransducerDepth        int32
-			ValidDetections        int16
-			SamplingFrequency1     int32
-			SamplingFrequency2     int32
-			DopplerCorrectionScale int32
+			ValidDetections        uint16
+			SamplingFrequency1     uint32
+			SamplingFrequency2     uint32
+			DopplerCorrectionScale uint32
 			VehicleDepth           int32
 			Spare                  [4]int32
-			TransmitSectors        int16
+			TransmitSectors        uint16
 		} // 48 bytes
 		sector_buffer struct {
 			TiltAngle       []float32
@@ -1068,36 +1068,36 @@ func DecodeEm4Specific(reader *bytes.Reader) (sensor_data EM4) {
 		}
 		sector_buffer_base struct {
 			TiltAngle       int16
-			FocusRange      int16
-			SignalLength    int32
-			TransmitDelay   int32
-			CenterFrequency int32
-			MeanAbsorption  int16
+			FocusRange      uint16
+			SignalLength    uint32
+			TransmitDelay   uint32
+			CenterFrequency uint32
+			MeanAbsorption  uint16
 			WaveformId      uint8
 			SectorNumber    uint8
-			SignalBandwith  int32
+			SignalBandwith  uint32
 			Spare           [4]int32
 		} // 40 bytes
 		spare_buffer struct {
 			Spare [4]int32
 		} // 16 bytes
 		runtime_buffer struct {
-			RunTimeModelNumber            int16
-			RunTimeDatagramTime_sec       int32
-			RunTimeDatagramTime_nsec      int32
-			RunTimePingCounter            int16
-			RunTimeSerialNumber           int16
+			RunTimeModelNumber            uint16
+			RunTimeDatagramTime_sec       uint32
+			RunTimeDatagramTime_nsec      uint32
+			RunTimePingCounter            uint16
+			RunTimeSerialNumber           uint16
 			RunTimeOperatorStationStatus  uint8
 			RunTimeProcessingUnitStatus   uint8
 			RunTimeBspStatus              uint8
 			RunTimeHeadTransceiverStatus  uint8
 			RunTimeMode                   uint8
 			RunTimeFilterId               uint8
-			RunTimeMinDepth               int16
-			RunTimeMaxDepth               int16
-			RunTimeAbsorption             int16
-			RunTimeTransmitPulseLength    int16
-			RunTimeTransmitBeamWidth      int16
+			RunTimeMinDepth               uint16
+			RunTimeMaxDepth               uint16
+			RunTimeAbsorption             uint16
+			RunTimeTransmitPulseLength    uint16
+			RunTimeTransmitBeamWidth      uint16
 			RunTimeTransmitPowerReduction uint8
 			RunTimeReceiveBeamWidth       uint8
 			RunTimeReceiveBandwidth       uint8
@@ -1109,7 +1109,7 @@ func DecodeEm4Specific(reader *bytes.Reader) (sensor_data EM4) {
 			RunTimeMaxPortCoverage        uint8
 			RunTimeStabilization          uint8
 			RunTimeMaxStbdCoverage        uint8
-			RunTimeMaxStdbSwathWidth      int16
+			RunTimeMaxStdbSwathWidth      uint16
 			RunTimeTransmitAlongTilt      int16
 			RunTimeFilterId2              uint8
 			Spare                         [4]int32
@@ -1130,7 +1130,7 @@ func DecodeEm4Specific(reader *bytes.Reader) (sensor_data EM4) {
 
 	// sector arrays
 	// what if TransmitSectors == 0???
-	for i := int16(0); i < buffer.TransmitSectors; i++ {
+	for i := uint16(0); i < buffer.TransmitSectors; i++ {
 		_ = binary.Read(reader, binary.BigEndian, &sector_buffer_base)
 		sector_buffer.TiltAngle = append(
 			sector_buffer.TiltAngle,
@@ -1180,16 +1180,16 @@ func DecodeEm4Specific(reader *bytes.Reader) (sensor_data EM4) {
 	_ = binary.Read(reader, binary.BigEndian, &proc_buffer)
 
 	// populate generic
-	sensor_data.ModelNumber = []int16{buffer.ModelNumber}
-	sensor_data.PingCounter = []int16{buffer.PingCounter}
-	sensor_data.SerialNumber = []int16{buffer.SerialNumber}
+	sensor_data.ModelNumber = []uint16{buffer.ModelNumber}
+	sensor_data.PingCounter = []uint16{buffer.PingCounter}
+	sensor_data.SerialNumber = []uint16{buffer.SerialNumber}
 	sensor_data.SurfaceVelocity = []float32{float32(buffer.SurfaceVelocity) / float32(10)}
 	sensor_data.TransducerDepth = []float64{float64(buffer.TransducerDepth) / float64(20000)}
-	sensor_data.ValidDetections = []int16{buffer.ValidDetections}
+	sensor_data.ValidDetections = []uint16{buffer.ValidDetections}
 	sensor_data.SamplingFrequency = []float64{float64(buffer.SamplingFrequency1) + float64(buffer.SamplingFrequency2)/float64(4_000_000_000)}
-	sensor_data.DopplerCorrectionScale = []int32{buffer.DopplerCorrectionScale}
+	sensor_data.DopplerCorrectionScale = []uint32{buffer.DopplerCorrectionScale}
 	sensor_data.VehicleDepth = []float32{float32(buffer.VehicleDepth) / float32(1000)}
-	sensor_data.TransmitSectors = []int16{buffer.TransmitSectors}
+	sensor_data.TransmitSectors = []uint16{buffer.TransmitSectors}
 
 	// populate sector info
 	sensor_data.TiltAngle = [][]float32{sector_buffer.TiltAngle}
@@ -1203,13 +1203,13 @@ func DecodeEm4Specific(reader *bytes.Reader) (sensor_data EM4) {
 	sensor_data.SignalBandwith = [][]float64{sector_buffer.SignalBandwith}
 
 	// populate runtime info
-	sensor_data.RunTimeModelNumber = []int16{runtime_buffer.RunTimeModelNumber}
+	sensor_data.RunTimeModelNumber = []uint16{runtime_buffer.RunTimeModelNumber}
 	sensor_data.RunTimeDatagramTime = []time.Time{time.Unix(
 		int64(runtime_buffer.RunTimeDatagramTime_sec),
 		int64(runtime_buffer.RunTimeDatagramTime_nsec),
 	)}
-	sensor_data.RunTimePingCounter = []int16{runtime_buffer.RunTimePingCounter}
-	sensor_data.RunTimeSerialNumber = []int16{runtime_buffer.RunTimeSerialNumber}
+	sensor_data.RunTimePingCounter = []uint16{runtime_buffer.RunTimePingCounter}
+	sensor_data.RunTimeSerialNumber = []uint16{runtime_buffer.RunTimeSerialNumber}
 	sensor_data.RunTimeOperatorStationStatus = []uint8{runtime_buffer.RunTimeOperatorStationStatus}
 	sensor_data.RunTimeProcessingUnitStatus = []uint8{runtime_buffer.RunTimeProcessingUnitStatus}
 	sensor_data.RunTimeBspStatus = []uint8{runtime_buffer.RunTimeBspStatus}
@@ -1232,7 +1232,7 @@ func DecodeEm4Specific(reader *bytes.Reader) (sensor_data EM4) {
 	sensor_data.RunTimeMaxPortCoverage = []uint8{runtime_buffer.RunTimeMaxPortCoverage}
 	sensor_data.RunTimeStabilization = []uint8{runtime_buffer.RunTimeStabilization}
 	sensor_data.RunTimeMaxStbdCoverage = []uint8{runtime_buffer.RunTimeMaxStbdCoverage}
-	sensor_data.RunTimeMaxStdbSwathWidth = []int16{runtime_buffer.RunTimeMaxStdbSwathWidth}
+	sensor_data.RunTimeMaxStdbSwathWidth = []uint16{runtime_buffer.RunTimeMaxStdbSwathWidth}
 	sensor_data.RunTimeTransmitAlongTilt = []float32{float32(runtime_buffer.RunTimeTransmitAlongTilt) / float32(100)}
 	sensor_data.RunTimeFilterId2 = []uint8{runtime_buffer.RunTimeFilterId2}
 
