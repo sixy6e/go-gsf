@@ -6,6 +6,8 @@ import (
 	"time"
 )
 
+// TODO; check signed/unsigned type reads with c code (stemp, ltemp)
+
 type Seabeam struct {
 	EclipseTime []uint16
 }
@@ -677,9 +679,286 @@ func DecodeReson8100(reader *bytes.Reader) (sensor_data Reson8100) {
 }
 
 type Em3 struct {
+	ModelNumber          []int16
+	PingNumber           []int16
+	SerialNumber         []int16
+	SurfaceSoundVelocity []float32
+	TransducerDepth      []float32
+	ValidBeams           []int16
+	SampleRate           []int16
+	DepthDifference      []float32
+	OffsetMultiplier     []int8
+	// RunTimeID                      []uint32 // not stored
+	RunTimeModelNumber             [][]int16
+	RunTimeDgTime                  [][]time.Time
+	RunTimePingNumber              [][]int16
+	RunTimeSerialNumber            [][]int16
+	RunTimeSystemStatus            [][]uint32
+	RunTimeMode                    [][]int8
+	RunTimeFilterID                [][]int8
+	RunTimeMinDepth                [][]float32
+	RunTimeMaxDepth                [][]float32
+	RunTimeAbsorption              [][]float32
+	RunTimeTransmitPulseLength     [][]float32
+	RunTimeTransmitBeamWidth       [][]float32
+	RunTimePowerReduction          [][]int8
+	RunTimeReceiveBeamWidth        [][]float32
+	RunTimeReceiveBandwidth        [][]int16
+	RunTimeReceiveGain             [][]int8
+	RunTimeCrossOverAngle          [][]int8
+	RunTimeSsvSource               [][]int8
+	RunTimePortSwathWidth          [][]int16
+	RunTimeBeamSpacing             [][]int8
+	RunTimePortCoverageSector      [][]int8
+	RunTimeStabilization           [][]int8
+	RunTimeStarboardCoverageSector [][]int8
+	RunTimeStarboardSwathWidth     [][]int16
+	RunTimeHiloFreqAbsorpRatio     [][]int8
+	RunTimeSwathWidth              [][]int16
+	RunTimeCoverageSector          [][]int16
 }
 
 func DecodeEm3(reader *bytes.Reader) (sensor_data Em3) {
+	var (
+		buffer struct {
+			ModelNumber          int16
+			PingNumber           int16
+			SerialNumber         int16
+			SurfaceSoundVelocity int16
+			TransducerDepth      int16
+			ValidBeams           int16
+			SampleRate           int16
+			DepthDifference      int16
+			OffsetMultiplier     int8
+			RunTimeID            uint32
+		}
+		rt1 struct {
+			ModelNumber             int16
+			TvSec                   uint32
+			TvNSec                  uint32
+			PingNumber              int16
+			SerialNumber            int16
+			SystemStatus            uint32
+			Mode                    int8
+			FilterID                int8
+			MinDepth                int16
+			MaxDepth                int16
+			Absoprtion              int16
+			TransmitPulseLength     int16
+			TransmitBeamWidth       int16
+			PowerReduction          int8
+			ReceiveBeamWidth        int8
+			ReceiveBandwidth        int8
+			ReceiveGain             int8
+			CrossOverAnlge          int8
+			SsvSource               int8
+			PortSwathWidth          int16
+			BeamSpacing             int8
+			PortCoverageSector      int8
+			Stabilization           int8
+			StarboardCoverageSector int8
+			StarboardSwathWidth     int16
+			HiloFreqAbsorpRatio     int8
+			Spare                   int32
+		}
+		rt2 struct {
+			ModelNumber             int16
+			TvSec                   uint32
+			TvNSec                  uint32
+			PingNumber              int16
+			SerialNumber            int16
+			SystemStatus            uint32
+			Mode                    int8
+			FilterID                int8
+			MinDepth                int16
+			MaxDepth                int16
+			Absoprtion              int16
+			TransmitPulseLength     int16
+			TransmitBeamWidth       int16
+			PowerReduction          int8
+			ReceiveBeamWidth        int8
+			ReceiveBandwidth        int8
+			ReceiveGain             int8
+			CrossOverAnlge          int8
+			SsvSource               int8
+			PortSwathWidth          int16
+			BeamSpacing             int8
+			PortCoverageSector      int8
+			Stabilization           int8
+			StarboardCoverageSector int8
+			StarboardSwathWidth     int16
+			HiloFreqAbsorpRatio     int8
+			Spare                   int32
+		}
+	)
+	model_number := make([]int16, 0, 2)
+	dg_time := make([]time.Time, 0, 2)
+	ping_number := make([]int16, 0, 2)
+	serial_number := make([]int16, 0, 2)
+	system_status := make([]uint32, 0, 2)
+	mode := make([]int8, 0, 2)
+	filter_id := make([]int8, 0, 2)
+	min_depth := make([]float32, 0, 2)
+	max_depth := make([]float32, 0, 2)
+	absorption := make([]float32, 0, 2)
+	transmit_pulse_length := make([]float32, 0, 2)
+	transmit_beam_width := make([]float32, 0, 2)
+	power_reduction := make([]int8, 0, 2)
+	receive_beamwidth := make([]float32, 0, 2)
+	receive_bandwidth := make([]int16, 0, 2)
+	receive_gain := make([]int8, 0, 2)
+	cross_over_angle := make([]int8, 0, 2)
+	ssv_source := make([]int8, 0, 2)
+	port_swath_width := make([]int16, 0, 2)
+	beam_spacing := make([]int8, 0, 2)
+	port_coverage_sector := make([]int8, 0, 2)
+	stabilization := make([]int8, 0, 2)
+	starboard_coverage_sector := make([]int8, 0, 2)
+	starboard_swath_width := make([]int16, 0, 2)
+	hilo_freq_absorp_ratio := make([]int8, 0, 2)
+	swath_width := make([]int16, 0, 2)
+	coverage_sector := make([]int16, 0, 2)
+
+	_ = binary.Read(reader, binary.BigEndian, &buffer)
+
+	// base set of values
+	sensor_data.ModelNumber = []int16{buffer.ModelNumber}
+	sensor_data.PingNumber = []int16{buffer.PingNumber}
+	sensor_data.SerialNumber = []int16{buffer.SerialNumber}
+	sensor_data.SurfaceSoundVelocity = []float32{float32(buffer.SerialNumber) / 10.0}
+	sensor_data.TransducerDepth = []float32{float32(buffer.TransducerDepth) / SCALE2}
+	sensor_data.ValidBeams = []int16{buffer.ValidBeams}
+	sensor_data.SampleRate = []int16{buffer.SampleRate}
+	sensor_data.DepthDifference = []float32{float32(buffer.DepthDifference) / SCALE2}
+	sensor_data.OffsetMultiplier = []int8{buffer.OffsetMultiplier}
+
+	// runtime values
+	if (buffer.RunTimeID & 0x00000001) != 0 {
+		_ = binary.Read(reader, binary.BigEndian, &rt1)
+		model_number = append(model_number, rt1.ModelNumber)
+		dg_time = append(dg_time, time.Unix(int64(rt1.TvSec), int64(rt1.TvNSec)).UTC())
+		ping_number = append(ping_number, rt1.PingNumber)
+		serial_number = append(serial_number, rt1.SerialNumber)
+		system_status = append(system_status, rt1.SystemStatus)
+		mode = append(mode, rt1.Mode)
+		filter_id = append(filter_id, rt1.FilterID)
+		min_depth = append(min_depth, float32(rt1.MinDepth))
+		max_depth = append(max_depth, float32(rt1.MaxDepth))
+		absorption = append(absorption, float32(rt2.Absoprtion)/SCALE2)
+		transmit_pulse_length = append(transmit_pulse_length, float32(rt1.TransmitPulseLength))
+		transmit_beam_width = append(transmit_beam_width, float32(rt1.TransmitBeamWidth)/10.0)
+		power_reduction = append(power_reduction, rt1.PowerReduction)
+		receive_beamwidth = append(receive_beamwidth, float32(rt1.ReceiveBeamWidth)/10.0)
+		receive_bandwidth = append(receive_bandwidth, int16(rt1.ReceiveBandwidth)*50)
+		receive_gain = append(receive_gain, rt1.ReceiveGain)
+		cross_over_angle = append(cross_over_angle, rt1.CrossOverAnlge)
+		ssv_source = append(ssv_source, rt1.SsvSource)
+		// port_swath_width = append(port_swath_width, rt1.PortSwathWidth)
+		beam_spacing = append(beam_spacing, rt1.BeamSpacing)
+		//port_coverage_sector = append(port_coverage_sector, rt1.PortCoverageSector)
+		stabilization = append(stabilization, rt1.Stabilization)
+		// starboard_coverage_sector = append(starboard_coverage_sector, rt1.StarboardCoverageSector)
+		// starboard_swath_width = append(starboard_swath_width, rt1.StarboardSwathWidth)
+		hilo_freq_absorp_ratio = append(hilo_freq_absorp_ratio, rt1.HiloFreqAbsorpRatio)
+
+		if rt1.StarboardSwathWidth != 0 {
+			swath_width = append(swath_width, rt1.PortSwathWidth+rt1.StarboardSwathWidth)
+			port_swath_width = append(port_swath_width, rt1.PortSwathWidth)
+			starboard_swath_width = append(starboard_swath_width, rt1.StarboardSwathWidth)
+		} else {
+			swath_width = append(swath_width, rt1.PortSwathWidth)
+			port_swath_width = append(port_swath_width, rt1.PortSwathWidth/2)
+			starboard_swath_width = append(starboard_swath_width, rt1.PortSwathWidth/2)
+		}
+
+		if rt1.StarboardCoverageSector != 0 {
+			coverage_sector = append(coverage_sector, int16(rt1.PortCoverageSector)+int16(rt1.StarboardCoverageSector))
+			port_coverage_sector = append(port_coverage_sector, rt1.PortCoverageSector)
+			starboard_coverage_sector = append(starboard_coverage_sector, rt1.StarboardCoverageSector)
+		} else {
+			coverage_sector = append(coverage_sector, int16(rt1.PortCoverageSector))
+			port_coverage_sector = append(port_coverage_sector, rt1.PortCoverageSector/2)
+			starboard_coverage_sector = append(starboard_coverage_sector, rt1.PortCoverageSector/2)
+		}
+
+		if (buffer.RunTimeID & 0x00000002) != 0 {
+			_ = binary.Read(reader, binary.BigEndian, &rt2)
+			model_number = append(model_number, rt2.ModelNumber)
+			dg_time = append(dg_time, time.Unix(int64(rt2.TvSec), int64(rt2.TvNSec)).UTC())
+			ping_number = append(ping_number, rt2.PingNumber)
+			serial_number = append(serial_number, rt2.SerialNumber)
+			system_status = append(system_status, rt2.SystemStatus)
+			mode = append(mode, rt2.Mode)
+			filter_id = append(filter_id, rt2.FilterID)
+			min_depth = append(min_depth, float32(rt2.MinDepth))
+			max_depth = append(max_depth, float32(rt2.MaxDepth))
+			absorption = append(absorption, float32(rt2.Absoprtion)/SCALE2)
+			transmit_pulse_length = append(transmit_pulse_length, float32(rt2.TransmitPulseLength))
+			transmit_beam_width = append(transmit_beam_width, float32(rt2.TransmitBeamWidth)/10.0)
+			power_reduction = append(power_reduction, rt2.PowerReduction)
+			receive_beamwidth = append(receive_beamwidth, float32(rt2.ReceiveBeamWidth)/10.0)
+			receive_bandwidth = append(receive_bandwidth, int16(rt2.ReceiveBandwidth)*50)
+			receive_gain = append(receive_gain, rt2.ReceiveGain)
+			cross_over_angle = append(cross_over_angle, rt2.CrossOverAnlge)
+			ssv_source = append(ssv_source, rt2.SsvSource)
+			// port_swath_width = append(port_swath_width, rt2.PortSwathWidth)
+			beam_spacing = append(beam_spacing, rt2.BeamSpacing)
+			port_coverage_sector = append(port_coverage_sector, rt2.PortCoverageSector)
+			stabilization = append(stabilization, rt2.Stabilization)
+			starboard_coverage_sector = append(starboard_coverage_sector, rt2.StarboardCoverageSector)
+			// starboard_swath_width = append(starboard_swath_width, rt2.StarboardSwathWidth)
+			hilo_freq_absorp_ratio = append(hilo_freq_absorp_ratio, rt2.HiloFreqAbsorpRatio)
+		}
+
+		if rt2.StarboardSwathWidth != 0 {
+			swath_width = append(swath_width, rt2.PortSwathWidth+rt2.StarboardSwathWidth)
+			port_swath_width = append(port_swath_width, rt2.PortSwathWidth)
+			starboard_swath_width = append(starboard_swath_width, rt2.StarboardSwathWidth)
+		} else {
+			swath_width = append(swath_width, rt2.PortSwathWidth)
+			port_swath_width = append(port_swath_width, rt2.PortSwathWidth/2)
+			starboard_swath_width = append(starboard_swath_width, rt2.PortSwathWidth/2)
+		}
+
+		if rt2.StarboardCoverageSector != 0 {
+			coverage_sector = append(coverage_sector, int16(rt2.PortCoverageSector)+int16(rt2.StarboardCoverageSector))
+			port_coverage_sector = append(port_coverage_sector, rt2.PortCoverageSector)
+			starboard_coverage_sector = append(starboard_coverage_sector, rt2.StarboardCoverageSector)
+		} else {
+			coverage_sector = append(coverage_sector, int16(rt2.PortCoverageSector))
+			port_coverage_sector = append(port_coverage_sector, rt2.PortCoverageSector/2)
+			starboard_coverage_sector = append(starboard_coverage_sector, rt2.PortCoverageSector/2)
+		}
+	}
+
+	// insert runtime data
+	sensor_data.RunTimeModelNumber = [][]int16{model_number}
+	sensor_data.RunTimeDgTime = [][]time.Time{dg_time}
+	sensor_data.RunTimePingNumber = [][]int16{ping_number}
+	sensor_data.RunTimeSerialNumber = [][]int16{serial_number}
+	sensor_data.RunTimeMode = [][]int8{mode}
+	sensor_data.RunTimeFilterID = [][]int8{filter_id}
+	sensor_data.RunTimeMinDepth = [][]float32{min_depth}
+	sensor_data.RunTimeMaxDepth = [][]float32{max_depth}
+	sensor_data.RunTimeAbsorption = [][]float32{absorption}
+	sensor_data.RunTimeTransmitPulseLength = [][]float32{transmit_pulse_length}
+	sensor_data.RunTimeTransmitBeamWidth = [][]float32{transmit_beam_width}
+	sensor_data.RunTimePowerReduction = [][]int8{power_reduction}
+	sensor_data.RunTimeReceiveBeamWidth = [][]float32{receive_beamwidth}
+	sensor_data.RunTimeReceiveBandwidth = [][]int16{receive_bandwidth}
+	sensor_data.RunTimeReceiveGain = [][]int8{receive_gain}
+	sensor_data.RunTimeCrossOverAngle = [][]int8{cross_over_angle}
+	sensor_data.RunTimeSsvSource = [][]int8{ssv_source}
+	sensor_data.RunTimePortSwathWidth = [][]int16{port_swath_width}
+	sensor_data.RunTimeBeamSpacing = [][]int8{beam_spacing}
+	sensor_data.RunTimePortCoverageSector = [][]int8{port_coverage_sector}
+	sensor_data.RunTimeStabilization = [][]int8{stabilization}
+	sensor_data.RunTimeStarboardCoverageSector = [][]int8{starboard_coverage_sector}
+	sensor_data.RunTimeStarboardSwathWidth = [][]int16{starboard_swath_width}
+	sensor_data.RunTimeHiloFreqAbsorpRatio = [][]int8{hilo_freq_absorp_ratio}
+	sensor_data.RunTimeSwathWidth = [][]int16{swath_width}
+	sensor_data.RunTimeCoverageSector = [][]int16{coverage_sector}
+
 	return sensor_data
 }
 
