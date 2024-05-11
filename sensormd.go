@@ -7,6 +7,16 @@ import (
 )
 
 // TODO; check signed/unsigned type reads with c code (stemp, ltemp)
+// Update: it will be difficult to determine the correct read type in cases
+// where the spec differs to the c-code.
+// In many instances the spec says int16, but the code reads it as a uint16
+// and then converts to an int32.
+// If the spec says int16, then we should be safe in reading as int16.
+// However, I've come across many instances where the code does something
+// very different to the spec.
+// Best attempts will be made to infer the "more correct" type if something
+// doesn't look right:
+// (differs wildly in the spec vs code, as well as what the data represents).
 
 type Seabeam struct {
 	EclipseTime []uint16
