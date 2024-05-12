@@ -6,8 +6,7 @@ import (
 	"time"
 )
 
-// TODO; check signed/unsigned type reads with c code (stemp, ltemp)
-// Update: it will be difficult to determine the correct read type in cases
+// It's problematic to determine the correct read type in cases
 // where the spec differs to the c-code.
 // In many instances the spec says int16, but the code reads it as a uint16
 // and then converts to an int32.
@@ -23,7 +22,7 @@ import (
 // we'll keep as uint16 and not promote to int32.
 
 type Seabeam struct {
-	EclipseTime []uint16
+	EclipseTime []uint16 `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
 }
 
 func DecodeSeabeamSpecific(reader *bytes.Reader) (sensor_data Seabeam) {
@@ -37,11 +36,11 @@ func DecodeSeabeamSpecific(reader *bytes.Reader) (sensor_data Seabeam) {
 }
 
 type Em12 struct {
-	PingNumber    []uint16
-	Resolution    []int8
-	PingQuality   []int8
-	SoundVelocity []float32
-	Mode          []int8
+	PingNumber    []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	Resolution    []int8    `tiledb:"dtype=int8,ftype=attr" filters:"zstd(level=16)"`
+	PingQuality   []int8    `tiledb:"dtype=int8,ftype=attr" filters:"zstd(level=16)"`
+	SoundVelocity []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	Mode          []int8    `tiledb:"dtype=int8,ftype=attr" filters:"zstd(level=16)"`
 }
 
 func DecodeEm12Specific(reader *bytes.Reader) (sensor_data Em12) {
@@ -65,14 +64,14 @@ func DecodeEm12Specific(reader *bytes.Reader) (sensor_data Em12) {
 }
 
 type Em100 struct {
-	ShipPitch       []float32
-	TransducerPitch []float32
-	Mode            []int8
-	Power           []int8
-	Attenuation     []int8
-	Tvg             []int8
-	PulseLength     []int8
-	Counter         []uint16
+	ShipPitch       []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	TransducerPitch []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	Mode            []int8    `tiledb:"dtype=int8,ftype=attr" filters:"zstd(level=16)"`
+	Power           []int8    `tiledb:"dtype=int8,ftype=attr" filters:"zstd(level=16)"`
+	Attenuation     []int8    `tiledb:"dtype=int8,ftype=attr" filters:"zstd(level=16)"`
+	Tvg             []int8    `tiledb:"dtype=int8,ftype=attr" filters:"zstd(level=16)"`
+	PulseLength     []int8    `tiledb:"dtype=int8,ftype=attr" filters:"zstd(level=16)"`
+	Counter         []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
 }
 
 func DecodeEm100Specific(reader *bytes.Reader) (sensor_data Em100) {
@@ -101,12 +100,12 @@ func DecodeEm100Specific(reader *bytes.Reader) (sensor_data Em100) {
 }
 
 type Em950 struct {
-	PingNumber           []uint16
-	Mode                 []uint8
-	Quality              []uint8
-	ShipPitch            []float32
-	TransducerPitch      []float32
-	SurfaceSoundVelocity []float32
+	PingNumber           []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	Mode                 []uint8   `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
+	Quality              []uint8   `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
+	ShipPitch            []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	TransducerPitch      []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	SurfaceSoundVelocity []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
 }
 
 func DecodeEm950Specific(reader *bytes.Reader) (sensor_data Em950) {
@@ -131,15 +130,15 @@ func DecodeEm950Specific(reader *bytes.Reader) (sensor_data Em950) {
 }
 
 type Em121A struct {
-	PingNumber           []uint16
-	Mode                 []int8
-	ValidBeams           []int8
-	PulseLength          []int8
-	BeamWidth            []int8
-	TransmitPower        []int8
-	TransmitStatus       []int8
-	ReceiveStatus        []int8
-	SurfaceSoundVelocity []float32
+	PingNumber           []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	Mode                 []int8    `tiledb:"dtype=int8,ftype=attr" filters:"zstd(level=16)"`
+	ValidBeams           []int8    `tiledb:"dtype=int8,ftype=attr" filters:"zstd(level=16)"`
+	PulseLength          []int8    `tiledb:"dtype=int8,ftype=attr" filters:"zstd(level=16)"`
+	BeamWidth            []int8    `tiledb:"dtype=int8,ftype=attr" filters:"zstd(level=16)"`
+	TransmitPower        []int8    `tiledb:"dtype=int8,ftype=attr" filters:"zstd(level=16)"`
+	TransmitStatus       []int8    `tiledb:"dtype=int8,ftype=attr" filters:"zstd(level=16)"`
+	ReceiveStatus        []int8    `tiledb:"dtype=int8,ftype=attr" filters:"zstd(level=16)"`
+	SurfaceSoundVelocity []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
 }
 
 func DecodeEm121ASpecific(reader *bytes.Reader) (sensor_data Em121A) {
@@ -170,15 +169,15 @@ func DecodeEm121ASpecific(reader *bytes.Reader) (sensor_data Em121A) {
 }
 
 type Em121 struct {
-	PingNumber           []uint16
-	Mode                 []int8
-	ValidBeams           []int8
-	PulseLength          []int8
-	BeamWidth            []int8
-	TransmitPower        []int8
-	TransmitStatus       []int8
-	ReceiveStatus        []int8
-	SurfaceSoundVelocity []float32
+	PingNumber           []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	Mode                 []int8    `tiledb:"dtype=int8,ftype=attr" filters:"zstd(level=16)"`
+	ValidBeams           []int8    `tiledb:"dtype=int8,ftype=attr" filters:"zstd(level=16)"`
+	PulseLength          []int8    `tiledb:"dtype=int8,ftype=attr" filters:"zstd(level=16)"`
+	BeamWidth            []int8    `tiledb:"dtype=int8,ftype=attr" filters:"zstd(level=16)"`
+	TransmitPower        []int8    `tiledb:"dtype=int8,ftype=attr" filters:"zstd(level=16)"`
+	TransmitStatus       []int8    `tiledb:"dtype=int8,ftype=attr" filters:"zstd(level=16)"`
+	ReceiveStatus        []int8    `tiledb:"dtype=int8,ftype=attr" filters:"zstd(level=16)"`
+	SurfaceSoundVelocity []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
 }
 
 func DecodeEm121Specific(reader *bytes.Reader) (sensor_data Em121) {
@@ -209,12 +208,12 @@ func DecodeEm121Specific(reader *bytes.Reader) (sensor_data Em121) {
 }
 
 type Sass struct {
-	LeftMostBeam       []uint16
-	RightMostBeam      []uint16
-	TotalNumverOfBeams []uint16
-	NavigationMode     []uint16
-	PingNumber         []uint16
-	MissionNumber      []uint16
+	LeftMostBeam       []uint16 `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	RightMostBeam      []uint16 `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	TotalNumverOfBeams []uint16 `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	NavigationMode     []uint16 `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	PingNumber         []uint16 `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	MissionNumber      []uint16 `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
 }
 
 func DecodeSassSpecfic(reader *bytes.Reader) (sensor_data Sass) {
@@ -239,17 +238,17 @@ func DecodeSassSpecfic(reader *bytes.Reader) (sensor_data Sass) {
 }
 
 type Seamap struct {
-	PortTransmit1        []float32
-	PortTransmit2        []float32
-	StarboardTransmit1   []float32
-	StarboardTransmit2   []float32
-	PortGain             []float32
-	StarboardGain        []float32
-	PortPulseLength      []float32
-	StarboardPulseLength []float32
-	PressureDepth        []float32 // only present in GSF >= 2.08
-	Altitude             []float32
-	Temperature          []float32
+	PortTransmit1        []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	PortTransmit2        []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	StarboardTransmit1   []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	StarboardTransmit2   []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	PortGain             []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	StarboardGain        []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	PortPulseLength      []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	StarboardPulseLength []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	PressureDepth        []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"` // only present in GSF >= 2.08
+	Altitude             []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	Temperature          []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
 }
 
 func DecodeSeamapSpecific(reader *bytes.Reader, gsfd GsfDetails) (sensor_data Seamap) {
@@ -298,12 +297,12 @@ func DecodeSeamapSpecific(reader *bytes.Reader, gsfd GsfDetails) (sensor_data Se
 }
 
 type Seabat struct {
-	PingNumber           []uint16
-	SurfaceSoundVelocity []float32
-	Mode                 []int8
-	Range                []int8
-	TransmitPower        []int8
-	ReceiveGain          []int8
+	PingNumber           []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	SurfaceSoundVelocity []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	Mode                 []int8    `tiledb:"dtype=int8,ftype=attr" filters:"zstd(level=16)"`
+	Range                []int8    `tiledb:"dtype=int8,ftype=attr" filters:"zstd(level=16)"`
+	TransmitPower        []int8    `tiledb:"dtype=int8,ftype=attr" filters:"zstd(level=16)"`
+	ReceiveGain          []int8    `tiledb:"dtype=int8,ftype=attr" filters:"zstd(level=16)"`
 }
 
 func DecodeSeabatSpecific(reader *bytes.Reader, gsfd GsfDetails) (sensor_data Seabat) {
@@ -328,12 +327,12 @@ func DecodeSeabatSpecific(reader *bytes.Reader, gsfd GsfDetails) (sensor_data Se
 }
 
 type Em1000 struct {
-	PingNumber           []uint16
-	Mode                 []int8
-	Quality              []int8
-	ShipPitch            []float32
-	TransducerPitch      []float32
-	SurfaceSoundVelocity []float32
+	PingNumber           []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	Mode                 []int8    `tiledb:"dtype=int8,ftype=attr" filters:"zstd(level=16)"`
+	Quality              []int8    `tiledb:"dtype=int8,ftype=attr" filters:"zstd(level=16)"`
+	ShipPitch            []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	TransducerPitch      []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	SurfaceSoundVelocity []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
 }
 
 func DecodeEm1000Specific(reader *bytes.Reader) (sensor_data Em1000) {
@@ -358,12 +357,12 @@ func DecodeEm1000Specific(reader *bytes.Reader) (sensor_data Em1000) {
 }
 
 type TypeIIISeabeam struct {
-	LeftMostBeam       []uint16
-	RightMostBeam      []uint16
-	TotalNumverOfBeams []uint16
-	NavigationMode     []uint16
-	PingNumber         []uint16
-	MissionNumber      []uint16
+	LeftMostBeam       []uint16 `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	RightMostBeam      []uint16 `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	TotalNumverOfBeams []uint16 `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	NavigationMode     []uint16 `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	PingNumber         []uint16 `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	MissionNumber      []uint16 `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
 }
 
 func DecodeTypeIIISeabeamSpecific(reader *bytes.Reader) (sensor_data TypeIIISeabeam) {
@@ -388,12 +387,12 @@ func DecodeTypeIIISeabeamSpecific(reader *bytes.Reader) (sensor_data TypeIIISeab
 }
 
 type SbAmp struct {
-	Hour         []int8
-	Minute       []int8
-	Second       []int8
-	Hundredths   []int8
-	BlockNumber  []uint32
-	AvgGateDepth []uint16
+	Hour         []int8   `tiledb:"dtype=int8,ftype=attr" filters:"zstd(level=16)"`
+	Minute       []int8   `tiledb:"dtype=int8,ftype=attr" filters:"zstd(level=16)"`
+	Second       []int8   `tiledb:"dtype=int8,ftype=attr" filters:"zstd(level=16)"`
+	Hundredths   []int8   `tiledb:"dtype=int8,ftype=attr" filters:"zstd(level=16)"`
+	BlockNumber  []uint32 `tiledb:"dtype=uint32,ftype=attr" filters:"zstd(level=16)"`
+	AvgGateDepth []uint16 `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
 }
 
 func DecodeSbAmpSeabeamSpecific(reader *bytes.Reader) (sensor_data SbAmp) {
@@ -418,14 +417,14 @@ func DecodeSbAmpSeabeamSpecific(reader *bytes.Reader) (sensor_data SbAmp) {
 }
 
 type SeabatII struct {
-	PingNumber           []uint16
-	SurfaceSoundVelocity []float32
-	Mode                 []uint16
-	SonarRange           []uint16
-	TransmitPower        []uint16
-	ReceiveGain          []uint16
-	ForeAftBandwidth     []float32
-	AthwartBandwidth     []float32
+	PingNumber           []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	SurfaceSoundVelocity []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	Mode                 []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	SonarRange           []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	TransmitPower        []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	ReceiveGain          []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	ForeAftBandwidth     []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	AthwartBandwidth     []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
 }
 
 func DecodeSeabatIISpecific(reader *bytes.Reader) (sensor_data SeabatII) {
@@ -455,22 +454,22 @@ func DecodeSeabatIISpecific(reader *bytes.Reader) (sensor_data SeabatII) {
 }
 
 type Seabat8101 struct {
-	PingNumber           []uint16
-	SurfaceSoundVelocity []float32
-	Mode                 []uint16
-	Range                []uint16
-	TransmitPower        []uint16
-	RecieveGain          []uint16
-	PulseWidth           []uint16
-	TvgSpreading         []int8
-	TvgAbsorption        []int8
-	ForeAftBandwidth     []float32
-	AthwartBandwidth     []float32
-	RangeFilterMin       []float32
-	RangeFilterMax       []float32
-	DepthFilterMin       []float32
-	DepthFilterMax       []float32
-	ProjectorType        []int8
+	PingNumber           []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	SurfaceSoundVelocity []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	Mode                 []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	Range                []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	TransmitPower        []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	RecieveGain          []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	PulseWidth           []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	TvgSpreading         []int8    `tiledb:"dtype=int8,ftype=attr" filters:"zstd(level=16)"`
+	TvgAbsorption        []int8    `tiledb:"dtype=int8,ftype=attr" filters:"zstd(level=16)"`
+	ForeAftBandwidth     []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	AthwartBandwidth     []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	RangeFilterMin       []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	RangeFilterMax       []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	DepthFilterMin       []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	DepthFilterMax       []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	ProjectorType        []int8    `tiledb:"dtype=int8,ftype=attr" filters:"zstd(level=16)"`
 }
 
 func DecodeSeabat8101Specific(reader *bytes.Reader) (sensor_data Seabat8101) {
@@ -516,14 +515,14 @@ func DecodeSeabat8101Specific(reader *bytes.Reader) (sensor_data Seabat8101) {
 }
 
 type Seabeam2112 struct {
-	Mode                   []int8
-	SurfaceSoundVelocity   []float32
-	SsvSource              []int8
-	PingGain               []int8
-	PulseWidth             []int8
-	TransmitterAttenuation []int8
-	NumberAlgorithms       []int8
-	AlgorithmOrder         []string
+	Mode                   []int8    `tiledb:"dtype=int8,ftype=attr" filters:"zstd(level=16)"`
+	SurfaceSoundVelocity   []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	SsvSource              []int8    `tiledb:"dtype=int8,ftype=attr" filters:"zstd(level=16)"`
+	PingGain               []int8    `tiledb:"dtype=int8,ftype=attr" filters:"zstd(level=16)"`
+	PulseWidth             []int8    `tiledb:"dtype=int8,ftype=attr" filters:"zstd(level=16)"`
+	TransmitterAttenuation []int8    `tiledb:"dtype=int8,ftype=attr" filters:"zstd(level=16)"`
+	NumberAlgorithms       []int8    `tiledb:"dtype=int8,ftype=attr" filters:"zstd(level=16)"`
+	AlgorithmOrder         []string  `tiledb:"dtype=string,ftype=attr" filters:"zstd(level=16)"`
 }
 
 func DecodeSeabeam2112Specific(reader *bytes.Reader) (sensor_data Seabeam2112) {
@@ -553,12 +552,12 @@ func DecodeSeabeam2112Specific(reader *bytes.Reader) (sensor_data Seabeam2112) {
 }
 
 type ElacMkII struct {
-	Mode                  []int8
-	PingNumber            []uint16
-	SurfaceSoundVelocity  []uint16
-	PulseLength           []uint16
-	ReceiverGainStarboard []int8
-	ReceiverGainPort      []int8
+	Mode                  []int8   `tiledb:"dtype=int8,ftype=attr" filters:"zstd(level=16)"`
+	PingNumber            []uint16 `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	SurfaceSoundVelocity  []uint16 `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	PulseLength           []uint16 `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	ReceiverGainStarboard []int8   `tiledb:"dtype=int8,ftype=attr" filters:"zstd(level=16)"`
+	ReceiverGainPort      []int8   `tiledb:"dtype=int8,ftype=attr" filters:"zstd(level=16)"`
 }
 
 func DecodeElacMkIISpecific(reader *bytes.Reader) (sensor_data ElacMkII) {
@@ -584,8 +583,8 @@ func DecodeElacMkIISpecific(reader *bytes.Reader) (sensor_data ElacMkII) {
 }
 
 type CmpSass struct {
-	Lfreq  []float32
-	Lntens []float32
+	Lfreq  []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	Lntens []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
 }
 
 func DecodeCmpSass(reader *bytes.Reader) (sensor_data CmpSass) {
@@ -602,32 +601,32 @@ func DecodeCmpSass(reader *bytes.Reader) (sensor_data CmpSass) {
 }
 
 type Reson8100 struct {
-	Latency              []uint16
-	PingNumber           []uint16
-	SonarID              []uint16
-	SonarModel           []uint16
-	Frequency            []uint16
-	SurfaceSoundVelocity []float32
-	SampleRate           []uint16
-	PingRate             []uint16
-	Mode                 []uint16
-	Range                []uint16
-	TransmitPower        []uint16
-	ReceiveGain          []uint16
-	PulseWidth           []uint16
-	TvgSpreading         []int8
-	TvgAbsorption        []int8
-	ForeAftBandwidth     []float32
-	AthwartBandwidth     []float32
-	ProjectorType        []int8
-	ProjectorAngle       []int16
-	RangeFilterMin       []float32
-	RangeFilterMax       []float32
-	DepthFilterMin       []float32
-	DepthFilterMax       []float32
-	FiltersActive        []int8
-	Temperature          []uint16
-	BeamSpacing          []float32
+	Latency              []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	PingNumber           []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	SonarID              []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	SonarModel           []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	Frequency            []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	SurfaceSoundVelocity []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	SampleRate           []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	PingRate             []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	Mode                 []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	Range                []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	TransmitPower        []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	ReceiveGain          []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	PulseWidth           []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	TvgSpreading         []int8    `tiledb:"dtype=int8,ftype=attr" filters:"zstd(level=16)"`
+	TvgAbsorption        []int8    `tiledb:"dtype=int8,ftype=attr" filters:"zstd(level=16)"`
+	ForeAftBandwidth     []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	AthwartBandwidth     []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	ProjectorType        []int8    `tiledb:"dtype=int8,ftype=attr" filters:"zstd(level=16)"`
+	ProjectorAngle       []int16   `tiledb:"dtype=int16,ftype=attr" filters:"zstd(level=16)"`
+	RangeFilterMin       []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	RangeFilterMax       []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	DepthFilterMin       []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	DepthFilterMax       []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	FiltersActive        []int8    `tiledb:"dtype=int8,ftype=attr" filters:"zstd(level=16)"`
+	Temperature          []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	BeamSpacing          []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
 }
 
 func DecodeReson8100(reader *bytes.Reader) (sensor_data Reson8100) {
@@ -693,43 +692,43 @@ func DecodeReson8100(reader *bytes.Reader) (sensor_data Reson8100) {
 }
 
 type Em3 struct {
-	ModelNumber          []uint16
-	PingNumber           []uint16
-	SerialNumber         []uint16
-	SurfaceSoundVelocity []float32
-	TransducerDepth      []float32
-	ValidBeams           []uint16
-	SampleRate           []uint16
-	DepthDifference      []float32
-	OffsetMultiplier     []int8
+	ModelNumber          []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	PingNumber           []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	SerialNumber         []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	SurfaceSoundVelocity []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	TransducerDepth      []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	ValidBeams           []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	SampleRate           []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	DepthDifference      []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	OffsetMultiplier     []int8    `tiledb:"dtype=int8,ftype=attr" filters:"zstd(level=16)"`
 	// RunTimeID                      []uint32 // not stored
-	RunTimeModelNumber             [][]uint16
-	RunTimeDgTime                  [][]time.Time
-	RunTimePingNumber              [][]uint16
-	RunTimeSerialNumber            [][]uint16
-	RunTimeSystemStatus            [][]uint32
-	RunTimeMode                    [][]int8
-	RunTimeFilterID                [][]int8
-	RunTimeMinDepth                [][]float32
-	RunTimeMaxDepth                [][]float32
-	RunTimeAbsorption              [][]float32
-	RunTimeTransmitPulseLength     [][]float32
-	RunTimeTransmitBeamWidth       [][]float32
-	RunTimePowerReduction          [][]int8
-	RunTimeReceiveBeamWidth        [][]float32
-	RunTimeReceiveBandwidth        [][]int16
-	RunTimeReceiveGain             [][]int8
-	RunTimeCrossOverAngle          [][]int8
-	RunTimeSsvSource               [][]int8
-	RunTimePortSwathWidth          [][]uint16
-	RunTimeBeamSpacing             [][]int8
-	RunTimePortCoverageSector      [][]int8
-	RunTimeStabilization           [][]int8
-	RunTimeStarboardCoverageSector [][]int8
-	RunTimeStarboardSwathWidth     [][]uint16
-	RunTimeHiloFreqAbsorpRatio     [][]int8
-	RunTimeSwathWidth              [][]uint16
-	RunTimeCoverageSector          [][]uint16
+	RunTimeModelNumber             [][]uint16    `tiledb:"dtype=uint16,ftype=attr,var" filters:"zstd(level=16)"`
+	RunTimeDgTime                  [][]time.Time `tiledb:"dtype=time,ftype=attr,var" filters:"zstd(level=16)"`
+	RunTimePingNumber              [][]uint16    `tiledb:"dtype=uint16,ftype=attr,var" filters:"zstd(level=16)"`
+	RunTimeSerialNumber            [][]uint16    `tiledb:"dtype=uint16,ftype=attr,var" filters:"zstd(level=16)"`
+	RunTimeSystemStatus            [][]uint32    `tiledb:"dtype=uint32,ftype=attr,var" filters:"zstd(level=16)"`
+	RunTimeMode                    [][]int8      `tiledb:"dtype=int8,ftype=attr,var" filters:"zstd(level=16)"`
+	RunTimeFilterID                [][]int8      `tiledb:"dtype=int8,ftype=attr,var" filters:"zstd(level=16)"`
+	RunTimeMinDepth                [][]float32   `tiledb:"dtype=float32,ftype=attr,var" filters:"zstd(level=16)"`
+	RunTimeMaxDepth                [][]float32   `tiledb:"dtype=float32,ftype=attr,var" filters:"zstd(level=16)"`
+	RunTimeAbsorption              [][]float32   `tiledb:"dtype=float32,ftype=attr,var" filters:"zstd(level=16)"`
+	RunTimeTransmitPulseLength     [][]float32   `tiledb:"dtype=float32,ftype=attr,var" filters:"zstd(level=16)"`
+	RunTimeTransmitBeamWidth       [][]float32   `tiledb:"dtype=float32,ftype=attr,var" filters:"zstd(level=16)"`
+	RunTimePowerReduction          [][]int8      `tiledb:"dtype=int8,ftype=attr,var" filters:"zstd(level=16)"`
+	RunTimeReceiveBeamWidth        [][]float32   `tiledb:"dtype=float32,ftype=attr,var" filters:"zstd(level=16)"`
+	RunTimeReceiveBandwidth        [][]int16     `tiledb:"dtype=int16,ftype=attr,var" filters:"zstd(level=16)"`
+	RunTimeReceiveGain             [][]int8      `tiledb:"dtype=int8,ftype=attr,var" filters:"zstd(level=16)"`
+	RunTimeCrossOverAngle          [][]int8      `tiledb:"dtype=int8,ftype=attr,var" filters:"zstd(level=16)"`
+	RunTimeSsvSource               [][]int8      `tiledb:"dtype=int8,ftype=attr,var" filters:"zstd(level=16)"`
+	RunTimePortSwathWidth          [][]uint16    `tiledb:"dtype=uint16,ftype=attr,var" filters:"zstd(level=16)"`
+	RunTimeBeamSpacing             [][]int8      `tiledb:"dtype=int8,ftype=attr,var" filters:"zstd(level=16)"`
+	RunTimePortCoverageSector      [][]int8      `tiledb:"dtype=int8,ftype=attr,var" filters:"zstd(level=16)"`
+	RunTimeStabilization           [][]int8      `tiledb:"dtype=int8,ftype=attr,var" filters:"zstd(level=16)"`
+	RunTimeStarboardCoverageSector [][]int8      `tiledb:"dtype=int8,ftype=attr,var" filters:"zstd(level=16)"`
+	RunTimeStarboardSwathWidth     [][]uint16    `tiledb:"dtype=uint16,ftype=attr,var" filters:"zstd(level=16)"`
+	RunTimeHiloFreqAbsorpRatio     [][]int8      `tiledb:"dtype=int8,ftype=attr,var" filters:"zstd(level=16)"`
+	RunTimeSwathWidth              [][]uint16    `tiledb:"dtype=uint16,ftype=attr,var" filters:"zstd(level=16)"`
+	RunTimeCoverageSector          [][]uint16    `tiledb:"dtype=uint16,ftype=attr,var" filters:"zstd(level=16)"`
 }
 
 func DecodeEm3(reader *bytes.Reader) (sensor_data Em3) {
@@ -1250,31 +1249,31 @@ func DecodeEm4Specific(reader *bytes.Reader) (sensor_data Em4) {
 // Seems a waste to store 2 bytes for data that is only a 0 or 1.
 type GeoSwathPlus struct {
 	// (0 = CBF, 1 = RDF) why 2bytes? why not uint8? could convert to string ...
-	DataSource []uint16
+	DataSource []uint16 `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
 	// again why 2bytes for (0 port, 1 = stbd)
-	Side                  []uint16
-	ModelNumber           []uint16
-	Frequency             []float32
-	EchosounderType       []uint16
-	PingNumber            []uint32
-	NumNavSamples         []uint16
-	NumAttitudeSamples    []uint16
-	NumHeadingSamples     []uint16
-	NumMiniSvsSamples     []uint16
-	NumEchosounderSamples []uint16
-	NumRaaSamples         []uint16
-	MeanSv                []float32
-	SurfaceVelocity       []float32
-	ValidBeams            []uint16
-	SampleRate            []float32
-	PulseLength           []float32
-	PingLength            []uint16
-	TransmitPower         []uint16
-	SidescanGainChannel   []uint16
-	Stabilization         []uint16
-	GpsQuality            []uint16
-	RangeUncertainty      []float32
-	AngleUncertainty      []float32
+	Side                  []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	ModelNumber           []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	Frequency             []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	EchosounderType       []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	PingNumber            []uint32  `tiledb:"dtype=uint32,ftype=attr" filters:"zstd(level=16)"`
+	NumNavSamples         []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	NumAttitudeSamples    []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	NumHeadingSamples     []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	NumMiniSvsSamples     []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	NumEchosounderSamples []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	NumRaaSamples         []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	MeanSv                []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	SurfaceVelocity       []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	ValidBeams            []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	SampleRate            []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	PulseLength           []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	PingLength            []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	TransmitPower         []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	SidescanGainChannel   []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	Stabilization         []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	GpsQuality            []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	RangeUncertainty      []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	AngleUncertainty      []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
 }
 
 func DecodeGeoSwathPlusSpecific(reader *bytes.Reader) (sensor_data GeoSwathPlus) {
@@ -1338,22 +1337,22 @@ func DecodeGeoSwathPlusSpecific(reader *bytes.Reader) (sensor_data GeoSwathPlus)
 // DecodeKlein5410Bss TODO; change DataSource and Side types from uint16 to uint8.
 // Seems a waste to store 2 bytes for data that is only a 0 or 1.
 type Klein5410Bss struct {
-	DataSource        []uint16
-	Side              []uint16
-	ModelNumber       []uint16
-	AcousticFrequency []float32
-	SamplingFrequency []float32
-	PingNumber        []uint32
-	NumSamples        []uint32
-	NumRaaSamples     []uint32
-	ErrorFlags        []uint32
-	Range             []uint32
-	FishDepth         []float32
-	FishAltitude      []float32
-	SoundSpeed        []float32
-	TransmitWaveform  []uint16
-	Altimeter         []uint16
-	RawDataConfig     []uint32
+	DataSource        []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	Side              []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	ModelNumber       []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	AcousticFrequency []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	SamplingFrequency []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	PingNumber        []uint32  `tiledb:"dtype=uint32,ftype=attr" filters:"zstd(level=16)"`
+	NumSamples        []uint32  `tiledb:"dtype=uint32,ftype=attr" filters:"zstd(level=16)"`
+	NumRaaSamples     []uint32  `tiledb:"dtype=uint32,ftype=attr" filters:"zstd(level=16)"`
+	ErrorFlags        []uint32  `tiledb:"dtype=uint32,ftype=attr" filters:"zstd(level=16)"`
+	Range             []uint32  `tiledb:"dtype=uint32,ftype=attr" filters:"zstd(level=16)"`
+	FishDepth         []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	FishAltitude      []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	SoundSpeed        []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	TransmitWaveform  []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	Altimeter         []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	RawDataConfig     []uint32  `tiledb:"dtype=uint32,ftype=attr" filters:"zstd(level=16)"`
 }
 
 func DecodeKlein5410BssSpecific(reader *bytes.Reader) (sensor_data Klein5410Bss) {
