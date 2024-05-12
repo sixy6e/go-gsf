@@ -1396,3 +1396,47 @@ func DecodeKlein5410BssSpecific(reader *bytes.Reader) (sensor_data Klein5410Bss)
 
 	return sensor_data
 }
+
+type Reson7100 struct {
+	ProtocolVersion                   []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	DeviceID                          []uint32  `tiledb:"dtype=uint32,ftype=attr" filters:"zstd(level=16)"`
+	MajorSerialNumber                 []uint32  `tiledb:"dtype=uint32,ftype=attr" filters:"zstd(level=16)"`
+	MinorSerialNumber                 []uint32  `tiledb:"dtype=uint32,ftype=attr" filters:"zstd(level=16)"`
+	PingNumber                        []uint32  `tiledb:"dtype=uint32,ftype=attr" filters:"zstd(level=16)"`
+	MultiPingSequence                 []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	Frequency                         []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	SampleRate                        []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	ReceiverBandwidth                 []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	TxPulseWidth                      []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	TxPulseTypeID                     []uint32  `tiledb:"dtype=uint32,ftype=attr" filters:"zstd(level=16)"`
+	TxPulseEnvlpParam                 []uint32  `tiledb:"dtype=uint32,ftype=attr" filters:"zstd(level=16)"`
+	MaxPingRate                       []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	PingPeriod                        []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	Range                             []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	Gain                              []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	ControlFlags                      []uint32  `tiledb:"dtype=uint32,ftype=attr" filters:"zstd(level=16)"`
+	ProjectorID                       []uint32  `tiledb:"dtype=uint32,ftype=attr" filters:"zstd(level=16)"`
+	ProjectorSteerAnglVert            []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	ProjectorSteerAnglHorz            []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	ProjectorBeamWidthVert            []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	ProjectorBeamWidthHorz            []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	ProjectorBeamFocalPt              []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	ProjectorBeamWeightingWindowType  []uint32  `tiledb:"dtype=uint32,ftype=attr" filters:"zstd(level=16)"`
+	ProjectorBeamWeightingWindowParam []uint32  `tiledb:"dtype=uint32,ftype=attr" filters:"zstd(level=16)"`
+	TransmitFlags                     []uint32  `tiledb:"dtype=uint32,ftype=attr" filters:"zstd(level=16)"`
+	HydrophoneID                      []uint32  `tiledb:"dtype=uint32,ftype=attr" filters:"zstd(level=16)"`
+	ReceivingBeamWeightingWindowType  []uint32  `tiledb:"dtype=uint32,ftype=attr" filters:"zstd(level=16)"`
+	ReceivingBeamWeightingWindowParam []uint32  `tiledb:"dtype=uint32,ftype=attr" filters:"zstd(level=16)"`
+	ReceiveFlags                      []uint32  `tiledb:"dtype=uint32,ftype=attr" filters:"zstd(level=16)"`
+	ReceiveBeamWidth                  []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	RangeFiltMin                      []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	RangeFiltMax                      []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	DepthFiltMin                      []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	DepthFiltMax                      []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	Absorption                        []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	SoundVelocity                     []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	Spreading                         []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	RawDataFrom7027                   []uint8   `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
+	SvSource                          []uint8   `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
+	LayerCompFlag                     []uint8   `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
+}
