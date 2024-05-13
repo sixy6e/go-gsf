@@ -2003,3 +2003,191 @@ func DecodeR2SonicSpecific(reader *bytes.Reader) (sensor_data R2Sonic) {
 
 	return sensor_data
 }
+
+type ResonTSeries struct {
+	ProtocolVersion                   []uint16
+	DeviceID                          []uint32
+	NumberDevices                     []uint32
+	SystemEnumerator                  []uint16
+	MajorSerialNumber                 []uint32
+	MinorSerialNumber                 []uint32
+	PingNumber                        []uint32
+	MultiPingSequence                 []uint16
+	Frequency                         []float32
+	SampleRate                        []float32
+	ReceiverBandwidth                 []float32
+	TxPulseWidth                      []float64
+	TxPulseTypeID                     []uint32
+	TxPulseEnvlpID                    []uint32
+	TxPulseEnvlpParam                 []float32
+	TxPulseMode                       []uint16
+	MaxPingRate                       []float64
+	PingPeriod                        []float64
+	Range                             []float32
+	Power                             []float32
+	Gain                              []float32
+	ControlFlags                      []uint32
+	ProjectorID                       []uint32
+	ProjectorSteerAnglVert            []float32
+	ProjectorSteerAnglHorz            []float32
+	ProjectorBeamWidthVert            []float32
+	ProjectorBeamWidthHorz            []float32
+	ProjectorBeamFocalPt              []float32
+	ProjectorBeamWeightingWindowType  []uint32
+	ProjectorBeamWeightingWindowParam []uint32
+	TransmitFlags                     []uint32
+	HydrophoneID                      []uint32
+	ReceivingBeamWeightingWindowType  []uint32
+	ReceivingBeamWeightingWindowParam []uint32
+	ReceiveFlags                      []uint32
+	ReceiveBeamWidth                  []float32
+	RangeFiltMin                      []float32
+	RangeFiltMax                      []float32
+	DepthFiltMin                      []float32
+	DepthFiltMax                      []float32
+	Absorption                        []float32
+	SoundVelocity                     []float64
+	SvSource                          []uint8
+	Spreading                         []float32
+	BeamSpacingMode                   []uint16
+	SonarSourceMode                   []uint16
+	CoverageMode                      []uint8
+	CoverageAngle                     []float32
+	HorizontalReceiverSteeringAngle   []float32
+	UncertaintyType                   []uint32
+	TransmitterSteeringAngle          []float32
+	AppliedRoll                       []float32
+	DetectionAlgorithm                []uint16
+	DetectionFlags                    []uint32
+	DeviceDescription                 []string
+}
+
+func DecodeResonTSeriesSonicSpecific(reader *bytes.Reader) (sensor_data ResonTSeries) {
+	var buffer struct {
+		ProtocolVersion                   uint16
+		DeviceID                          uint32
+		NumberDevices                     uint32
+		SystemEnumerator                  uint16
+		Reserved1                         [10]byte
+		MajorSerialNumber                 uint32
+		MinorSerialNumber                 uint32
+		PingNumber                        uint32
+		MultiPingSequence                 uint16
+		Frequency                         uint32
+		SampleRate                        uint32
+		ReceiverBandwidth                 uint32
+		TxPulseWidth                      uint32
+		TxPulseTypeID                     uint32
+		TxPulseEnvlpID                    uint32
+		TxPulseEnvlpParam                 uint32
+		TxPulseMode                       uint16
+		TxPulseReserved                   uint16
+		MaxPingRate                       uint32
+		PingPeriod                        uint32
+		Range                             uint32
+		Power                             uint32
+		Gain                              int32
+		ControlFlags                      uint32
+		ProjectorID                       uint32
+		ProjectorSteerAnglVert            int32
+		ProjectorSteerAnglHorz            int32
+		ProjectorBeamWidthVert            uint16
+		ProjectorBeamWidthHorz            uint16
+		ProjectorBeamFocalPt              uint32
+		ProjectorBeamWeightingWindowType  uint32
+		ProjectorBeamWeightingWindowParam uint32
+		TransmitFlags                     uint32
+		HydrophoneID                      uint32
+		ReceivingBeamWeightingWindowType  uint32
+		ReceivingBeamWeightingWindowParam uint32
+		ReceiveFlags                      uint32
+		ReceiveBeamWidth                  uint16
+		RangeFiltMin                      int32
+		RangeFiltMax                      int32
+		DepthFiltMin                      int32
+		DepthFiltMax                      int32
+		Absorption                        uint32
+		SoundVelocity                     uint16
+		SvSource                          uint8
+		Spreading                         uint32
+		BeamSpacingMode                   uint16
+		SonarSourceMode                   uint16
+		CoverageMode                      uint8
+		CoverageAngle                     uint32
+		HorizontalReceiverSteeringAngle   int32
+		Reserved2                         [3]byte
+		UncertaintyType                   uint32
+		TransmitterSteeringAngle          int32
+		AppliedRoll                       int32
+		DetectionAlgorithm                uint16
+		DetectionFlags                    uint32
+		DeviceDescription                 [60]byte
+		SoundVelocity2                    uint32
+		Reserved7027                      [416]byte
+		Reserved3                         [32]byte
+	}
+	_ = binary.Read(reader, binary.BigEndian, &buffer)
+
+	sensor_data.ProtocolVersion = []uint16{buffer.ProtocolVersion}
+	sensor_data.DeviceID = []uint32{buffer.DeviceID}
+	sensor_data.NumberDevices = []uint32{buffer.NumberDevices}
+	sensor_data.SystemEnumerator = []uint16{buffer.SystemEnumerator}
+	sensor_data.MajorSerialNumber = []uint32{buffer.MajorSerialNumber}
+	sensor_data.MinorSerialNumber = []uint32{buffer.MinorSerialNumber}
+	sensor_data.PingNumber = []uint32{buffer.PingNumber}
+	sensor_data.MultiPingSequence = []uint16{buffer.MultiPingSequence}
+	sensor_data.Frequency = []float32{float32(buffer.Frequency) / SCALE3}
+	sensor_data.SampleRate = []float32{float32(buffer.SampleRate) / 10_000.0}
+	sensor_data.ReceiverBandwidth = []float32{float32(buffer.ReceiverBandwidth) / 10_000.0}
+	sensor_data.TxPulseWidth = []float64{float64(buffer.TxPulseWidth) / 10_000_000.0}
+	sensor_data.TxPulseTypeID = []uint32{buffer.TxPulseTypeID}
+	sensor_data.TxPulseEnvlpID = []uint32{buffer.TxPulseEnvlpID}
+	sensor_data.TxPulseEnvlpParam = []float32{float32(buffer.TxPulseEnvlpParam) / SCALE2}
+	sensor_data.TxPulseMode = []uint16{buffer.TxPulseMode}
+	sensor_data.MaxPingRate = []float64{float64(buffer.MaxPingRate) / 1_000_000.0}
+	sensor_data.PingPeriod = []float64{float64(buffer.PingPeriod) / 1_000_000.0}
+	sensor_data.Range = []float32{float32(buffer.Range) / SCALE2}
+	sensor_data.Power = []float32{float32(buffer.Power) / SCALE2}
+	sensor_data.Gain = []float32{float32(buffer.Gain) / SCALE2}
+	sensor_data.ControlFlags = []uint32{buffer.ControlFlags}
+	sensor_data.ProjectorID = []uint32{buffer.ProjectorID}
+	sensor_data.ProjectorSteerAnglVert = []float32{float32(buffer.ProjectorSteerAnglVert) / SCALE3}
+	sensor_data.ProjectorSteerAnglHorz = []float32{float32(buffer.ProjectorSteerAnglHorz) / SCALE3}
+	sensor_data.ProjectorBeamWidthVert = []float32{float32(buffer.ProjectorBeamWidthVert) / SCALE2}
+	sensor_data.ProjectorBeamWidthHorz = []float32{float32(buffer.ProjectorBeamWidthHorz) / SCALE2}
+	sensor_data.ProjectorBeamFocalPt = []float32{float32(buffer.ProjectorBeamFocalPt) / SCALE2}
+	sensor_data.ProjectorBeamWeightingWindowType = []uint32{buffer.ProjectorBeamWeightingWindowType}
+	sensor_data.ProjectorBeamWeightingWindowParam = []uint32{buffer.ProjectorBeamWeightingWindowParam}
+	sensor_data.TransmitFlags = []uint32{buffer.TransmitFlags}
+	sensor_data.HydrophoneID = []uint32{buffer.HydrophoneID}
+	sensor_data.ReceivingBeamWeightingWindowType = []uint32{buffer.ReceivingBeamWeightingWindowType}
+	sensor_data.ReceivingBeamWeightingWindowParam = []uint32{buffer.ReceivingBeamWeightingWindowParam}
+	sensor_data.ReceiveFlags = []uint32{buffer.ReceiveFlags}
+	sensor_data.ReceiveBeamWidth = []float32{float32(buffer.ReceiveBeamWidth) / SCALE2}
+	sensor_data.RangeFiltMin = []float32{float32(buffer.RangeFiltMin) / 10.0}
+	sensor_data.RangeFiltMax = []float32{float32(buffer.RangeFiltMax) / 10.0}
+	sensor_data.DepthFiltMin = []float32{float32(buffer.DepthFiltMin) / 10.0}
+	sensor_data.DepthFiltMax = []float32{float32(buffer.DepthFiltMax) / 10.0}
+	sensor_data.Absorption = []float32{float32(buffer.Absorption) / SCALE3}
+	sensor_data.SoundVelocity = []float64{float64(buffer.SoundVelocity) / 10.0}
+	sensor_data.SvSource = []uint8{buffer.SvSource}
+	sensor_data.Spreading = []float32{float32(buffer.Spreading) / SCALE3}
+	sensor_data.BeamSpacingMode = []uint16{buffer.BeamSpacingMode}
+	sensor_data.SonarSourceMode = []uint16{buffer.SonarSourceMode}
+	sensor_data.CoverageMode = []uint8{buffer.CoverageMode}
+	sensor_data.CoverageAngle = []float32{float32(buffer.CoverageAngle) / SCALE2}
+	sensor_data.HorizontalReceiverSteeringAngle = []float32{float32(buffer.HorizontalReceiverSteeringAngle) / SCALE2}
+	sensor_data.UncertaintyType = []uint32{buffer.UncertaintyType}
+	sensor_data.TransmitterSteeringAngle = []float32{float32(buffer.TransmitterSteeringAngle) / 100_000.0}
+	sensor_data.AppliedRoll = []float32{float32(buffer.AppliedRoll) / 100_000.0}
+	sensor_data.DetectionAlgorithm = []uint16{buffer.DetectionAlgorithm}
+	sensor_data.DetectionFlags = []uint32{buffer.DetectionFlags}
+	sensor_data.DeviceDescription = []string{string(buffer.DeviceDescription[:])}
+
+	// higher precision sound velocity
+	if buffer.SoundVelocity2 > 0 {
+		sensor_data.SoundVelocity = []float64{float64(buffer.SoundVelocity2) / 1_000_000.0}
+	}
+
+	return sensor_data
+}
