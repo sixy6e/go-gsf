@@ -2191,3 +2191,348 @@ func DecodeResonTSeriesSonicSpecific(reader *bytes.Reader) (sensor_data ResonTSe
 
 	return sensor_data
 }
+
+type Kmall struct {
+	KmallVersion                       []uint8
+	DgmType                            []uint8
+	DgmVersion                         []uint8
+	SystemID                           []uint8
+	EchoSounderID                      []uint16
+	NumBytesCmnPart                    []uint16
+	PingCounter                        []uint16
+	RxFansPerRing                      []uint8
+	RxFansIndex                        []uint8
+	SwathsPerRing                      []uint8
+	SwathAlongPosition                 []uint8
+	TxTransducerIndex                  []uint8
+	RxTransducerIndex                  []uint8
+	NumRxTransducers                   []uint8
+	AlgorithmType                      []uint8
+	NumBytesInfoData                   []uint16
+	PingRateHz                         []float64
+	BeamSpacing                        []uint8
+	DepthMode                          []uint8
+	SubDepthMode                       []uint8
+	DistanceBetweenSwath               []uint8
+	DetectionMode                      []uint8
+	PulseForm                          []uint8
+	FrequencyModeHz                    []int32
+	FrequencyRangeLowLimHz             []float64
+	FrequencyRangeHighLimHz            []float64
+	MaxTotalTxPulseLengthSector        []float64
+	MaxEffectiveTxPulseLengthSector    []float64
+	MaxEffectiveTxBandWidthHz          []float64
+	AbsCoeffDbPerKm                    []float64
+	PortSectorEdgeDeg                  []float32
+	StarboardSectorEdgeDeg             []float32
+	PortMeanCoverageDeg                []float32
+	StarboardMeanCoverageDeg           []float32
+	PortMeanCoverageMetres             []int16
+	StarboardMeanCoverageMetres        []int16
+	ModeAndStabilisation               []uint8
+	RunTimeFilter1                     []uint8
+	RunTimeFilter2                     []uint8
+	PipeTrackingStatus                 []uint32
+	TransmitArraySizeUsedDeg           []float32
+	ReceiveArraySizeUsedDeg            []float32
+	TransmitPowerDb                    []float32
+	SlRampUpTimeRemaining              []uint16
+	YawAngleDeg                        []float64
+	NumTxSectors                       []uint16
+	NumBytesPerTxSector                []uint16
+	HeadingVesselDeg                   []float64
+	SoundSpeedAtTxDepthMetresPerSecond []float64
+	TxTransducerDepthMetres            []float64
+	ZwaterLevelReRefPointMetres        []float64
+	XKmallToAllMetres                  []float64
+	YKmallToAllMetres                  []float64
+	LatLonInfo                         []uint8
+	PositionSensorStatus               []uint8
+	AttitudeSensorStatus               []uint8
+	LatitudeDeg                        []float64
+	LongitudeDeg                       []float64
+	EllipsoidHeightReRefPointMetres    []float64
+	TxSectorNumber                     [][]uint8
+	TxArrayNumber                      [][]uint8
+	TxSubArray                         [][]uint8
+	SectorTransmitDelaySec             [][]float64
+	TiltAngleReTxDeg                   [][]float64
+	TxNominalSourceLevelDb             [][]float64
+	TxFocusRangeMetres                 [][]float64
+	CentreFrequencyHz                  [][]float64
+	SignalBandWidthHz                  [][]float64
+	TotalSignalLengthSec               [][]float64
+	PulseShading                       [][]uint8
+	SignalWaveForm                     [][]uint8
+	NumBytesRxInfo                     []uint16
+	NumSoundingsMaxMain                []uint16
+	NumSoundingsValidMain              []uint16
+	NumBytesPerSounding                []uint16
+	WcSampleRate                       []float64
+	SeabedImageSampleRate              []float64
+	BackscatterNormalDb                []float64
+	BackscatterObliqueDb               []float64
+	ExtraDetectionAlarmFlag            []uint16
+	NumExtraDetections                 []uint16
+	NumExtraDetectionClasses           []uint16
+	NumBytesPerClass                   []uint16
+	NumExtraDetectionInClass           [][]uint16
+	AlarmFlag                          [][]uint8
+}
+
+func DecodeKmallSpecific(reader *bytes.Reader) (sensor_data Kmall) {
+	var (
+		buffer struct {
+			KmallVersion  uint8
+			DgmType       uint8
+			DgmVersion    uint8
+			SystemID      uint8
+			EchoSounderID uint16
+			Spare         [8]byte
+		}
+		cmn_buf struct {
+			NumBytesCmnPart    uint16
+			PingCounter        uint16
+			RxFansPerRing      uint8
+			RxFansIndex        uint8
+			SwathsPerRing      uint8
+			SwathAlongPosition uint8
+			TxTransducerIndex  uint8
+			RxTransducerIndex  uint8
+			NumRxTransducers   uint8
+			AlgorithmType      uint8
+			Spare              [16]byte
+		}
+		ping_buf struct {
+			NumBytesInfoData                uint16
+			PingRateHz                      uint32
+			BeamSpacing                     uint8
+			DepthMode                       uint8
+			SubDepthMode                    uint8
+			DistanceBetweenSwath            uint8
+			DetectionMode                   uint8
+			PulseForm                       uint8
+			FrequencyModeHz                 int32
+			FrequencyRangeLowLimHz          int32
+			FrequencyRangeHighLimHz         int32
+			MaxTotalTxPulseLengthSector     int32
+			MaxEffectiveTxPulseLengthSector int32
+			MaxEffectiveTxBandWidthHz       int32
+			AbsCoeffDbPerKm                 int32
+			PortSectorEdgeDeg               int16
+			StarboardSectorEdgeDeg          int16
+			PortMeanCoverageDeg             int16
+			StarboardMeanCoverageDeg        int16
+			// PortMeanCoverageDeg2 int16 // the C-code reads PortMeanCoverageDeg twice, spec doesn't indicate this. potential error????
+			// StarboardMeanCoverageDeg2 int16 // the C-code reads StarboardMeanCoverageDeg twice, spec doesn't indicate this. potential error????
+			PortMeanCoverageMetres             int16
+			StarboardMeanCoverageMetres        int16
+			ModeAndStabilisation               uint8
+			RunTimeFilter1                     uint8
+			RunTimeFilter2                     uint8
+			PipeTrackingStatus                 uint32
+			TransmitArraySizeUsedDeg           uint16
+			ReceiveArraySizeUsedDeg            uint16
+			TransmitPowerDb                    int16
+			SlRampUpTimeRemaining              uint16
+			YawAngleDeg                        uint32
+			NumTxSectors                       uint16
+			NumBytesPerTxSector                uint16
+			HeadingVesselDeg                   int32
+			SoundSpeedAtTxDepthMetresPerSecond int32
+			TxTransducerDepthMetres            int32
+			ZwaterLevelReRefPointMetres        int32
+			XKmallToAllMetres                  int32
+			YKmallToAllMetres                  int32
+			LatLonInfo                         uint8
+			PositionSensorStatus               uint8
+			AttitudeSensorStatus               uint8
+			LatitudeDeg                        int32
+			LongitudeDeg                       int32
+			EllipsoidHeightReRefPointMetres    int32
+			Spare                              [32]byte
+		}
+		sec_buf struct {
+			TxSectorNumber         uint8
+			TxArrayNumber          uint8
+			TxSubArray             uint8
+			SectorTransmitDelaySec int32
+			TiltAngleReTxDeg       int32
+			TxNominalSourceLevelDb int32
+			TxFocusRangeMetres     int32
+			CentreFrequencyHz      int32
+			SignalBandWidthHz      int32
+			TotalSignalLengthSec   int32
+			PulseShading           uint8
+			SignalWaveForm         uint8
+			Spare                  [20]byte
+		}
+		rx_buf struct {
+			NumBytesRxInfo           uint16
+			NumSoundingsMaxMain      uint16
+			NumSoundingsValidMain    uint16
+			NumBytesPerSounding      uint16
+			WcSampleRate1            int32
+			WcSampleRate2            uint32
+			SeabedImageSampleRate1   int32
+			SeabedImageSampleRate2   uint32
+			BackscatterNormalDb      int32
+			BackscatterObliqueDb     int32
+			ExtraDetectionAlarmFlag  uint16
+			NumExtraDetections       uint16
+			NumExtraDetectionClasses uint16
+			NumBytesPerClass         uint16
+			Spare                    [32]byte
+		}
+		cls_buf struct {
+			NumExtraDetectionInClass uint16
+			AlarmFlag                uint8
+			Spare                    [32]byte
+		}
+		final_spare [32]byte
+	)
+
+	// block one
+	_ = binary.Read(reader, binary.BigEndian, &buffer)
+	sensor_data.KmallVersion = []uint8{buffer.KmallVersion}
+	sensor_data.DgmType = []uint8{buffer.DgmType}
+	sensor_data.DgmVersion = []uint8{buffer.DgmVersion}
+	sensor_data.EchoSounderID = []uint16{buffer.EchoSounderID}
+
+	// block two (Cmn part)
+	_ = binary.Read(reader, binary.BigEndian, &cmn_buf)
+	sensor_data.NumBytesCmnPart = []uint16{cmn_buf.NumBytesCmnPart}
+	sensor_data.PingCounter = []uint16{cmn_buf.PingCounter}
+	sensor_data.RxFansPerRing = []uint8{cmn_buf.RxFansPerRing}
+	sensor_data.RxFansIndex = []uint8{cmn_buf.RxFansIndex}
+	sensor_data.SwathsPerRing = []uint8{cmn_buf.SwathsPerRing}
+	sensor_data.SwathAlongPosition = []uint8{cmn_buf.SwathAlongPosition}
+	sensor_data.TxTransducerIndex = []uint8{cmn_buf.TxTransducerIndex}
+	sensor_data.RxTransducerIndex = []uint8{cmn_buf.RxTransducerIndex}
+	sensor_data.NumRxTransducers = []uint8{cmn_buf.NumRxTransducers}
+	sensor_data.AlgorithmType = []uint8{cmn_buf.AlgorithmType}
+
+	// block three (ping data)
+	_ = binary.Read(reader, binary.BigEndian, &cmn_buf)
+	sensor_data.NumBytesInfoData = []uint16{ping_buf.NumBytesInfoData}
+	sensor_data.PingRateHz = []float64{float64(ping_buf.PingRateHz) / 100_000.0}
+	sensor_data.BeamSpacing = []uint8{ping_buf.BeamSpacing}
+	sensor_data.DepthMode = []uint8{ping_buf.DepthMode}
+	sensor_data.SubDepthMode = []uint8{ping_buf.SubDepthMode}
+	sensor_data.DistanceBetweenSwath = []uint8{ping_buf.DistanceBetweenSwath}
+	sensor_data.DetectionMode = []uint8{ping_buf.DetectionMode}
+	sensor_data.PulseForm = []uint8{ping_buf.PulseForm}
+	sensor_data.FrequencyModeHz = []int32{ping_buf.FrequencyModeHz}
+	sensor_data.FrequencyRangeLowLimHz = []float64{float64(ping_buf.FrequencyRangeLowLimHz) / 1_000.0}
+	sensor_data.FrequencyRangeHighLimHz = []float64{float64(ping_buf.FrequencyRangeHighLimHz) / 1_000.0}
+	sensor_data.MaxTotalTxPulseLengthSector = []float64{float64(ping_buf.MaxTotalTxPulseLengthSector) / 1_000_000.0}
+	sensor_data.MaxEffectiveTxPulseLengthSector = []float64{float64(ping_buf.MaxEffectiveTxPulseLengthSector) / 1_000_0.0}
+	sensor_data.MaxEffectiveTxBandWidthHz = []float64{float64(ping_buf.MaxEffectiveTxBandWidthHz) / 1_000.0}
+	sensor_data.AbsCoeffDbPerKm = []float64{float64(ping_buf.AbsCoeffDbPerKm) / 1_000.0}
+	sensor_data.PortSectorEdgeDeg = []float32{float32(ping_buf.PortSectorEdgeDeg) / SCALE2}
+	sensor_data.StarboardSectorEdgeDeg = []float32{float32(ping_buf.StarboardSectorEdgeDeg) / SCALE2}
+	sensor_data.PortMeanCoverageDeg = []float32{float32(ping_buf.PortMeanCoverageDeg) / SCALE2}
+	sensor_data.StarboardMeanCoverageDeg = []float32{float32(ping_buf.StarboardMeanCoverageDeg) / SCALE2}
+	sensor_data.PortMeanCoverageMetres = []int16{ping_buf.PortMeanCoverageMetres}
+	sensor_data.StarboardMeanCoverageMetres = []int16{ping_buf.StarboardMeanCoverageMetres}
+	sensor_data.ModeAndStabilisation = []uint8{ping_buf.ModeAndStabilisation}
+	sensor_data.RunTimeFilter1 = []uint8{ping_buf.RunTimeFilter1}
+	sensor_data.RunTimeFilter2 = []uint8{ping_buf.RunTimeFilter2}
+	sensor_data.PipeTrackingStatus = []uint32{ping_buf.PipeTrackingStatus}
+	sensor_data.TransmitArraySizeUsedDeg = []float32{float32(ping_buf.TransmitArraySizeUsedDeg) / SCALE3}
+	sensor_data.ReceiveArraySizeUsedDeg = []float32{float32(ping_buf.ReceiveArraySizeUsedDeg) / SCALE3}
+	sensor_data.TransmitPowerDb = []float32{float32(ping_buf.TransmitPowerDb) / SCALE2}
+	sensor_data.SlRampUpTimeRemaining = []uint16{ping_buf.SlRampUpTimeRemaining}
+	sensor_data.YawAngleDeg = []float64{float64(ping_buf.YawAngleDeg) / 1_000_000.0}
+	sensor_data.NumTxSectors = []uint16{ping_buf.NumTxSectors}
+	sensor_data.NumBytesPerTxSector = []uint16{ping_buf.NumBytesPerTxSector}
+	sensor_data.HeadingVesselDeg = []float64{float64(ping_buf.HeadingVesselDeg) / 1_000_000.0}
+	sensor_data.SoundSpeedAtTxDepthMetresPerSecond = []float64{float64(ping_buf.SoundSpeedAtTxDepthMetresPerSecond) / 1_000_000.0}
+	sensor_data.TxTransducerDepthMetres = []float64{float64(ping_buf.TxTransducerDepthMetres) / 1_000_000.0}
+	sensor_data.ZwaterLevelReRefPointMetres = []float64{float64(ping_buf.ZwaterLevelReRefPointMetres) / 1_000_000.0}
+	sensor_data.XKmallToAllMetres = []float64{float64(ping_buf.XKmallToAllMetres) / 1_000_000.0}
+	sensor_data.YKmallToAllMetres = []float64{float64(ping_buf.YKmallToAllMetres) / 1_000_000.0}
+	sensor_data.LatLonInfo = []uint8{ping_buf.LatLonInfo}
+	sensor_data.PositionSensorStatus = []uint8{ping_buf.PositionSensorStatus}
+	sensor_data.AttitudeSensorStatus = []uint8{ping_buf.AttitudeSensorStatus}
+	sensor_data.LatitudeDeg = []float64{float64(ping_buf.LatitudeDeg) / 10_000_000.0}
+	sensor_data.LongitudeDeg = []float64{float64(ping_buf.LongitudeDeg) / 10_000_000.0}
+	sensor_data.EllipsoidHeightReRefPointMetres = []float64{float64(ping_buf.EllipsoidHeightReRefPointMetres) / 1_000.0}
+
+	// block four (sector specific info)
+	nsectors := int(ping_buf.NumTxSectors)
+	TxSectorNumber := make([]uint8, 0, nsectors)
+	TxArrayNumber := make([]uint8, 0, nsectors)
+	TxSubArray := make([]uint8, 0, nsectors)
+	SectorTransmitDelaySec := make([]float64, 0, nsectors)
+	TiltAngleReTxDeg := make([]float64, 0, nsectors)
+	TxNominalSourceLevelDb := make([]float64, 0, nsectors)
+	TxFocusRangeMetres := make([]float64, 0, nsectors)
+	CentreFrequencyHz := make([]float64, 0, nsectors)
+	SignalBandWidthHz := make([]float64, 0, nsectors)
+	TotalSignalLengthSec := make([]float64, 0, nsectors)
+	PulseShading := make([]uint8, 0, nsectors)
+	SignalWaveForm := make([]uint8, 0, nsectors)
+
+	for i := uint16(0); i < ping_buf.NumTxSectors; i++ {
+		_ = binary.Read(reader, binary.BigEndian, &sec_buf)
+		TxSectorNumber = append(TxSectorNumber, sec_buf.TxSectorNumber)
+		TxArrayNumber = append(TxArrayNumber, sec_buf.TxArrayNumber)
+		TxSubArray = append(TxSubArray, sec_buf.TxSubArray)
+		SectorTransmitDelaySec = append(SectorTransmitDelaySec, float64(sec_buf.SectorTransmitDelaySec)/1_000_000.0)
+		TiltAngleReTxDeg = append(TiltAngleReTxDeg, float64(sec_buf.TiltAngleReTxDeg)/1_000_000.0)
+		TxNominalSourceLevelDb = append(TxNominalSourceLevelDb, float64(sec_buf.TxNominalSourceLevelDb)/1_000_000.0)
+		TxFocusRangeMetres = append(TxFocusRangeMetres, float64(sec_buf.TxFocusRangeMetres)/1_000.0)
+		CentreFrequencyHz = append(CentreFrequencyHz, float64(sec_buf.CentreFrequencyHz)/1_000.0)
+		SignalBandWidthHz = append(SignalBandWidthHz, float64(sec_buf.SignalBandWidthHz)/1_000.0)
+		TotalSignalLengthSec = append(TotalSignalLengthSec, float64(sec_buf.TotalSignalLengthSec)/1_000_000.0)
+		PulseShading = append(PulseShading, sec_buf.PulseShading)
+		SignalWaveForm = append(SignalWaveForm, sec_buf.SignalWaveForm)
+	}
+
+	sensor_data.TxSectorNumber = [][]uint8{TxSectorNumber}
+	sensor_data.TxArrayNumber = [][]uint8{TxArrayNumber}
+	sensor_data.TxSubArray = [][]uint8{TxSubArray}
+	sensor_data.SectorTransmitDelaySec = [][]float64{SectorTransmitDelaySec}
+	sensor_data.TiltAngleReTxDeg = [][]float64{TiltAngleReTxDeg}
+	sensor_data.TxNominalSourceLevelDb = [][]float64{TxNominalSourceLevelDb}
+	sensor_data.TxFocusRangeMetres = [][]float64{TxFocusRangeMetres}
+	sensor_data.CentreFrequencyHz = [][]float64{CentreFrequencyHz}
+	sensor_data.SignalBandWidthHz = [][]float64{SignalBandWidthHz}
+	sensor_data.TotalSignalLengthSec = [][]float64{TotalSignalLengthSec}
+	sensor_data.PulseShading = [][]uint8{PulseShading}
+	sensor_data.SignalWaveForm = [][]uint8{SignalWaveForm}
+
+	// block five (rx info)
+	_ = binary.Read(reader, binary.BigEndian, &rx_buf)
+	sensor_data.NumBytesRxInfo = []uint16{rx_buf.NumBytesRxInfo}
+	sensor_data.NumSoundingsMaxMain = []uint16{rx_buf.NumSoundingsMaxMain}
+	sensor_data.NumSoundingsValidMain = []uint16{rx_buf.NumSoundingsValidMain}
+	sensor_data.NumBytesPerSounding = []uint16{rx_buf.NumBytesPerSounding}
+	sensor_data.WcSampleRate = []float64{float64(rx_buf.WcSampleRate1) + (float64(rx_buf.WcSampleRate2) / 1_000_000_000.0)}
+	sensor_data.SeabedImageSampleRate = []float64{float64(rx_buf.SeabedImageSampleRate1) + (float64(rx_buf.SeabedImageSampleRate2) / 1_000_000_000.0)}
+	sensor_data.BackscatterNormalDb = []float64{float64(rx_buf.BackscatterNormalDb) / 1_000_000.0}
+	sensor_data.BackscatterObliqueDb = []float64{float64(rx_buf.BackscatterObliqueDb) / 1_000_000.0}
+	sensor_data.ExtraDetectionAlarmFlag = []uint16{rx_buf.ExtraDetectionAlarmFlag}
+	sensor_data.NumExtraDetections = []uint16{rx_buf.NumExtraDetections}
+	sensor_data.NumExtraDetectionClasses = []uint16{rx_buf.NumExtraDetectionClasses}
+	sensor_data.NumBytesPerClass = []uint16{rx_buf.NumBytesPerClass}
+
+	// block six (extra detection classes
+	nclasses := int(rx_buf.NumExtraDetectionClasses)
+	NumExtraDetectionInClass := make([]uint16, 0, nclasses)
+	AlarmFlag := make([]uint8, 0, nclasses)
+
+	for i := 0; i < nclasses; i++ {
+		_ = binary.Read(reader, binary.BigEndian, &cls_buf)
+		NumExtraDetectionInClass = append(NumExtraDetectionInClass, cls_buf.NumExtraDetectionInClass)
+		AlarmFlag = append(AlarmFlag, cls_buf.AlarmFlag)
+	}
+
+	sensor_data.NumExtraDetectionInClass = [][]uint16{NumExtraDetectionInClass}
+	sensor_data.AlarmFlag = [][]uint8{AlarmFlag}
+
+	_ = binary.Read(reader, binary.BigEndian, &final_spare)
+
+	return sensor_data
+}
