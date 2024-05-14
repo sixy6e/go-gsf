@@ -88,8 +88,8 @@ func DecodeEm100Specific(reader *bytes.Reader) (sensor_data Em100) {
 	}
 	_ = binary.Read(reader, binary.BigEndian, &buffer)
 
-	sensor_data.ShipPitch = []float32{float32(buffer.ShipPitch) / SCALE2}
-	sensor_data.TransducerPitch = []float32{float32(buffer.TransducerPitch) / SCALE2}
+	sensor_data.ShipPitch = []float32{float32(buffer.ShipPitch) / SCALE_2_F32}
+	sensor_data.TransducerPitch = []float32{float32(buffer.TransducerPitch) / SCALE_2_F32}
 	sensor_data.Mode = []uint8{buffer.Mode}
 	sensor_data.Power = []uint8{buffer.Power}
 	sensor_data.Attenuation = []uint8{buffer.Attenuation}
@@ -123,9 +123,9 @@ func DecodeEm950Specific(reader *bytes.Reader) (sensor_data Em950) {
 	sensor_data.PingNumber = []uint16{buffer.PingNumber}
 	sensor_data.Mode = []uint8{buffer.Mode}
 	sensor_data.Quality = []uint8{buffer.Quality}
-	sensor_data.ShipPitch = []float32{float32(buffer.ShipPitch) / SCALE2}
-	sensor_data.TransducerPitch = []float32{float32(buffer.TransducerPitch) / SCALE2}
-	sensor_data.SurfaceSoundVelocity = []float32{float32(buffer.SurfaceSoundVelocity) / 10.0}
+	sensor_data.ShipPitch = []float32{float32(buffer.ShipPitch) / SCALE_2_F32}
+	sensor_data.TransducerPitch = []float32{float32(buffer.TransducerPitch) / SCALE_2_F32}
+	sensor_data.SurfaceSoundVelocity = []float32{float32(buffer.SurfaceSoundVelocity) / SCALE_1_F32}
 
 	return sensor_data
 }
@@ -164,7 +164,7 @@ func DecodeEm121ASpecific(reader *bytes.Reader) (sensor_data Em121A) {
 	sensor_data.TransmitPower = []uint8{buffer.TransmitPower}
 	sensor_data.TransmitStatus = []uint8{buffer.TransmitStatus}
 	sensor_data.ReceiveStatus = []uint8{buffer.ReceiveStatus}
-	sensor_data.SurfaceSoundVelocity = []float32{float32(buffer.ReceiveStatus) / 10.0}
+	sensor_data.SurfaceSoundVelocity = []float32{float32(buffer.ReceiveStatus) / SCALE_1_F32}
 
 	return sensor_data
 }
@@ -203,7 +203,7 @@ func DecodeEm121Specific(reader *bytes.Reader) (sensor_data Em121) {
 	sensor_data.TransmitPower = []uint8{buffer.TransmitPower}
 	sensor_data.TransmitStatus = []uint8{buffer.TransmitStatus}
 	sensor_data.ReceiveStatus = []uint8{buffer.ReceiveStatus}
-	sensor_data.SurfaceSoundVelocity = []float32{float32(buffer.ReceiveStatus) / 10.0}
+	sensor_data.SurfaceSoundVelocity = []float32{float32(buffer.ReceiveStatus) / SCALE_1_F32}
 
 	return sensor_data
 }
@@ -282,17 +282,17 @@ func DecodeSeamapSpecific(reader *bytes.Reader, gsfd GsfDetails) (sensor_data Se
 
 	_ = binary.Read(reader, binary.BigEndian, &buffer2)
 
-	sensor_data.PortTransmit1 = []float32{float32(buffer1.PortTransmit1) / 10.0}
-	sensor_data.PortTransmit2 = []float32{float32(buffer1.PortTransmit2) / 10.0}
-	sensor_data.StarboardTransmit1 = []float32{float32(buffer1.StarboardTransmit1) / 10.0}
-	sensor_data.StarboardTransmit2 = []float32{float32(buffer1.StarboardTransmit2) / 10.0}
-	sensor_data.PortGain = []float32{float32(buffer1.PortGain) / 10.0}
-	sensor_data.StarboardGain = []float32{float32(buffer1.StarboardGain) / 10.0}
-	sensor_data.PortPulseLength = []float32{float32(buffer1.PortPulseLength) / 10.0}
-	sensor_data.StarboardPulseLength = []float32{float32(buffer1.StarboardPulseLength) / 10.0}
-	sensor_data.PressureDepth = []float32{float32(pressure_depth) / 10.0}
-	sensor_data.Altitude = []float32{float32(buffer2.Altitude) / 10.0}
-	sensor_data.Temperature = []float32{float32(buffer2.Temperature) / 10.0}
+	sensor_data.PortTransmit1 = []float32{float32(buffer1.PortTransmit1) / SCALE_1_F32}
+	sensor_data.PortTransmit2 = []float32{float32(buffer1.PortTransmit2) / SCALE_1_F32}
+	sensor_data.StarboardTransmit1 = []float32{float32(buffer1.StarboardTransmit1) / SCALE_1_F32}
+	sensor_data.StarboardTransmit2 = []float32{float32(buffer1.StarboardTransmit2) / SCALE_1_F32}
+	sensor_data.PortGain = []float32{float32(buffer1.PortGain) / SCALE_1_F32}
+	sensor_data.StarboardGain = []float32{float32(buffer1.StarboardGain) / SCALE_1_F32}
+	sensor_data.PortPulseLength = []float32{float32(buffer1.PortPulseLength) / SCALE_1_F32}
+	sensor_data.StarboardPulseLength = []float32{float32(buffer1.StarboardPulseLength) / SCALE_1_F32}
+	sensor_data.PressureDepth = []float32{float32(pressure_depth) / SCALE_1_F32}
+	sensor_data.Altitude = []float32{float32(buffer2.Altitude) / SCALE_1_F32}
+	sensor_data.Temperature = []float32{float32(buffer2.Temperature) / SCALE_1_F32}
 
 	return sensor_data
 }
@@ -318,7 +318,7 @@ func DecodeSeabatSpecific(reader *bytes.Reader, gsfd GsfDetails) (sensor_data Se
 	_ = binary.Read(reader, binary.BigEndian, &buffer)
 
 	sensor_data.PingNumber = []uint16{buffer.PingNumber}
-	sensor_data.SurfaceSoundVelocity = []float32{float32(buffer.SurfaceSoundVelocity) / 10.0}
+	sensor_data.SurfaceSoundVelocity = []float32{float32(buffer.SurfaceSoundVelocity) / SCALE_1_F32}
 	sensor_data.Mode = []uint8{buffer.Mode}
 	sensor_data.Range = []uint8{buffer.Range}
 	sensor_data.TransmitPower = []uint8{buffer.TransmitPower}
@@ -350,9 +350,9 @@ func DecodeEm1000Specific(reader *bytes.Reader) (sensor_data Em1000) {
 	sensor_data.PingNumber = []uint16{buffer.PingNumber}
 	sensor_data.Mode = []uint8{buffer.Mode}
 	sensor_data.Quality = []uint8{buffer.Quality}
-	sensor_data.ShipPitch = []float32{float32(buffer.ShipPitch) / SCALE2}
-	sensor_data.TransducerPitch = []float32{float32(buffer.TransducerPitch) / SCALE2}
-	sensor_data.SurfaceSoundVelocity = []float32{float32(buffer.SurfaceSoundVelocity) / 10.0}
+	sensor_data.ShipPitch = []float32{float32(buffer.ShipPitch) / SCALE_2_F32}
+	sensor_data.TransducerPitch = []float32{float32(buffer.TransducerPitch) / SCALE_2_F32}
+	sensor_data.SurfaceSoundVelocity = []float32{float32(buffer.SurfaceSoundVelocity) / SCALE_1_F32}
 
 	return sensor_data
 }
@@ -443,13 +443,13 @@ func DecodeSeabatIISpecific(reader *bytes.Reader) (sensor_data SeabatII) {
 	_ = binary.Read(reader, binary.BigEndian, &buffer)
 
 	sensor_data.PingNumber = []uint16{buffer.PingNumber}
-	sensor_data.SurfaceSoundVelocity = []float32{float32(buffer.SurfaceSoundVelocity) / 10.0}
+	sensor_data.SurfaceSoundVelocity = []float32{float32(buffer.SurfaceSoundVelocity) / SCALE_1_F32}
 	sensor_data.Mode = []uint16{buffer.Mode}
 	sensor_data.SonarRange = []uint16{buffer.SonarRange}
 	sensor_data.TransmitPower = []uint16{buffer.TransmitPower}
 	sensor_data.ReceiveGain = []uint16{buffer.ReceiveGain}
-	sensor_data.ForeAftBandwidth = []float32{float32(buffer.ForeAftBandwidth) / 10.0}
-	sensor_data.AthwartBandwidth = []float32{float32(buffer.AthwartBandwidth) / 10.0}
+	sensor_data.ForeAftBandwidth = []float32{float32(buffer.ForeAftBandwidth) / SCALE_1_F32}
+	sensor_data.AthwartBandwidth = []float32{float32(buffer.AthwartBandwidth) / SCALE_1_F32}
 
 	return sensor_data
 }
@@ -491,12 +491,12 @@ func DecodeSeabat8101Specific(reader *bytes.Reader) (sensor_data Seabat8101) {
 		DepthFilterMin       uint16
 		DepthFilterMax       uint16
 		ProjectorType        uint8
-		Spare                int32
+		Spare                [4]byte
 	}
 	_ = binary.Read(reader, binary.BigEndian, &buffer)
 
 	sensor_data.PingNumber = []uint16{buffer.PingNumber}
-	sensor_data.SurfaceSoundVelocity = []float32{float32(buffer.SurfaceSoundVelocity) / 10.0}
+	sensor_data.SurfaceSoundVelocity = []float32{float32(buffer.SurfaceSoundVelocity) / SCALE_1_F32}
 	sensor_data.Mode = []uint16{buffer.Mode}
 	sensor_data.Range = []uint16{buffer.Range}
 	sensor_data.TransmitPower = []uint16{buffer.TransmitPower}
@@ -504,8 +504,8 @@ func DecodeSeabat8101Specific(reader *bytes.Reader) (sensor_data Seabat8101) {
 	sensor_data.PulseWidth = []uint16{buffer.PulseWidth}
 	sensor_data.TvgSpreading = []uint8{buffer.TvgSpreading}
 	sensor_data.TvgAbsorption = []uint8{buffer.TvgAbsorption}
-	sensor_data.ForeAftBandwidth = []float32{float32(buffer.ForeAftBandwidth) / 10.0}
-	sensor_data.AthwartBandwidth = []float32{float32(buffer.AthwartBandwidth) / 10.0}
+	sensor_data.ForeAftBandwidth = []float32{float32(buffer.ForeAftBandwidth) / SCALE_1_F32}
+	sensor_data.AthwartBandwidth = []float32{float32(buffer.AthwartBandwidth) / SCALE_1_F32}
 	sensor_data.RangeFilterMin = []float32{float32(buffer.RangeFilterMin)}
 	sensor_data.RangeFilterMax = []float32{float32(buffer.RangeFilterMax)}
 	sensor_data.DepthFilterMin = []float32{float32(buffer.DepthFilterMin)}
@@ -517,7 +517,7 @@ func DecodeSeabat8101Specific(reader *bytes.Reader) (sensor_data Seabat8101) {
 
 type Seabeam2112 struct {
 	Mode                   []uint8   `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
-	SurfaceSoundVelocity   []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	SurfaceSoundVelocity   []float64 `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
 	SsvSource              []uint8   `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
 	PingGain               []uint8   `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
 	PulseWidth             []uint8   `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
@@ -536,12 +536,12 @@ func DecodeSeabeam2112Specific(reader *bytes.Reader) (sensor_data Seabeam2112) {
 		TransmitterAttenuation uint8
 		NumberAlgorithms       uint8
 		AlgorithmOrder         [5]byte
-		Spare                  int16
+		Spare                  [2]byte
 	}
 	_ = binary.Read(reader, binary.BigEndian, &buffer)
 
 	sensor_data.Mode = []uint8{buffer.Mode}
-	sensor_data.SurfaceSoundVelocity = []float32{(float32(buffer.SurfaceSoundVelocity) + 130000.0) / 100.0}
+	sensor_data.SurfaceSoundVelocity = []float64{(float64(buffer.SurfaceSoundVelocity) + 130000.0) / SCALE_2_F64}
 	sensor_data.SsvSource = []uint8{buffer.SsvSource}
 	sensor_data.PingGain = []uint8{buffer.PingGain}
 	sensor_data.PulseWidth = []uint8{buffer.PulseWidth}
@@ -595,8 +595,8 @@ func DecodeCmpSass(reader *bytes.Reader) (sensor_data CmpSass) {
 	}
 	_ = binary.Read(reader, binary.BigEndian, &buffer)
 
-	sensor_data.Lfreq = []float32{float32(buffer.Lfreq) / 10.0}
-	sensor_data.Lntens = []float32{float32(buffer.Lntens) / 10.0}
+	sensor_data.Lfreq = []float32{float32(buffer.Lfreq) / SCALE_1_F32}
+	sensor_data.Lntens = []float32{float32(buffer.Lntens) / SCALE_1_F32}
 
 	return sensor_data
 }
@@ -667,7 +667,7 @@ func DecodeReson8100(reader *bytes.Reader) (sensor_data Reson8100) {
 	sensor_data.SonarID = []uint16{buffer.SonarID}
 	sensor_data.SonarModel = []uint16{buffer.SonarModel}
 	sensor_data.Frequency = []uint16{buffer.Frequency}
-	sensor_data.SurfaceSoundVelocity = []float32{float32(buffer.SurfaceSoundVelocity) / 10.0}
+	sensor_data.SurfaceSoundVelocity = []float32{float32(buffer.SurfaceSoundVelocity) / SCALE_1_F32}
 	sensor_data.SampleRate = []uint16{buffer.SampleRate}
 	sensor_data.PingRate = []uint16{buffer.PingRate}
 	sensor_data.Mode = []uint16{buffer.Mode}
@@ -677,8 +677,8 @@ func DecodeReson8100(reader *bytes.Reader) (sensor_data Reson8100) {
 	sensor_data.PulseWidth = []uint16{buffer.PulseWidth}
 	sensor_data.TvgSpreading = []uint8{buffer.TvgSpreading}
 	sensor_data.TvgAbsorption = []uint8{buffer.TvgAbsorption}
-	sensor_data.ForeAftBandwidth = []float32{float32(buffer.ForeAftBandwidth) / 10.0}
-	sensor_data.AthwartBandwidth = []float32{float32(buffer.AthwartBandwidth) / 10.0}
+	sensor_data.ForeAftBandwidth = []float32{float32(buffer.ForeAftBandwidth) / SCALE_1_F32}
+	sensor_data.AthwartBandwidth = []float32{float32(buffer.AthwartBandwidth) / SCALE_1_F32}
 	sensor_data.ProjectorType = []uint8{buffer.ProjectorType}
 	sensor_data.ProjectorAngle = []int16{buffer.ProjectorAngle}
 	sensor_data.RangeFilterMin = []float32{float32(buffer.RangeFilterMin)}
@@ -687,7 +687,7 @@ func DecodeReson8100(reader *bytes.Reader) (sensor_data Reson8100) {
 	sensor_data.DepthFilterMax = []float32{float32(buffer.DepthFilterMax)}
 	sensor_data.FiltersActive = []uint8{buffer.FiltersActive}
 	sensor_data.Temperature = []uint16{buffer.Temperature}
-	sensor_data.BeamSpacing = []float32{float32(buffer.BeamSpacing) / 10000.0}
+	sensor_data.BeamSpacing = []float32{float32(buffer.BeamSpacing) / SCALE_4_F32}
 
 	return sensor_data
 }
@@ -717,7 +717,7 @@ type Em3 struct {
 	RunTimeTransmitBeamWidth       [][]float32   `tiledb:"dtype=float32,ftype=attr,var" filters:"zstd(level=16)"`
 	RunTimePowerReduction          [][]uint8     `tiledb:"dtype=uint8,ftype=attr,var" filters:"zstd(level=16)"`
 	RunTimeReceiveBeamWidth        [][]float32   `tiledb:"dtype=float32,ftype=attr,var" filters:"zstd(level=16)"`
-	RunTimeReceiveBandwidth        [][]int16     `tiledb:"dtype=int16,ftype=attr,var" filters:"zstd(level=16)"`
+	RunTimeReceiveBandwidth        [][]uint16    `tiledb:"dtype=uint16,ftype=attr,var" filters:"zstd(level=16)"`
 	RunTimeReceiveGain             [][]uint8     `tiledb:"dtype=uint8,ftype=attr,var" filters:"zstd(level=16)"`
 	RunTimeCrossOverAngle          [][]uint8     `tiledb:"dtype=uint8,ftype=attr,var" filters:"zstd(level=16)"`
 	RunTimeSsvSource               [][]uint8     `tiledb:"dtype=uint8,ftype=attr,var" filters:"zstd(level=16)"`
@@ -819,7 +819,7 @@ func DecodeEm3(reader *bytes.Reader) (sensor_data Em3) {
 	transmit_beam_width := make([]float32, 0, 2)
 	power_reduction := make([]uint8, 0, 2)
 	receive_beamwidth := make([]float32, 0, 2)
-	receive_bandwidth := make([]int16, 0, 2)
+	receive_bandwidth := make([]uint16, 0, 2)
 	receive_gain := make([]uint8, 0, 2)
 	cross_over_angle := make([]uint8, 0, 2)
 	ssv_source := make([]uint8, 0, 2)
@@ -839,11 +839,11 @@ func DecodeEm3(reader *bytes.Reader) (sensor_data Em3) {
 	sensor_data.ModelNumber = []uint16{buffer.ModelNumber}
 	sensor_data.PingNumber = []uint16{buffer.PingNumber}
 	sensor_data.SerialNumber = []uint16{buffer.SerialNumber}
-	sensor_data.SurfaceSoundVelocity = []float32{float32(buffer.SerialNumber) / 10.0}
-	sensor_data.TransducerDepth = []float32{float32(buffer.TransducerDepth) / SCALE2}
+	sensor_data.SurfaceSoundVelocity = []float32{float32(buffer.SerialNumber) / SCALE_1_F32}
+	sensor_data.TransducerDepth = []float32{float32(buffer.TransducerDepth) / SCALE_2_F32}
 	sensor_data.ValidBeams = []uint16{buffer.ValidBeams}
 	sensor_data.SampleRate = []uint16{buffer.SampleRate}
-	sensor_data.DepthDifference = []float32{float32(buffer.DepthDifference) / SCALE2}
+	sensor_data.DepthDifference = []float32{float32(buffer.DepthDifference) / SCALE_2_F32}
 	sensor_data.OffsetMultiplier = []uint8{buffer.OffsetMultiplier}
 
 	// runtime values
@@ -858,12 +858,12 @@ func DecodeEm3(reader *bytes.Reader) (sensor_data Em3) {
 		filter_id = append(filter_id, rt1.FilterID)
 		min_depth = append(min_depth, float32(rt1.MinDepth))
 		max_depth = append(max_depth, float32(rt1.MaxDepth))
-		absorption = append(absorption, float32(rt2.Absorption)/SCALE2)
+		absorption = append(absorption, float32(rt2.Absorption)/SCALE_2_F32)
 		transmit_pulse_length = append(transmit_pulse_length, float32(rt1.TransmitPulseLength))
-		transmit_beam_width = append(transmit_beam_width, float32(rt1.TransmitBeamWidth)/10.0)
+		transmit_beam_width = append(transmit_beam_width, float32(rt1.TransmitBeamWidth)/SCALE_1_F32)
 		power_reduction = append(power_reduction, rt1.PowerReduction)
-		receive_beamwidth = append(receive_beamwidth, float32(rt1.ReceiveBeamWidth)/10.0)
-		receive_bandwidth = append(receive_bandwidth, int16(rt1.ReceiveBandwidth)*50)
+		receive_beamwidth = append(receive_beamwidth, float32(rt1.ReceiveBeamWidth)/SCALE_1_F32)
+		receive_bandwidth = append(receive_bandwidth, uint16(rt1.ReceiveBandwidth)*50)
 		receive_gain = append(receive_gain, rt1.ReceiveGain)
 		cross_over_angle = append(cross_over_angle, rt1.CrossOverAnlge)
 		ssv_source = append(ssv_source, rt1.SsvSource)
@@ -906,12 +906,12 @@ func DecodeEm3(reader *bytes.Reader) (sensor_data Em3) {
 			filter_id = append(filter_id, rt2.FilterID)
 			min_depth = append(min_depth, float32(rt2.MinDepth))
 			max_depth = append(max_depth, float32(rt2.MaxDepth))
-			absorption = append(absorption, float32(rt2.Absorption)/SCALE2)
+			absorption = append(absorption, float32(rt2.Absorption)/SCALE_2_F32)
 			transmit_pulse_length = append(transmit_pulse_length, float32(rt2.TransmitPulseLength))
-			transmit_beam_width = append(transmit_beam_width, float32(rt2.TransmitBeamWidth)/10.0)
+			transmit_beam_width = append(transmit_beam_width, float32(rt2.TransmitBeamWidth)/SCALE_1_F32)
 			power_reduction = append(power_reduction, rt2.PowerReduction)
-			receive_beamwidth = append(receive_beamwidth, float32(rt2.ReceiveBeamWidth)/10.0)
-			receive_bandwidth = append(receive_bandwidth, int16(rt2.ReceiveBandwidth)*50)
+			receive_beamwidth = append(receive_beamwidth, float32(rt2.ReceiveBeamWidth)/SCALE_1_F32)
+			receive_bandwidth = append(receive_bandwidth, uint16(rt2.ReceiveBandwidth)*50)
 			receive_gain = append(receive_gain, rt2.ReceiveGain)
 			cross_over_angle = append(cross_over_angle, rt2.CrossOverAnlge)
 			ssv_source = append(ssv_source, rt2.SsvSource)
@@ -959,7 +959,7 @@ func DecodeEm3(reader *bytes.Reader) (sensor_data Em3) {
 	sensor_data.RunTimeTransmitBeamWidth = [][]float32{transmit_beam_width}
 	sensor_data.RunTimePowerReduction = [][]uint8{power_reduction}
 	sensor_data.RunTimeReceiveBeamWidth = [][]float32{receive_beamwidth}
-	sensor_data.RunTimeReceiveBandwidth = [][]int16{receive_bandwidth}
+	sensor_data.RunTimeReceiveBandwidth = [][]uint16{receive_bandwidth}
 	sensor_data.RunTimeReceiveGain = [][]uint8{receive_gain}
 	sensor_data.RunTimeCrossOverAngle = [][]uint8{cross_over_angle}
 	sensor_data.RunTimeSsvSource = [][]uint8{ssv_source}
@@ -990,7 +990,7 @@ type Em4 struct {
 	ValidDetections                   []uint16    `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
 	SamplingFrequency                 []float64   `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
 	DopplerCorrectionScale            []uint32    `tiledb:"dtype=uint32,ftype=attr" filters:"zstd(level=16)"`
-	VehicleDepth                      []float32   `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	VehicleDepth                      []float64   `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
 	TransmitSectors                   []uint16    `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
 	TiltAngle                         [][]float32 `tiledb:"dtype=float32,ftype=attr,var" filters:"zstd(level=16)"`
 	FocusRange                        [][]float32 `tiledb:"dtype=float32,ftype=attr,var" filters:"zstd(level=16)"`
@@ -1051,7 +1051,7 @@ func DecodeEm4Specific(reader *bytes.Reader) (sensor_data Em4) {
 			SamplingFrequency2     uint32
 			DopplerCorrectionScale uint32
 			VehicleDepth           int32
-			Spare                  [4]int32
+			Spare                  [16]byte
 			TransmitSectors        uint16
 		} // 48 bytes
 		sector_buffer struct {
@@ -1064,7 +1064,7 @@ func DecodeEm4Specific(reader *bytes.Reader) (sensor_data Em4) {
 			WaveformId      []uint8
 			SectorNumber    []uint8
 			SignalBandwith  []float64
-			Spare           [4]int32
+			Spare           []byte
 		}
 		sector_buffer_base struct {
 			TiltAngle       int16
@@ -1076,10 +1076,10 @@ func DecodeEm4Specific(reader *bytes.Reader) (sensor_data Em4) {
 			WaveformId      uint8
 			SectorNumber    uint8
 			SignalBandwith  uint32
-			Spare           [4]int32
+			Spare           [16]byte
 		} // 40 bytes
 		spare_buffer struct {
-			Spare [4]int32
+			Spare [16]byte
 		} // 16 bytes
 		runtime_buffer struct {
 			RunTimeModelNumber            uint16
@@ -1112,7 +1112,7 @@ func DecodeEm4Specific(reader *bytes.Reader) (sensor_data Em4) {
 			RunTimeMaxStdbSwathWidth      uint16
 			RunTimeTransmitAlongTilt      int16
 			RunTimeFilterID2              uint8
-			Spare                         [4]int32
+			Spare                         [16]byte
 		} // 63 bytes
 		proc_buffer struct {
 			ProcessorUnitCpuLoad              uint8
@@ -1120,7 +1120,7 @@ func DecodeEm4Specific(reader *bytes.Reader) (sensor_data Em4) {
 			ProcessorUnitAchievedPortCoverage uint8
 			ProcessorUnitAchievedStbdCoverage uint8
 			ProcessorUnitYawStabilization     int16
-			Spare                             [4]int32
+			Spare                             [16]byte
 		} // 23 bytes
 	)
 
@@ -1134,27 +1134,27 @@ func DecodeEm4Specific(reader *bytes.Reader) (sensor_data Em4) {
 		_ = binary.Read(reader, binary.BigEndian, &sector_buffer_base)
 		sector_buffer.TiltAngle = append(
 			sector_buffer.TiltAngle,
-			float32(sector_buffer_base.TiltAngle)/float32(100),
+			float32(sector_buffer_base.TiltAngle)/SCALE_2_F32,
 		)
 		sector_buffer.FocusRange = append(
 			sector_buffer.FocusRange,
-			float32(sector_buffer_base.FocusRange)/float32(10),
+			float32(sector_buffer_base.FocusRange)/SCALE_1_F32,
 		)
 		sector_buffer.SignalLength = append(
 			sector_buffer.SignalLength,
-			float64(sector_buffer_base.SignalLength)/float64(1_000_000),
+			float64(sector_buffer_base.SignalLength)/SCALE_6_F64,
 		)
 		sector_buffer.TransmitDelay = append(
 			sector_buffer.TransmitDelay,
-			float64(sector_buffer_base.TransmitDelay)/float64(1_000_000),
+			float64(sector_buffer_base.TransmitDelay)/SCALE_6_F64,
 		)
 		sector_buffer.CenterFrequency = append(
 			sector_buffer.CenterFrequency,
-			float64(sector_buffer_base.CenterFrequency)/float64(1000),
+			float64(sector_buffer_base.CenterFrequency)/SCALE_3_F64,
 		)
 		sector_buffer.MeanAbsorption = append(
 			sector_buffer.MeanAbsorption,
-			float32(sector_buffer_base.MeanAbsorption)/float32(100),
+			float32(sector_buffer_base.MeanAbsorption)/SCALE_2_F32,
 		)
 		sector_buffer.WaveformId = append(
 			sector_buffer.WaveformId,
@@ -1166,7 +1166,7 @@ func DecodeEm4Specific(reader *bytes.Reader) (sensor_data Em4) {
 		)
 		sector_buffer.SignalBandwith = append(
 			sector_buffer.SignalBandwith,
-			float64(sector_buffer_base.SignalBandwith)/float64(1000),
+			float64(sector_buffer_base.SignalBandwith)/SCALE_3_F64,
 		)
 	}
 
@@ -1183,12 +1183,12 @@ func DecodeEm4Specific(reader *bytes.Reader) (sensor_data Em4) {
 	sensor_data.ModelNumber = []uint16{buffer.ModelNumber}
 	sensor_data.PingCounter = []uint16{buffer.PingCounter}
 	sensor_data.SerialNumber = []uint16{buffer.SerialNumber}
-	sensor_data.SurfaceVelocity = []float32{float32(buffer.SurfaceVelocity) / float32(10)}
+	sensor_data.SurfaceVelocity = []float32{float32(buffer.SurfaceVelocity) / SCALE_1_F32}
 	sensor_data.TransducerDepth = []float64{float64(buffer.TransducerDepth) / float64(20000)}
 	sensor_data.ValidDetections = []uint16{buffer.ValidDetections}
 	sensor_data.SamplingFrequency = []float64{float64(buffer.SamplingFrequency1) + float64(buffer.SamplingFrequency2)/float64(4_000_000_000)}
 	sensor_data.DopplerCorrectionScale = []uint32{buffer.DopplerCorrectionScale}
-	sensor_data.VehicleDepth = []float32{float32(buffer.VehicleDepth) / float32(1000)}
+	sensor_data.VehicleDepth = []float64{float64(buffer.VehicleDepth) / SCALE_3_F64}
 	sensor_data.TransmitSectors = []uint16{buffer.TransmitSectors}
 
 	// populate sector info
@@ -1218,11 +1218,11 @@ func DecodeEm4Specific(reader *bytes.Reader) (sensor_data Em4) {
 	sensor_data.RunTimeFilterID = []uint8{runtime_buffer.RunTimeFilterID}
 	sensor_data.RunTimeMinDepth = []float32{float32(runtime_buffer.RunTimeMinDepth)}
 	sensor_data.RunTimeMaxDepth = []float32{float32(runtime_buffer.RunTimeMaxDepth)}
-	sensor_data.RunTimeAbsorption = []float32{float32(runtime_buffer.RunTimeAbsorption) / float32(100)}
+	sensor_data.RunTimeAbsorption = []float32{float32(runtime_buffer.RunTimeAbsorption) / SCALE_2_F32}
 	sensor_data.RunTimeTransmitPulseLength = []float32{float32(runtime_buffer.RunTimeTransmitPulseLength)}
-	sensor_data.RunTimeTransmitBeamWidth = []float32{float32(runtime_buffer.RunTimeTransmitBeamWidth) / float32(10)}
+	sensor_data.RunTimeTransmitBeamWidth = []float32{float32(runtime_buffer.RunTimeTransmitBeamWidth) / SCALE_1_F32}
 	sensor_data.RunTimeTransmitPowerReduction = []uint8{runtime_buffer.RunTimeTransmitPowerReduction}
-	sensor_data.RunTimeReceiveBeamWidth = []float32{float32(runtime_buffer.RunTimeReceiveBeamWidth) / float32(10)}
+	sensor_data.RunTimeReceiveBeamWidth = []float32{float32(runtime_buffer.RunTimeReceiveBeamWidth) / SCALE_1_F32}
 	sensor_data.RunTimeReceiveBandwidth = []float32{float32(runtime_buffer.RunTimeReceiveBandwidth) * float32(50)}
 	sensor_data.RunTimeReceiveFixedGain = []uint8{runtime_buffer.RunTimeReceiveFixedGain}
 	sensor_data.RunTimeTvgCrossOverAngle = []uint8{runtime_buffer.RunTimeTvgCrossOverAngle}
@@ -1233,7 +1233,7 @@ func DecodeEm4Specific(reader *bytes.Reader) (sensor_data Em4) {
 	sensor_data.RunTimeStabilization = []uint8{runtime_buffer.RunTimeStabilization}
 	sensor_data.RunTimeMaxStbdCoverage = []uint8{runtime_buffer.RunTimeMaxStbdCoverage}
 	sensor_data.RunTimeMaxStdbSwathWidth = []uint16{runtime_buffer.RunTimeMaxStdbSwathWidth}
-	sensor_data.RunTimeTransmitAlongTilt = []float32{float32(runtime_buffer.RunTimeTransmitAlongTilt) / float32(100)}
+	sensor_data.RunTimeTransmitAlongTilt = []float32{float32(runtime_buffer.RunTimeTransmitAlongTilt) / SCALE_2_F32}
 	sensor_data.RunTimeFilterID2 = []uint8{runtime_buffer.RunTimeFilterID2}
 
 	// populate processor unit info
@@ -1241,7 +1241,7 @@ func DecodeEm4Specific(reader *bytes.Reader) (sensor_data Em4) {
 	sensor_data.ProcessorUnitSensorStatus = []uint16{proc_buffer.ProcessorUnitSensorStatus}
 	sensor_data.ProcessorUnitAchievedPortCoverage = []uint8{proc_buffer.ProcessorUnitAchievedPortCoverage}
 	sensor_data.ProcessorUnitAchievedStbdCoverage = []uint8{proc_buffer.ProcessorUnitAchievedStbdCoverage}
-	sensor_data.ProcessorUnitYawStabilization = []float32{float32(proc_buffer.ProcessorUnitYawStabilization) / float32(100)}
+	sensor_data.ProcessorUnitYawStabilization = []float32{float32(proc_buffer.ProcessorUnitYawStabilization) / SCALE_2_F32}
 
 	return sensor_data
 }
@@ -1310,7 +1310,7 @@ func DecodeGeoSwathPlusSpecific(reader *bytes.Reader) (sensor_data GeoSwathPlus)
 	sensor_data.DataSource = []uint16{buffer.DataSource}
 	sensor_data.Side = []uint16{buffer.Side}
 	sensor_data.ModelNumber = []uint16{buffer.ModelNumber}
-	sensor_data.Frequency = []float32{float32(buffer.Frequency) / 10.0}
+	sensor_data.Frequency = []float32{float32(buffer.Frequency) * SCALE_1_F32}
 	sensor_data.EchosounderType = []uint16{buffer.EchosounderType}
 	sensor_data.PingNumber = []uint32{buffer.PingNumber}
 	sensor_data.NumNavSamples = []uint16{buffer.NumNavSamples}
@@ -1322,15 +1322,15 @@ func DecodeGeoSwathPlusSpecific(reader *bytes.Reader) (sensor_data GeoSwathPlus)
 	sensor_data.MeanSv = []float32{float32(buffer.MeanSv) / 20.0}
 	sensor_data.SurfaceVelocity = []float32{float32(buffer.SurfaceVelocity) / 20.0}
 	sensor_data.ValidBeams = []uint16{buffer.ValidBeams}
-	sensor_data.SampleRate = []float32{float32(buffer.SampleRate) / 10.0}
+	sensor_data.SampleRate = []float32{float32(buffer.SampleRate) * SCALE_1_F32}
 	sensor_data.PulseLength = []float32{float32(buffer.PulseLength)}
 	sensor_data.PingLength = []uint16{buffer.PingLength}
 	sensor_data.TransmitPower = []uint16{buffer.TransmitPower}
 	sensor_data.SidescanGainChannel = []uint16{buffer.SidescanGainChannel}
 	sensor_data.Stabilization = []uint16{buffer.Stabilization}
 	sensor_data.GpsQuality = []uint16{buffer.GpsQuality}
-	sensor_data.RangeUncertainty = []float32{float32(buffer.RangeUncertainty) / SCALE3}
-	sensor_data.AngleUncertainty = []float32{float32(buffer.AngleUncertainty) / SCALE2}
+	sensor_data.RangeUncertainty = []float32{float32(buffer.RangeUncertainty) / SCALE_3_F32}
+	sensor_data.AngleUncertainty = []float32{float32(buffer.AngleUncertainty) / SCALE_2_F32}
 
 	return sensor_data
 }
@@ -1341,16 +1341,16 @@ type Klein5410Bss struct {
 	DataSource        []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
 	Side              []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
 	ModelNumber       []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
-	AcousticFrequency []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
-	SamplingFrequency []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	AcousticFrequency []float64 `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
+	SamplingFrequency []float64 `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
 	PingNumber        []uint32  `tiledb:"dtype=uint32,ftype=attr" filters:"zstd(level=16)"`
 	NumSamples        []uint32  `tiledb:"dtype=uint32,ftype=attr" filters:"zstd(level=16)"`
 	NumRaaSamples     []uint32  `tiledb:"dtype=uint32,ftype=attr" filters:"zstd(level=16)"`
 	ErrorFlags        []uint32  `tiledb:"dtype=uint32,ftype=attr" filters:"zstd(level=16)"`
 	Range             []uint32  `tiledb:"dtype=uint32,ftype=attr" filters:"zstd(level=16)"`
-	FishDepth         []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
-	FishAltitude      []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
-	SoundSpeed        []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	FishDepth         []float64 `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
+	FishAltitude      []float64 `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
+	SoundSpeed        []float64 `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
 	TransmitWaveform  []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
 	Altimeter         []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
 	RawDataConfig     []uint32  `tiledb:"dtype=uint32,ftype=attr" filters:"zstd(level=16)"`
@@ -1374,23 +1374,23 @@ func DecodeKlein5410BssSpecific(reader *bytes.Reader) (sensor_data Klein5410Bss)
 		TransmitWaveform  uint16
 		Altimeter         uint16
 		RawDataConfig     uint32
-		Spare             [4]int32
+		Spare             [32]byte
 	}
 	_ = binary.Read(reader, binary.BigEndian, &buffer)
 
 	sensor_data.DataSource = []uint16{buffer.DataSource}
 	sensor_data.Side = []uint16{buffer.Side}
 	sensor_data.ModelNumber = []uint16{buffer.ModelNumber}
-	sensor_data.AcousticFrequency = []float32{float32(buffer.AcousticFrequency) / SCALE3}
-	sensor_data.SamplingFrequency = []float32{float32(buffer.SamplingFrequency) / SCALE3}
+	sensor_data.AcousticFrequency = []float64{float64(buffer.AcousticFrequency) / SCALE_3_F64}
+	sensor_data.SamplingFrequency = []float64{float64(buffer.SamplingFrequency) / SCALE_3_F64}
 	sensor_data.PingNumber = []uint32{buffer.PingNumber}
 	sensor_data.NumSamples = []uint32{buffer.NumSamples}
 	sensor_data.NumRaaSamples = []uint32{buffer.NumRaaSamples}
 	sensor_data.ErrorFlags = []uint32{buffer.ErrorFlags}
 	sensor_data.Range = []uint32{buffer.Range}
-	sensor_data.FishDepth = []float32{float32(buffer.FishDepth) / SCALE3}
-	sensor_data.FishAltitude = []float32{float32(buffer.FishAltitude) / SCALE3}
-	sensor_data.SoundSpeed = []float32{float32(buffer.SoundSpeed) / SCALE3}
+	sensor_data.FishDepth = []float64{float64(buffer.FishDepth) / SCALE_3_F64}
+	sensor_data.FishAltitude = []float64{float64(buffer.FishAltitude) / SCALE_3_F64}
+	sensor_data.SoundSpeed = []float64{float64(buffer.SoundSpeed) / SCALE_3_F64}
 	sensor_data.TransmitWaveform = []uint16{buffer.TransmitWaveform}
 	sensor_data.Altimeter = []uint16{buffer.Altimeter}
 	sensor_data.RawDataConfig = []uint32{buffer.RawDataConfig}
@@ -1405,25 +1405,25 @@ type Reson7100 struct {
 	MinorSerialNumber                 []uint32  `tiledb:"dtype=uint32,ftype=attr" filters:"zstd(level=16)"`
 	PingNumber                        []uint32  `tiledb:"dtype=uint32,ftype=attr" filters:"zstd(level=16)"`
 	MultiPingSequence                 []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
-	Frequency                         []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
-	SampleRate                        []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
-	ReceiverBandwidth                 []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
-	TxPulseWidth                      []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	Frequency                         []float64 `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
+	SampleRate                        []float64 `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
+	ReceiverBandwidth                 []float64 `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
+	TxPulseWidth                      []float64 `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
 	TxPulseTypeID                     []uint32  `tiledb:"dtype=uint32,ftype=attr" filters:"zstd(level=16)"`
 	TxPulseEnvlpID                    []uint32  `tiledb:"dtype=uint32,ftype=attr" filters:"zstd(level=16)"`
-	TxPulseEnvlpParam                 []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	TxPulseEnvlpParam                 []float64 `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
 	MaxPingRate                       []float64 `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
 	PingPeriod                        []float64 `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
-	Range                             []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
-	Power                             []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
-	Gain                              []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	Range                             []float64 `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
+	Power                             []float64 `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
+	Gain                              []float64 `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
 	ControlFlags                      []uint32  `tiledb:"dtype=uint32,ftype=attr" filters:"zstd(level=16)"`
 	ProjectorID                       []uint32  `tiledb:"dtype=uint32,ftype=attr" filters:"zstd(level=16)"`
-	ProjectorSteerAnglVert            []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
-	ProjectorSteerAnglHorz            []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	ProjectorSteerAnglVert            []float64 `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
+	ProjectorSteerAnglHorz            []float64 `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
 	ProjectorBeamWidthVert            []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
 	ProjectorBeamWidthHorz            []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
-	ProjectorBeamFocalPt              []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	ProjectorBeamFocalPt              []float64 `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
 	ProjectorBeamWeightingWindowType  []uint32  `tiledb:"dtype=uint32,ftype=attr" filters:"zstd(level=16)"`
 	ProjectorBeamWeightingWindowParam []uint32  `tiledb:"dtype=uint32,ftype=attr" filters:"zstd(level=16)"`
 	TransmitFlags                     []uint32  `tiledb:"dtype=uint32,ftype=attr" filters:"zstd(level=16)"`
@@ -1436,9 +1436,9 @@ type Reson7100 struct {
 	RangeFiltMax                      []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
 	DepthFiltMin                      []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
 	DepthFiltMax                      []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
-	Absorption                        []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	Absorption                        []float64 `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
 	SoundVelocity                     []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
-	Spreading                         []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	Spreading                         []float64 `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
 	RawDataFrom7027                   []uint8   `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
 	SvSource                          []uint8   `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
 	LayerCompFlag                     []uint8   `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
@@ -1503,25 +1503,25 @@ func DecodeReson7100Specific(reader *bytes.Reader) (sensor_data Reson7100) {
 	sensor_data.MinorSerialNumber = []uint32{buffer.MinorSerialNumber}
 	sensor_data.PingNumber = []uint32{buffer.PingNumber}
 	sensor_data.MultiPingSequence = []uint16{buffer.MultiPingSequence}
-	sensor_data.Frequency = []float32{float32(buffer.Frequency) / SCALE3}
-	sensor_data.SampleRate = []float32{float32(buffer.SampleRate) / 10_000.0}
-	sensor_data.ReceiverBandwidth = []float32{float32(buffer.ReceiverBandwidth) / 10_000.0}
-	sensor_data.TxPulseWidth = []float32{float32(buffer.TxPulseWidth) / SCALE1}
+	sensor_data.Frequency = []float64{float64(buffer.Frequency) / SCALE_3_F64}
+	sensor_data.SampleRate = []float64{float64(buffer.SampleRate) / SCALE_4_F64}
+	sensor_data.ReceiverBandwidth = []float64{float64(buffer.ReceiverBandwidth) / SCALE_4_F64}
+	sensor_data.TxPulseWidth = []float64{float64(buffer.TxPulseWidth) / SCALE_7_F64}
 	sensor_data.TxPulseTypeID = []uint32{buffer.TxPulseTypeID}
 	sensor_data.TxPulseEnvlpID = []uint32{buffer.TxPulseEnvlpID}
-	sensor_data.TxPulseEnvlpParam = []float32{float32(buffer.TxPulseEnvlpParam) / SCALE2}
-	sensor_data.MaxPingRate = []float64{float64(buffer.MaxPingRate) / 1_000_000.0}
-	sensor_data.PingPeriod = []float64{float64(buffer.PingPeriod) / 1_000_000.0}
-	sensor_data.Range = []float32{float32(buffer.Range) / SCALE2}
-	sensor_data.Power = []float32{float32(buffer.Power) / SCALE2}
-	sensor_data.Gain = []float32{float32(buffer.Gain) / SCALE2}
+	sensor_data.TxPulseEnvlpParam = []float64{float64(buffer.TxPulseEnvlpParam) / SCALE_2_F64}
+	sensor_data.MaxPingRate = []float64{float64(buffer.MaxPingRate) / SCALE_6_F64}
+	sensor_data.PingPeriod = []float64{float64(buffer.PingPeriod) / SCALE_6_F64}
+	sensor_data.Range = []float64{float64(buffer.Range) / SCALE_2_F64}
+	sensor_data.Power = []float64{float64(buffer.Power) / SCALE_2_F64}
+	sensor_data.Gain = []float64{float64(buffer.Gain) / SCALE_2_F64}
 	sensor_data.ControlFlags = []uint32{buffer.ControlFlags}
 	sensor_data.ProjectorID = []uint32{buffer.ProjectorID}
-	sensor_data.ProjectorSteerAnglVert = []float32{float32(buffer.ProjectorSteerAnglVert) / SCALE3}
-	sensor_data.ProjectorSteerAnglHorz = []float32{float32(buffer.ProjectorSteerAnglHorz) / SCALE3}
-	sensor_data.ProjectorBeamWidthVert = []float32{float32(buffer.ProjectorBeamWidthVert) / SCALE2}
-	sensor_data.ProjectorBeamWidthHorz = []float32{float32(buffer.ProjectorBeamWidthHorz) / SCALE2}
-	sensor_data.ProjectorBeamFocalPt = []float32{float32(buffer.ProjectorBeamFocalPt) / SCALE2}
+	sensor_data.ProjectorSteerAnglVert = []float64{float64(buffer.ProjectorSteerAnglVert) / SCALE_3_F64}
+	sensor_data.ProjectorSteerAnglHorz = []float64{float64(buffer.ProjectorSteerAnglHorz) / SCALE_3_F64}
+	sensor_data.ProjectorBeamWidthVert = []float32{float32(buffer.ProjectorBeamWidthVert) / SCALE_2_F32}
+	sensor_data.ProjectorBeamWidthHorz = []float32{float32(buffer.ProjectorBeamWidthHorz) / SCALE_2_F32}
+	sensor_data.ProjectorBeamFocalPt = []float64{float64(buffer.ProjectorBeamFocalPt) / SCALE_2_F64}
 	sensor_data.ProjectorBeamWeightingWindowType = []uint32{buffer.ProjectorBeamWeightingWindowType}
 	sensor_data.ProjectorBeamWeightingWindowParam = []uint32{buffer.ProjectorBeamWeightingWindowParam}
 	sensor_data.TransmitFlags = []uint32{buffer.TransmitFlags}
@@ -1529,14 +1529,14 @@ func DecodeReson7100Specific(reader *bytes.Reader) (sensor_data Reson7100) {
 	sensor_data.ReceivingBeamWeightingWindowType = []uint32{buffer.ReceivingBeamWeightingWindowType}
 	sensor_data.ReceivingBeamWeightingWindowParam = []uint32{buffer.ReceivingBeamWeightingWindowParam}
 	sensor_data.ReceiveFlags = []uint32{buffer.ReceiveFlags}
-	sensor_data.ReceiveBeamWidth = []float32{float32(buffer.ReceiveBeamWidth) / SCALE2}
-	sensor_data.RangeFiltMin = []float32{float32(buffer.RangeFiltMin) / 10.0}
-	sensor_data.RangeFiltMax = []float32{float32(buffer.RangeFiltMax) / 10.0}
-	sensor_data.DepthFiltMin = []float32{float32(buffer.DepthFiltMin) / 10.0}
-	sensor_data.DepthFiltMax = []float32{float32(buffer.DepthFiltMax) / 10.0}
-	sensor_data.Absorption = []float32{float32(buffer.Absorption) / SCALE3}
-	sensor_data.SoundVelocity = []float32{float32(buffer.SoundVelocity) / 10.0}
-	sensor_data.Spreading = []float32{float32(buffer.Spreading) / SCALE3}
+	sensor_data.ReceiveBeamWidth = []float32{float32(buffer.ReceiveBeamWidth) / SCALE_2_F32}
+	sensor_data.RangeFiltMin = []float32{float32(buffer.RangeFiltMin) / SCALE_1_F32}
+	sensor_data.RangeFiltMax = []float32{float32(buffer.RangeFiltMax) / SCALE_1_F32}
+	sensor_data.DepthFiltMin = []float32{float32(buffer.DepthFiltMin) / SCALE_1_F32}
+	sensor_data.DepthFiltMax = []float32{float32(buffer.DepthFiltMax) / SCALE_1_F32}
+	sensor_data.Absorption = []float64{float64(buffer.Absorption) / SCALE_3_F64}
+	sensor_data.SoundVelocity = []float32{float32(buffer.SoundVelocity) / SCALE_1_F32}
+	sensor_data.Spreading = []float64{float64(buffer.Spreading) / SCALE_3_F64}
 	sensor_data.RawDataFrom7027 = []uint8{buffer.RawDataFrom7027}
 	sensor_data.SvSource = []uint8{buffer.SvSource}
 	sensor_data.LayerCompFlag = []uint8{buffer.LayerCompFlag}
@@ -1549,10 +1549,10 @@ type Em3Raw struct {
 	PingCounter                       []uint16    `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
 	SerialNumber                      []uint16    `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
 	SurfaceVelocity                   []float32   `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
-	TransducerDepth                   []float32   `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	TransducerDepth                   []float64   `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
 	ValidDetections                   []uint16    `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
 	SamplingFrequency                 []float64   `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
-	VehicleDepth                      []float32   `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	VehicleDepth                      []float64   `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
 	DepthDifference                   []float32   `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
 	OffsetMultiplier                  []uint8     `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
 	TransmitSectors                   []uint16    `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
@@ -1560,10 +1560,10 @@ type Em3Raw struct {
 	FocusRange                        [][]float32 `tiledb:"dtype=float32,ftype=attr,var" filters:"zstd(level=16)"`
 	SignalLength                      [][]float64 `tiledb:"dtype=float64,ftype=attr,var" filters:"zstd(level=16)"`
 	TransmitDelay                     [][]float64 `tiledb:"dtype=float64,ftype=attr,var" filters:"zstd(level=16)"`
-	CenterFrequency                   [][]float32 `tiledb:"dtype=float32,ftype=attr,var" filters:"zstd(level=16)"`
+	CenterFrequency                   [][]float64 `tiledb:"dtype=float64,ftype=attr,var" filters:"zstd(level=16)"`
 	WaveformID                        [][]uint8   `tiledb:"dtype=uint8,ftype=attr,var" filters:"zstd(level=16)"`
 	SectorNumber                      [][]uint8   `tiledb:"dtype=uint8,ftype=attr,var" filters:"zstd(level=16)"`
-	SignalBandwidth                   [][]float32 `tiledb:"dtype=float32,ftype=attr,var" filters:"zstd(level=16)"`
+	SignalBandwidth                   [][]float64 `tiledb:"dtype=float64,ftype=attr,var" filters:"zstd(level=16)"`
 	RunTimeModelNumber                []uint16    `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
 	RunTimeDgTime                     []time.Time `tiledb:"dtype=time,ftype=attr" filters:"zstd(level=16)"`
 	RunTimePingCounter                []uint16    `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
@@ -1680,12 +1680,12 @@ func DecodeEm3RawSpecific(reader *bytes.Reader) (sensor_data Em3Raw) {
 	sensor_data.ModelNumber = []uint16{buffer.ModelNumber}
 	sensor_data.PingCounter = []uint16{buffer.PingCounter}
 	sensor_data.SerialNumber = []uint16{buffer.SerialNumber}
-	sensor_data.SurfaceVelocity = []float32{float32(buffer.SurfaceVelocity) / 10.0}
-	sensor_data.TransducerDepth = []float32{float32(buffer.TransducerDepth) / 20_000.0}
+	sensor_data.SurfaceVelocity = []float32{float32(buffer.SurfaceVelocity) / SCALE_1_F32}
+	sensor_data.TransducerDepth = []float64{float64(buffer.TransducerDepth) / 20_000.0}
 	sensor_data.ValidDetections = []uint16{buffer.ValidDetections}
 	sensor_data.SamplingFrequency = []float64{float64(buffer.SamplingFrequency1) + float64(buffer.SamplingFrequency2)/4_000_000_000.0}
-	sensor_data.VehicleDepth = []float32{float32(buffer.VehicleDepth) / SCALE3}
-	sensor_data.DepthDifference = []float32{float32(buffer.DepthDifference) / SCALE2}
+	sensor_data.VehicleDepth = []float64{float64(buffer.VehicleDepth) / SCALE_3_F64}
+	sensor_data.DepthDifference = []float32{float32(buffer.DepthDifference) / SCALE_2_F32}
 	sensor_data.OffsetMultiplier = []uint8{buffer.OffsetMultiplier}
 	sensor_data.TransmitSectors = []uint16{buffer.TransmitSectors}
 
@@ -1695,31 +1695,31 @@ func DecodeEm3RawSpecific(reader *bytes.Reader) (sensor_data Em3Raw) {
 	focus_range := make([]float32, 0, nsectors)
 	signal_length := make([]float64, 0, nsectors)
 	transmit_delay := make([]float64, 0, nsectors)
-	centre_frequency := make([]float32, 0, nsectors)
+	centre_frequency := make([]float64, 0, nsectors)
 	waveformID := make([]uint8, 0, nsectors)
 	sector_number := make([]uint8, 0, nsectors)
-	signal_bandwidth := make([]float32, 0, nsectors)
+	signal_bandwidth := make([]float64, 0, nsectors)
 
 	for i := 0; i < nsectors; i++ {
 		_ = binary.Read(reader, binary.BigEndian, &var_buff)
-		tilt_angle = append(tilt_angle, float32(var_buff.TiltAngle)/SCALE2)
-		focus_range = append(focus_range, float32(var_buff.FocusRange)/10.0)
-		signal_length = append(signal_length, float64(var_buff.SignalLength)/1_000_000.0)
-		transmit_delay = append(transmit_delay, float64(var_buff.TransmitDelay)/1_000_000.0)
-		centre_frequency = append(centre_frequency, float32(var_buff.CenterFrequency)/SCALE3)
+		tilt_angle = append(tilt_angle, float32(var_buff.TiltAngle)/SCALE_2_F32)
+		focus_range = append(focus_range, float32(var_buff.FocusRange)/SCALE_1_F32)
+		signal_length = append(signal_length, float64(var_buff.SignalLength)/SCALE_6_F64)
+		transmit_delay = append(transmit_delay, float64(var_buff.TransmitDelay)/SCALE_6_F64)
+		centre_frequency = append(centre_frequency, float64(var_buff.CenterFrequency)/SCALE_3_F64)
 		waveformID = append(waveformID, var_buff.WaveformID)
 		sector_number = append(sector_number, var_buff.SectorNumber)
-		signal_bandwidth = append(signal_bandwidth, float32(var_buff.SignalBandwidth)/SCALE3)
+		signal_bandwidth = append(signal_bandwidth, float64(var_buff.SignalBandwidth)/SCALE_3_F64)
 	}
 
 	sensor_data.TiltAngle = [][]float32{tilt_angle}
 	sensor_data.FocusRange = [][]float32{focus_range}
 	sensor_data.SignalLength = [][]float64{signal_length}
 	sensor_data.TransmitDelay = [][]float64{transmit_delay}
-	sensor_data.CenterFrequency = [][]float32{centre_frequency}
+	sensor_data.CenterFrequency = [][]float64{centre_frequency}
 	sensor_data.WaveformID = [][]uint8{waveformID}
 	sensor_data.SectorNumber = [][]uint8{sector_number}
-	sensor_data.SignalBandwidth = [][]float32{signal_bandwidth}
+	sensor_data.SignalBandwidth = [][]float64{signal_bandwidth}
 
 	// third block (runtime)
 	_ = binary.Read(reader, binary.BigEndian, &rt_buff)
@@ -1735,11 +1735,11 @@ func DecodeEm3RawSpecific(reader *bytes.Reader) (sensor_data Em3Raw) {
 	sensor_data.RunTimeFilterID = []uint8{rt_buff.RunTimeFilterID}
 	sensor_data.RunTimeMinDepth = []uint16{rt_buff.RunTimeMinDepth}
 	sensor_data.RunTimeMaxDepth = []uint16{rt_buff.RunTimeMaxDepth}
-	sensor_data.RunTimeAbsorption = []float32{float32(rt_buff.RunTimeAbsorption) / SCALE2}
+	sensor_data.RunTimeAbsorption = []float32{float32(rt_buff.RunTimeAbsorption) / SCALE_2_F32}
 	sensor_data.RunTimeTxPulseLength = []uint16{rt_buff.RunTimeTxPulseLength}
-	sensor_data.RunTimeTxBeamWidth = []float32{float32(rt_buff.RunTimeTxBeamWidth) / 10.0}
+	sensor_data.RunTimeTxBeamWidth = []float32{float32(rt_buff.RunTimeTxBeamWidth) / SCALE_1_F32}
 	sensor_data.RunTimeTxPowerReMax = []uint8{rt_buff.RunTimeTxPowerReMax}
-	sensor_data.RunTimeRxBeamWidth = []float32{float32(rt_buff.RunTimeRxBeamWidth) / 10.0}
+	sensor_data.RunTimeRxBeamWidth = []float32{float32(rt_buff.RunTimeRxBeamWidth) / SCALE_1_F32}
 	sensor_data.RunTimeRxBandwidth = []float32{float32(rt_buff.RunTimeRxBandwidth) * 50.0}
 	sensor_data.RunTimeRxFixedGain = []uint8{rt_buff.RunTimeRxFixedGain}
 	sensor_data.RunTimeTvgCrossOverAngle = []uint8{rt_buff.RunTimeTvgCrossOverAngle}
@@ -1754,7 +1754,7 @@ func DecodeEm3RawSpecific(reader *bytes.Reader) (sensor_data Em3Raw) {
 	switch rt_buff.RunTimeModelNumber {
 	case 1002:
 		_ = binary.Read(reader, binary.BigEndian, &RunTimeDurotongSpeed)
-		sensor_data.RunTimeDurotongSpeed = []float32{float32(RunTimeDurotongSpeed) / 10.0}
+		sensor_data.RunTimeDurotongSpeed = []float32{float32(RunTimeDurotongSpeed) / SCALE_1_F32}
 		sensor_data.RunTimeTxAlongTilt = []float32{NULL_FLOAT32_ZERO}
 	case 300:
 		sensor_data.RunTimeDurotongSpeed = []float32{NULL_FLOAT32_ZERO}
@@ -1765,7 +1765,7 @@ func DecodeEm3RawSpecific(reader *bytes.Reader) (sensor_data Em3Raw) {
 	case 3020:
 		sensor_data.RunTimeDurotongSpeed = []float32{NULL_FLOAT32_ZERO}
 		_ = binary.Read(reader, binary.BigEndian, &RunTimeTxAlongTilt)
-		sensor_data.RunTimeTxAlongTilt = []float32{float32(RunTimeTxAlongTilt) / SCALE2}
+		sensor_data.RunTimeTxAlongTilt = []float32{float32(RunTimeTxAlongTilt) / SCALE_2_F32}
 	default:
 		_ = binary.Read(reader, binary.BigEndian, &Spare)
 	}
@@ -1786,7 +1786,7 @@ func DecodeEm3RawSpecific(reader *bytes.Reader) (sensor_data Em3Raw) {
 	sensor_data.PuStatusSensorStatus = []uint16{pu_buff.PuStatusSensorStatus}
 	sensor_data.PuStatusAchievedPortCoverage = []uint8{pu_buff.PuStatusAchievedPortCoverage}
 	sensor_data.PuStatusAchievedStarboardCoverage = []uint8{pu_buff.PuStatusAchievedStarboardCoverage}
-	sensor_data.PuStatusYawStabilization = []float32{float32(pu_buff.PuStatusYawStabilization) / SCALE2}
+	sensor_data.PuStatusYawStabilization = []float32{float32(pu_buff.PuStatusYawStabilization) / SCALE_2_F32}
 
 	return sensor_data
 }
@@ -1815,7 +1815,7 @@ type DeltaT struct {
 	NumberPingsAveraged  []uint8
 	CenterPingTimeOffset []float32
 	UserDefinedByte      []uint8
-	Altitude             []float32
+	Altitude             []float64
 	ExternalSensorFlags  []uint8
 	PulseLength          []float64
 	ForeAftBeamwidth     []float32
@@ -1863,23 +1863,28 @@ func DecodeDeltaTSpecific(reader *bytes.Reader) (sensor_data DeltaT) {
 	sensor_data.InterrogationTime = []time.Time{time.Unix(int64(buffer.TvSec), int64(buffer.TvNsec)).UTC()}
 	sensor_data.SamplesPerBeam = []uint16{buffer.SamplesPerBeam}
 	sensor_data.SectorSize = []uint16{buffer.SectorSize}
-	sensor_data.StartAngle = []float32{(float32(buffer.StartAngle) / SCALE2) - 180.0}
-	sensor_data.AngleIncrement = []float32{float32(buffer.AngleIncrement) / SCALE2}
+	sensor_data.StartAngle = []float32{(float32(buffer.StartAngle) / SCALE_2_F32) - 180.0}
+	sensor_data.AngleIncrement = []float32{float32(buffer.AngleIncrement) / SCALE_2_F32}
 	sensor_data.AcousticRange = []uint16{buffer.AcousticRange}
 	sensor_data.AcousticFrequency = []uint16{buffer.AcousticFrequency}
-	sensor_data.SoundVelocity = []float32{float32(buffer.SoundVelocity) / 10.0}
+	sensor_data.SoundVelocity = []float32{float32(buffer.SoundVelocity) / SCALE_1_F32}
 	sensor_data.RangeResolution = []uint16{buffer.RangeResolution}
 	sensor_data.ProfileTiltAngle = []float32{float32(buffer.ProfileTiltAngle) - 180.0}
 	sensor_data.RepetitionRate = []uint16{buffer.RepetitionRate}
 	sensor_data.PingNumber = []uint32{buffer.PingNumber}
 	sensor_data.IntensityFlag = []uint8{buffer.IntensityFlag}
-	sensor_data.PingLatency = []float32{float32(buffer.PingLatency) / 10_000.0}
+	sensor_data.PingLatency = []float32{float32(buffer.PingLatency) / SCALE_4_F32}
+	sensor_data.DataLatency = []float32{float32(buffer.DataLatency) / SCALE_4_F32}
+	sensor_data.SampleRateFlag = []uint8{buffer.SampleRateFlag}
+	sensor_data.OptionsFlag = []uint8{buffer.OptionsFlag}
+	sensor_data.NumberPingsAveraged = []uint8{buffer.NumberPingsAveraged}
+	sensor_data.CenterPingTimeOffset = []float32{float32(buffer.CenterPingTimeOffset) / SCALE_4_F32}
 	sensor_data.UserDefinedByte = []uint8{buffer.UserDefinedByte}
-	sensor_data.Altitude = []float32{float32(buffer.Altitude) / SCALE2}
+	sensor_data.Altitude = []float64{float64(buffer.Altitude) / SCALE_2_F64}
 	sensor_data.ExternalSensorFlags = []uint8{buffer.ExternalSensorFlags}
-	sensor_data.PulseLength = []float64{float64(buffer.PulseLength) / 1_000_000.0}
-	sensor_data.ForeAftBeamwidth = []float32{float32(buffer.ForeAftBeamwidth) / 10.0}
-	sensor_data.AthwartBeamwidth = []float32{float32(buffer.AthwartBeamwidth) / 10.0}
+	sensor_data.PulseLength = []float64{float64(buffer.PulseLength) / SCALE_6_F64}
+	sensor_data.ForeAftBeamwidth = []float32{float32(buffer.ForeAftBeamwidth) / SCALE_1_F32}
+	sensor_data.AthwartBeamwidth = []float32{float32(buffer.AthwartBeamwidth) / SCALE_1_F32}
 
 	return sensor_data
 }
@@ -1890,21 +1895,21 @@ type R2Sonic struct {
 	DgTime           []time.Time
 	PingNumber       []uint32
 	PingPeriod       []float64
-	SoundSpeed       []float32
-	Frequency        []float32
-	TxPower          []float32
+	SoundSpeed       []float64
+	Frequency        []float64
+	TxPower          []float64
 	TxPulseWidth     []float64
 	TxBeamWidthVert  []float64
 	TxBeamWidthHoriz []float64
 	TxSteeringVert   []float64
 	TxSteeringHoriz  []float64
 	TxMiscInfo       []uint32
-	RxBandwidth      []float32
-	RxSampleRate     []float32
+	RxBandwidth      []float64
+	RxSampleRate     []float64
 	RxRange          []float64
-	RxGain           []float32
-	RxSpreading      []float32
-	RxAbsorption     []float32
+	RxGain           []float64
+	RxSpreading      []float64
+	RxAbsorption     []float64
 	RxMountTilt      []float64
 	RxMiscInfo       []uint32
 	NumberBeams      []uint16
@@ -1962,23 +1967,23 @@ func DecodeR2SonicSpecific(reader *bytes.Reader) (sensor_data R2Sonic) {
 	sensor_data.SerialNumber = []string{string(buffer1.SerialNumber[:])}
 	sensor_data.DgTime = []time.Time{time.Unix(int64(buffer1.TvSec), int64(buffer1.TvNsec)).UTC()}
 	sensor_data.PingNumber = []uint32{buffer1.PingNumber}
-	sensor_data.PingPeriod = []float64{float64(buffer1.PingPeriod) / 1_000_000.0}
-	sensor_data.SoundSpeed = []float32{float32(buffer1.SoundSpeed) / SCALE2}
-	sensor_data.Frequency = []float32{float32(buffer1.Frequency) / SCALE3}
-	sensor_data.TxPower = []float32{float32(buffer1.TxPower) / SCALE2}
-	sensor_data.TxPulseWidth = []float64{float64(buffer1.TxPulseWidth) / 10_000_000.0}
-	sensor_data.TxBeamWidthVert = []float64{float64(buffer1.TxBeamWidthVert) / 1_000_000.0}
-	sensor_data.TxBeamWidthHoriz = []float64{float64(buffer1.TxBeamWidthHoriz) / 1_000_000.0}
-	sensor_data.TxSteeringVert = []float64{float64(buffer1.TxSteeringVert) / 1_000_000.0}
-	sensor_data.TxSteeringHoriz = []float64{float64(buffer1.TxSteeringHoriz) / 1_000_000.0}
+	sensor_data.PingPeriod = []float64{float64(buffer1.PingPeriod) / SCALE_6_F64}
+	sensor_data.SoundSpeed = []float64{float64(buffer1.SoundSpeed) / SCALE_2_F64}
+	sensor_data.Frequency = []float64{float64(buffer1.Frequency) / SCALE_3_F64}
+	sensor_data.TxPower = []float64{float64(buffer1.TxPower) / SCALE_2_F64}
+	sensor_data.TxPulseWidth = []float64{float64(buffer1.TxPulseWidth) / SCALE_7_F64}
+	sensor_data.TxBeamWidthVert = []float64{float64(buffer1.TxBeamWidthVert) / SCALE_6_F64}
+	sensor_data.TxBeamWidthHoriz = []float64{float64(buffer1.TxBeamWidthHoriz) / SCALE_6_F64}
+	sensor_data.TxSteeringVert = []float64{float64(buffer1.TxSteeringVert) / SCALE_6_F64}
+	sensor_data.TxSteeringHoriz = []float64{float64(buffer1.TxSteeringHoriz) / SCALE_6_F64}
 	sensor_data.TxMiscInfo = []uint32{buffer1.TxMiscInfo}
-	sensor_data.RxBandwidth = []float32{float32(buffer1.RxBandwidth) / 10_000.0}
-	sensor_data.RxSampleRate = []float32{float32(buffer1.RxSampleRate) / SCALE3}
-	sensor_data.RxRange = []float64{float64(buffer1.RxRange) / 100_000.0}
-	sensor_data.RxGain = []float32{float32(buffer1.RxGain) / SCALE2}
-	sensor_data.RxSpreading = []float32{float32(buffer1.RxSpreading) / SCALE3}
-	sensor_data.RxAbsorption = []float32{float32(buffer1.RxAbsorption) / SCALE3}
-	sensor_data.RxMountTilt = []float64{float64(buffer1.RxMountTilt) / 1_000_000.0}
+	sensor_data.RxBandwidth = []float64{float64(buffer1.RxBandwidth) / SCALE_4_F64}
+	sensor_data.RxSampleRate = []float64{float64(buffer1.RxSampleRate) / SCALE_3_F64}
+	sensor_data.RxRange = []float64{float64(buffer1.RxRange) / SCALE_5_F64}
+	sensor_data.RxGain = []float64{float64(buffer1.RxGain) / SCALE_2_F64}
+	sensor_data.RxSpreading = []float64{float64(buffer1.RxSpreading) / SCALE_3_F64}
+	sensor_data.RxAbsorption = []float64{float64(buffer1.RxAbsorption) / SCALE_3_F64}
+	sensor_data.RxMountTilt = []float64{float64(buffer1.RxMountTilt) / SCALE_6_F64}
 	sensor_data.RxMiscInfo = []uint32{buffer1.RxMiscInfo}
 	sensor_data.NumberBeams = []uint16{buffer1.NumberBeams}
 
@@ -1988,8 +1993,8 @@ func DecodeR2SonicSpecific(reader *bytes.Reader) (sensor_data R2Sonic) {
 	A2MoreInfo := make([]float64, 0, 6)
 
 	for i := 0; i < 6; i++ {
-		A0MoreInfo = append(A0MoreInfo, float64(var_buf.A0MoreInfo[i])/1_000_000.0)
-		A2MoreInfo = append(A2MoreInfo, float64(var_buf.A2MoreInfo[i])/1_000_000.0)
+		A0MoreInfo = append(A0MoreInfo, float64(var_buf.A0MoreInfo[i])/SCALE_6_F64)
+		A2MoreInfo = append(A2MoreInfo, float64(var_buf.A2MoreInfo[i])/SCALE_6_F64)
 	}
 
 	sensor_data.A0MoreInfo = [][]float64{A0MoreInfo}
@@ -1997,9 +2002,9 @@ func DecodeR2SonicSpecific(reader *bytes.Reader) (sensor_data R2Sonic) {
 
 	// block three
 	_ = binary.Read(reader, binary.BigEndian, &buffer2)
-	sensor_data.G0DepthGateMin = []float64{float64(buffer2.G0DepthGateMin) / 1_000_000.0}
-	sensor_data.G0DepthGateMax = []float64{float64(buffer2.G0DepthGateMax) / 1_000_000.0}
-	sensor_data.G0DepthGateSlope = []float64{float64(buffer2.G0DepthGateSlope) / 1_000_000.0}
+	sensor_data.G0DepthGateMin = []float64{float64(buffer2.G0DepthGateMin) / SCALE_6_F64}
+	sensor_data.G0DepthGateMax = []float64{float64(buffer2.G0DepthGateMax) / SCALE_6_F64}
+	sensor_data.G0DepthGateSlope = []float64{float64(buffer2.G0DepthGateSlope) / SCALE_6_F64}
 
 	return sensor_data
 }
@@ -2013,26 +2018,26 @@ type ResonTSeries struct {
 	MinorSerialNumber                 []uint32
 	PingNumber                        []uint32
 	MultiPingSequence                 []uint16
-	Frequency                         []float32
-	SampleRate                        []float32
-	ReceiverBandwidth                 []float32
+	Frequency                         []float64
+	SampleRate                        []float64
+	ReceiverBandwidth                 []float64
 	TxPulseWidth                      []float64
 	TxPulseTypeID                     []uint32
 	TxPulseEnvlpID                    []uint32
-	TxPulseEnvlpParam                 []float32
+	TxPulseEnvlpParam                 []float64
 	TxPulseMode                       []uint16
 	MaxPingRate                       []float64
 	PingPeriod                        []float64
-	Range                             []float32
-	Power                             []float32
-	Gain                              []float32
+	Range                             []float64
+	Power                             []float64
+	Gain                              []float64
 	ControlFlags                      []uint32
 	ProjectorID                       []uint32
-	ProjectorSteerAnglVert            []float32
-	ProjectorSteerAnglHorz            []float32
+	ProjectorSteerAnglVert            []float64
+	ProjectorSteerAnglHorz            []float64
 	ProjectorBeamWidthVert            []float32
 	ProjectorBeamWidthHorz            []float32
-	ProjectorBeamFocalPt              []float32
+	ProjectorBeamFocalPt              []float64
 	ProjectorBeamWeightingWindowType  []uint32
 	ProjectorBeamWeightingWindowParam []uint32
 	TransmitFlags                     []uint32
@@ -2040,23 +2045,23 @@ type ResonTSeries struct {
 	ReceivingBeamWeightingWindowType  []uint32
 	ReceivingBeamWeightingWindowParam []uint32
 	ReceiveFlags                      []uint32
-	ReceiveBeamWidth                  []float32
-	RangeFiltMin                      []float32
-	RangeFiltMax                      []float32
-	DepthFiltMin                      []float32
-	DepthFiltMax                      []float32
-	Absorption                        []float32
+	ReceiveBeamWidth                  []float64
+	RangeFiltMin                      []float64
+	RangeFiltMax                      []float64
+	DepthFiltMin                      []float64
+	DepthFiltMax                      []float64
+	Absorption                        []float64
 	SoundVelocity                     []float64
 	SvSource                          []uint8
-	Spreading                         []float32
+	Spreading                         []float64
 	BeamSpacingMode                   []uint16
 	SonarSourceMode                   []uint16
 	CoverageMode                      []uint8
-	CoverageAngle                     []float32
-	HorizontalReceiverSteeringAngle   []float32
+	CoverageAngle                     []float64
+	HorizontalReceiverSteeringAngle   []float64
 	UncertaintyType                   []uint32
-	TransmitterSteeringAngle          []float32
-	AppliedRoll                       []float32
+	TransmitterSteeringAngle          []float64
+	AppliedRoll                       []float64
 	DetectionAlgorithm                []uint16
 	DetectionFlags                    []uint32
 	DeviceDescription                 []string
@@ -2136,26 +2141,26 @@ func DecodeResonTSeriesSonicSpecific(reader *bytes.Reader) (sensor_data ResonTSe
 	sensor_data.MinorSerialNumber = []uint32{buffer.MinorSerialNumber}
 	sensor_data.PingNumber = []uint32{buffer.PingNumber}
 	sensor_data.MultiPingSequence = []uint16{buffer.MultiPingSequence}
-	sensor_data.Frequency = []float32{float32(buffer.Frequency) / SCALE3}
-	sensor_data.SampleRate = []float32{float32(buffer.SampleRate) / 10_000.0}
-	sensor_data.ReceiverBandwidth = []float32{float32(buffer.ReceiverBandwidth) / 10_000.0}
-	sensor_data.TxPulseWidth = []float64{float64(buffer.TxPulseWidth) / 10_000_000.0}
+	sensor_data.Frequency = []float64{float64(buffer.Frequency) / SCALE_3_F64}
+	sensor_data.SampleRate = []float64{float64(buffer.SampleRate) / SCALE_4_F64}
+	sensor_data.ReceiverBandwidth = []float64{float64(buffer.ReceiverBandwidth) / SCALE_4_F64}
+	sensor_data.TxPulseWidth = []float64{float64(buffer.TxPulseWidth) / SCALE_7_F64}
 	sensor_data.TxPulseTypeID = []uint32{buffer.TxPulseTypeID}
 	sensor_data.TxPulseEnvlpID = []uint32{buffer.TxPulseEnvlpID}
-	sensor_data.TxPulseEnvlpParam = []float32{float32(buffer.TxPulseEnvlpParam) / SCALE2}
+	sensor_data.TxPulseEnvlpParam = []float64{float64(buffer.TxPulseEnvlpParam) / SCALE_2_F64}
 	sensor_data.TxPulseMode = []uint16{buffer.TxPulseMode}
-	sensor_data.MaxPingRate = []float64{float64(buffer.MaxPingRate) / 1_000_000.0}
-	sensor_data.PingPeriod = []float64{float64(buffer.PingPeriod) / 1_000_000.0}
-	sensor_data.Range = []float32{float32(buffer.Range) / SCALE2}
-	sensor_data.Power = []float32{float32(buffer.Power) / SCALE2}
-	sensor_data.Gain = []float32{float32(buffer.Gain) / SCALE2}
+	sensor_data.MaxPingRate = []float64{float64(buffer.MaxPingRate) / SCALE_6_F64}
+	sensor_data.PingPeriod = []float64{float64(buffer.PingPeriod) / SCALE_6_F64}
+	sensor_data.Range = []float64{float64(buffer.Range) / SCALE_2_F64}
+	sensor_data.Power = []float64{float64(buffer.Power) / SCALE_2_F64}
+	sensor_data.Gain = []float64{float64(buffer.Gain) / SCALE_2_F64}
 	sensor_data.ControlFlags = []uint32{buffer.ControlFlags}
 	sensor_data.ProjectorID = []uint32{buffer.ProjectorID}
-	sensor_data.ProjectorSteerAnglVert = []float32{float32(buffer.ProjectorSteerAnglVert) / SCALE3}
-	sensor_data.ProjectorSteerAnglHorz = []float32{float32(buffer.ProjectorSteerAnglHorz) / SCALE3}
-	sensor_data.ProjectorBeamWidthVert = []float32{float32(buffer.ProjectorBeamWidthVert) / SCALE2}
-	sensor_data.ProjectorBeamWidthHorz = []float32{float32(buffer.ProjectorBeamWidthHorz) / SCALE2}
-	sensor_data.ProjectorBeamFocalPt = []float32{float32(buffer.ProjectorBeamFocalPt) / SCALE2}
+	sensor_data.ProjectorSteerAnglVert = []float64{float64(buffer.ProjectorSteerAnglVert) / SCALE_3_F64}
+	sensor_data.ProjectorSteerAnglHorz = []float64{float64(buffer.ProjectorSteerAnglHorz) / SCALE_3_F64}
+	sensor_data.ProjectorBeamWidthVert = []float32{float32(buffer.ProjectorBeamWidthVert) / SCALE_2_F32}
+	sensor_data.ProjectorBeamWidthHorz = []float32{float32(buffer.ProjectorBeamWidthHorz) / SCALE_2_F32}
+	sensor_data.ProjectorBeamFocalPt = []float64{float64(buffer.ProjectorBeamFocalPt) / SCALE_2_F64}
 	sensor_data.ProjectorBeamWeightingWindowType = []uint32{buffer.ProjectorBeamWeightingWindowType}
 	sensor_data.ProjectorBeamWeightingWindowParam = []uint32{buffer.ProjectorBeamWeightingWindowParam}
 	sensor_data.TransmitFlags = []uint32{buffer.TransmitFlags}
@@ -2163,30 +2168,30 @@ func DecodeResonTSeriesSonicSpecific(reader *bytes.Reader) (sensor_data ResonTSe
 	sensor_data.ReceivingBeamWeightingWindowType = []uint32{buffer.ReceivingBeamWeightingWindowType}
 	sensor_data.ReceivingBeamWeightingWindowParam = []uint32{buffer.ReceivingBeamWeightingWindowParam}
 	sensor_data.ReceiveFlags = []uint32{buffer.ReceiveFlags}
-	sensor_data.ReceiveBeamWidth = []float32{float32(buffer.ReceiveBeamWidth) / SCALE2}
-	sensor_data.RangeFiltMin = []float32{float32(buffer.RangeFiltMin) / 10.0}
-	sensor_data.RangeFiltMax = []float32{float32(buffer.RangeFiltMax) / 10.0}
-	sensor_data.DepthFiltMin = []float32{float32(buffer.DepthFiltMin) / 10.0}
-	sensor_data.DepthFiltMax = []float32{float32(buffer.DepthFiltMax) / 10.0}
-	sensor_data.Absorption = []float32{float32(buffer.Absorption) / SCALE3}
-	sensor_data.SoundVelocity = []float64{float64(buffer.SoundVelocity) / 10.0}
+	sensor_data.ReceiveBeamWidth = []float64{float64(buffer.ReceiveBeamWidth) / SCALE_2_F64}
+	sensor_data.RangeFiltMin = []float64{float64(buffer.RangeFiltMin) / SCALE_1_F64}
+	sensor_data.RangeFiltMax = []float64{float64(buffer.RangeFiltMax) / SCALE_1_F64}
+	sensor_data.DepthFiltMin = []float64{float64(buffer.DepthFiltMin) / SCALE_1_F64}
+	sensor_data.DepthFiltMax = []float64{float64(buffer.DepthFiltMax) / SCALE_1_F64}
+	sensor_data.Absorption = []float64{float64(buffer.Absorption) / SCALE_3_F64}
+	sensor_data.SoundVelocity = []float64{float64(buffer.SoundVelocity) / SCALE_1_F64}
 	sensor_data.SvSource = []uint8{buffer.SvSource}
-	sensor_data.Spreading = []float32{float32(buffer.Spreading) / SCALE3}
+	sensor_data.Spreading = []float64{float64(buffer.Spreading) / SCALE_3_F64}
 	sensor_data.BeamSpacingMode = []uint16{buffer.BeamSpacingMode}
 	sensor_data.SonarSourceMode = []uint16{buffer.SonarSourceMode}
 	sensor_data.CoverageMode = []uint8{buffer.CoverageMode}
-	sensor_data.CoverageAngle = []float32{float32(buffer.CoverageAngle) / SCALE2}
-	sensor_data.HorizontalReceiverSteeringAngle = []float32{float32(buffer.HorizontalReceiverSteeringAngle) / SCALE2}
+	sensor_data.CoverageAngle = []float64{float64(buffer.CoverageAngle) / SCALE_2_F64}
+	sensor_data.HorizontalReceiverSteeringAngle = []float64{float64(buffer.HorizontalReceiverSteeringAngle) / SCALE_2_F64}
 	sensor_data.UncertaintyType = []uint32{buffer.UncertaintyType}
-	sensor_data.TransmitterSteeringAngle = []float32{float32(buffer.TransmitterSteeringAngle) / 100_000.0}
-	sensor_data.AppliedRoll = []float32{float32(buffer.AppliedRoll) / 100_000.0}
+	sensor_data.TransmitterSteeringAngle = []float64{float64(buffer.TransmitterSteeringAngle) / SCALE_5_F64}
+	sensor_data.AppliedRoll = []float64{float64(buffer.AppliedRoll) / SCALE_5_F64}
 	sensor_data.DetectionAlgorithm = []uint16{buffer.DetectionAlgorithm}
 	sensor_data.DetectionFlags = []uint32{buffer.DetectionFlags}
 	sensor_data.DeviceDescription = []string{string(buffer.DeviceDescription[:])}
 
 	// higher precision sound velocity
 	if buffer.SoundVelocity2 > 0 {
-		sensor_data.SoundVelocity = []float64{float64(buffer.SoundVelocity2) / 1_000_000.0}
+		sensor_data.SoundVelocity = []float64{float64(buffer.SoundVelocity2) / SCALE_6_F64}
 	}
 
 	return sensor_data
@@ -2415,7 +2420,7 @@ func DecodeKmallSpecific(reader *bytes.Reader) (sensor_data Kmall) {
 	// block three (ping data)
 	_ = binary.Read(reader, binary.BigEndian, &cmn_buf)
 	sensor_data.NumBytesInfoData = []uint16{ping_buf.NumBytesInfoData}
-	sensor_data.PingRateHz = []float64{float64(ping_buf.PingRateHz) / 100_000.0}
+	sensor_data.PingRateHz = []float64{float64(ping_buf.PingRateHz) / SCALE_5_F64}
 	sensor_data.BeamSpacing = []uint8{ping_buf.BeamSpacing}
 	sensor_data.DepthMode = []uint8{ping_buf.DepthMode}
 	sensor_data.SubDepthMode = []uint8{ping_buf.SubDepthMode}
@@ -2423,41 +2428,41 @@ func DecodeKmallSpecific(reader *bytes.Reader) (sensor_data Kmall) {
 	sensor_data.DetectionMode = []uint8{ping_buf.DetectionMode}
 	sensor_data.PulseForm = []uint8{ping_buf.PulseForm}
 	sensor_data.FrequencyModeHz = []int32{ping_buf.FrequencyModeHz}
-	sensor_data.FrequencyRangeLowLimHz = []float64{float64(ping_buf.FrequencyRangeLowLimHz) / 1_000.0}
-	sensor_data.FrequencyRangeHighLimHz = []float64{float64(ping_buf.FrequencyRangeHighLimHz) / 1_000.0}
-	sensor_data.MaxTotalTxPulseLengthSector = []float64{float64(ping_buf.MaxTotalTxPulseLengthSector) / 1_000_000.0}
-	sensor_data.MaxEffectiveTxPulseLengthSector = []float64{float64(ping_buf.MaxEffectiveTxPulseLengthSector) / 1_000_0.0}
-	sensor_data.MaxEffectiveTxBandWidthHz = []float64{float64(ping_buf.MaxEffectiveTxBandWidthHz) / 1_000.0}
-	sensor_data.AbsCoeffDbPerKm = []float64{float64(ping_buf.AbsCoeffDbPerKm) / 1_000.0}
-	sensor_data.PortSectorEdgeDeg = []float32{float32(ping_buf.PortSectorEdgeDeg) / SCALE2}
-	sensor_data.StarboardSectorEdgeDeg = []float32{float32(ping_buf.StarboardSectorEdgeDeg) / SCALE2}
-	sensor_data.PortMeanCoverageDeg = []float32{float32(ping_buf.PortMeanCoverageDeg) / SCALE2}
-	sensor_data.StarboardMeanCoverageDeg = []float32{float32(ping_buf.StarboardMeanCoverageDeg) / SCALE2}
+	sensor_data.FrequencyRangeLowLimHz = []float64{float64(ping_buf.FrequencyRangeLowLimHz) / SCALE_3_F64}
+	sensor_data.FrequencyRangeHighLimHz = []float64{float64(ping_buf.FrequencyRangeHighLimHz) / SCALE_3_F64}
+	sensor_data.MaxTotalTxPulseLengthSector = []float64{float64(ping_buf.MaxTotalTxPulseLengthSector) / SCALE_6_F64}
+	sensor_data.MaxEffectiveTxPulseLengthSector = []float64{float64(ping_buf.MaxEffectiveTxPulseLengthSector) / SCALE_6_F64}
+	sensor_data.MaxEffectiveTxBandWidthHz = []float64{float64(ping_buf.MaxEffectiveTxBandWidthHz) / SCALE_3_F64}
+	sensor_data.AbsCoeffDbPerKm = []float64{float64(ping_buf.AbsCoeffDbPerKm) / SCALE_3_F64}
+	sensor_data.PortSectorEdgeDeg = []float32{float32(ping_buf.PortSectorEdgeDeg) / SCALE_2_F32}
+	sensor_data.StarboardSectorEdgeDeg = []float32{float32(ping_buf.StarboardSectorEdgeDeg) / SCALE_2_F32}
+	sensor_data.PortMeanCoverageDeg = []float32{float32(ping_buf.PortMeanCoverageDeg) / SCALE_2_F32}
+	sensor_data.StarboardMeanCoverageDeg = []float32{float32(ping_buf.StarboardMeanCoverageDeg) / SCALE_2_F32}
 	sensor_data.PortMeanCoverageMetres = []int16{ping_buf.PortMeanCoverageMetres}
 	sensor_data.StarboardMeanCoverageMetres = []int16{ping_buf.StarboardMeanCoverageMetres}
 	sensor_data.ModeAndStabilisation = []uint8{ping_buf.ModeAndStabilisation}
 	sensor_data.RunTimeFilter1 = []uint8{ping_buf.RunTimeFilter1}
 	sensor_data.RunTimeFilter2 = []uint8{ping_buf.RunTimeFilter2}
 	sensor_data.PipeTrackingStatus = []uint32{ping_buf.PipeTrackingStatus}
-	sensor_data.TransmitArraySizeUsedDeg = []float32{float32(ping_buf.TransmitArraySizeUsedDeg) / SCALE3}
-	sensor_data.ReceiveArraySizeUsedDeg = []float32{float32(ping_buf.ReceiveArraySizeUsedDeg) / SCALE3}
-	sensor_data.TransmitPowerDb = []float32{float32(ping_buf.TransmitPowerDb) / SCALE2}
+	sensor_data.TransmitArraySizeUsedDeg = []float32{float32(ping_buf.TransmitArraySizeUsedDeg) / SCALE_3_F32}
+	sensor_data.ReceiveArraySizeUsedDeg = []float32{float32(ping_buf.ReceiveArraySizeUsedDeg) / SCALE_3_F32}
+	sensor_data.TransmitPowerDb = []float32{float32(ping_buf.TransmitPowerDb) / SCALE_2_F32}
 	sensor_data.SlRampUpTimeRemaining = []uint16{ping_buf.SlRampUpTimeRemaining}
-	sensor_data.YawAngleDeg = []float64{float64(ping_buf.YawAngleDeg) / 1_000_000.0}
+	sensor_data.YawAngleDeg = []float64{float64(ping_buf.YawAngleDeg) / SCALE_6_F64}
 	sensor_data.NumTxSectors = []uint16{ping_buf.NumTxSectors}
 	sensor_data.NumBytesPerTxSector = []uint16{ping_buf.NumBytesPerTxSector}
-	sensor_data.HeadingVesselDeg = []float64{float64(ping_buf.HeadingVesselDeg) / 1_000_000.0}
-	sensor_data.SoundSpeedAtTxDepthMetresPerSecond = []float64{float64(ping_buf.SoundSpeedAtTxDepthMetresPerSecond) / 1_000_000.0}
-	sensor_data.TxTransducerDepthMetres = []float64{float64(ping_buf.TxTransducerDepthMetres) / 1_000_000.0}
-	sensor_data.ZwaterLevelReRefPointMetres = []float64{float64(ping_buf.ZwaterLevelReRefPointMetres) / 1_000_000.0}
-	sensor_data.XKmallToAllMetres = []float64{float64(ping_buf.XKmallToAllMetres) / 1_000_000.0}
-	sensor_data.YKmallToAllMetres = []float64{float64(ping_buf.YKmallToAllMetres) / 1_000_000.0}
+	sensor_data.HeadingVesselDeg = []float64{float64(ping_buf.HeadingVesselDeg) / SCALE_6_F64}
+	sensor_data.SoundSpeedAtTxDepthMetresPerSecond = []float64{float64(ping_buf.SoundSpeedAtTxDepthMetresPerSecond) / SCALE_6_F64}
+	sensor_data.TxTransducerDepthMetres = []float64{float64(ping_buf.TxTransducerDepthMetres) / SCALE_6_F64}
+	sensor_data.ZwaterLevelReRefPointMetres = []float64{float64(ping_buf.ZwaterLevelReRefPointMetres) / SCALE_6_F64}
+	sensor_data.XKmallToAllMetres = []float64{float64(ping_buf.XKmallToAllMetres) / SCALE_6_F64}
+	sensor_data.YKmallToAllMetres = []float64{float64(ping_buf.YKmallToAllMetres) / SCALE_6_F64}
 	sensor_data.LatLonInfo = []uint8{ping_buf.LatLonInfo}
 	sensor_data.PositionSensorStatus = []uint8{ping_buf.PositionSensorStatus}
 	sensor_data.AttitudeSensorStatus = []uint8{ping_buf.AttitudeSensorStatus}
-	sensor_data.LatitudeDeg = []float64{float64(ping_buf.LatitudeDeg) / 10_000_000.0}
-	sensor_data.LongitudeDeg = []float64{float64(ping_buf.LongitudeDeg) / 10_000_000.0}
-	sensor_data.EllipsoidHeightReRefPointMetres = []float64{float64(ping_buf.EllipsoidHeightReRefPointMetres) / 1_000.0}
+	sensor_data.LatitudeDeg = []float64{float64(ping_buf.LatitudeDeg) / SCALE_7_F64}
+	sensor_data.LongitudeDeg = []float64{float64(ping_buf.LongitudeDeg) / SCALE_7_F64}
+	sensor_data.EllipsoidHeightReRefPointMetres = []float64{float64(ping_buf.EllipsoidHeightReRefPointMetres) / SCALE_3_F64}
 
 	// block four (sector specific info)
 	nsectors := int(ping_buf.NumTxSectors)
@@ -2479,13 +2484,13 @@ func DecodeKmallSpecific(reader *bytes.Reader) (sensor_data Kmall) {
 		TxSectorNumber = append(TxSectorNumber, sec_buf.TxSectorNumber)
 		TxArrayNumber = append(TxArrayNumber, sec_buf.TxArrayNumber)
 		TxSubArray = append(TxSubArray, sec_buf.TxSubArray)
-		SectorTransmitDelaySec = append(SectorTransmitDelaySec, float64(sec_buf.SectorTransmitDelaySec)/1_000_000.0)
-		TiltAngleReTxDeg = append(TiltAngleReTxDeg, float64(sec_buf.TiltAngleReTxDeg)/1_000_000.0)
-		TxNominalSourceLevelDb = append(TxNominalSourceLevelDb, float64(sec_buf.TxNominalSourceLevelDb)/1_000_000.0)
-		TxFocusRangeMetres = append(TxFocusRangeMetres, float64(sec_buf.TxFocusRangeMetres)/1_000.0)
-		CentreFrequencyHz = append(CentreFrequencyHz, float64(sec_buf.CentreFrequencyHz)/1_000.0)
-		SignalBandWidthHz = append(SignalBandWidthHz, float64(sec_buf.SignalBandWidthHz)/1_000.0)
-		TotalSignalLengthSec = append(TotalSignalLengthSec, float64(sec_buf.TotalSignalLengthSec)/1_000_000.0)
+		SectorTransmitDelaySec = append(SectorTransmitDelaySec, float64(sec_buf.SectorTransmitDelaySec)/SCALE_6_F64)
+		TiltAngleReTxDeg = append(TiltAngleReTxDeg, float64(sec_buf.TiltAngleReTxDeg)/SCALE_6_F64)
+		TxNominalSourceLevelDb = append(TxNominalSourceLevelDb, float64(sec_buf.TxNominalSourceLevelDb)/SCALE_6_F64)
+		TxFocusRangeMetres = append(TxFocusRangeMetres, float64(sec_buf.TxFocusRangeMetres)/SCALE_3_F64)
+		CentreFrequencyHz = append(CentreFrequencyHz, float64(sec_buf.CentreFrequencyHz)/SCALE_3_F64)
+		SignalBandWidthHz = append(SignalBandWidthHz, float64(sec_buf.SignalBandWidthHz)/SCALE_3_F64)
+		TotalSignalLengthSec = append(TotalSignalLengthSec, float64(sec_buf.TotalSignalLengthSec)/SCALE_6_F64)
 		PulseShading = append(PulseShading, sec_buf.PulseShading)
 		SignalWaveForm = append(SignalWaveForm, sec_buf.SignalWaveForm)
 	}
@@ -2509,10 +2514,10 @@ func DecodeKmallSpecific(reader *bytes.Reader) (sensor_data Kmall) {
 	sensor_data.NumSoundingsMaxMain = []uint16{rx_buf.NumSoundingsMaxMain}
 	sensor_data.NumSoundingsValidMain = []uint16{rx_buf.NumSoundingsValidMain}
 	sensor_data.NumBytesPerSounding = []uint16{rx_buf.NumBytesPerSounding}
-	sensor_data.WcSampleRate = []float64{float64(rx_buf.WcSampleRate1) + (float64(rx_buf.WcSampleRate2) / 1_000_000_000.0)}
-	sensor_data.SeabedImageSampleRate = []float64{float64(rx_buf.SeabedImageSampleRate1) + (float64(rx_buf.SeabedImageSampleRate2) / 1_000_000_000.0)}
-	sensor_data.BackscatterNormalDb = []float64{float64(rx_buf.BackscatterNormalDb) / 1_000_000.0}
-	sensor_data.BackscatterObliqueDb = []float64{float64(rx_buf.BackscatterObliqueDb) / 1_000_000.0}
+	sensor_data.WcSampleRate = []float64{float64(rx_buf.WcSampleRate1) + (float64(rx_buf.WcSampleRate2) / SCALE_9_F64)}
+	sensor_data.SeabedImageSampleRate = []float64{float64(rx_buf.SeabedImageSampleRate1) + (float64(rx_buf.SeabedImageSampleRate2) / SCALE_9_F64)}
+	sensor_data.BackscatterNormalDb = []float64{float64(rx_buf.BackscatterNormalDb) / SCALE_6_F64}
+	sensor_data.BackscatterObliqueDb = []float64{float64(rx_buf.BackscatterObliqueDb) / SCALE_6_F64}
 	sensor_data.ExtraDetectionAlarmFlag = []uint16{rx_buf.ExtraDetectionAlarmFlag}
 	sensor_data.NumExtraDetections = []uint16{rx_buf.NumExtraDetections}
 	sensor_data.NumExtraDetectionClasses = []uint16{rx_buf.NumExtraDetectionClasses}

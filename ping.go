@@ -25,16 +25,16 @@ type PingHeader struct {
 	Number_beams       uint16
 	Centre_beam        uint16
 	Tide_corrector     float32
-	Depth_corrector    float32
+	Depth_corrector    float64
 	Heading            float32
 	Pitch              float32
 	Roll               float32
 	Heave              float32
 	Course             float32
 	Speed              float32
-	Height             float32
-	Separation         float32
-	GPS_tide_corrector float32
+	Height             float64
+	Separation         float64
+	GPS_tide_corrector float64
 	Ping_flags         int16
 }
 
@@ -45,16 +45,16 @@ type PingHeaders struct {
 	Number_beams       []uint16    `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
 	Centre_beam        []uint16    `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
 	Tide_corrector     []float32   `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
-	Depth_corrector    []float32   `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	Depth_corrector    []float64   `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
 	Heading            []float32   `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
 	Pitch              []float32   `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
 	Roll               []float32   `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
 	Heave              []float32   `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
 	Course             []float32   `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
 	Speed              []float32   `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
-	Height             []float32   `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
-	Separation         []float32   `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
-	GPS_tide_corrector []float32   `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	Height             []float64   `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
+	Separation         []float64   `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
+	GPS_tide_corrector []float64   `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
 	Ping_flags         []int16     `tiledb:"dtype=int16,ftype=attr" filters:"zstd(level=16)"`
 }
 
@@ -360,23 +360,24 @@ func decode_ping_hdr(reader *bytes.Reader) PingHeader {
 
 	_ = binary.Read(reader, binary.BigEndian, &hdr_base)
 
+	// TODO; cater for <gsfv3 for height, sep, gps
 	hdr.Timestamp = time.Unix(int64(hdr_base.Seconds), int64(hdr_base.Nano_seconds)).UTC()
-	hdr.Longitude = float64(float32(hdr_base.Longitude) / SCALE1)
-	hdr.Latitude = float64(float32(hdr_base.Latitude) / SCALE1)
+	hdr.Longitude = float64(hdr_base.Longitude) / SCALE_7_F64
+	hdr.Latitude = float64(hdr_base.Latitude) / SCALE_7_F64
 	hdr.Number_beams = hdr_base.Number_beams
 	hdr.Centre_beam = hdr_base.Centre_beam
 	hdr.Ping_flags = hdr_base.Ping_flags
-	hdr.Tide_corrector = float32(hdr_base.Tide_corrector) / SCALE2
-	hdr.Depth_corrector = float32(hdr_base.Depth_corrector) / SCALE2
-	hdr.Heading = float32(hdr_base.Heading) / SCALE2
-	hdr.Pitch = float32(hdr_base.Pitch) / SCALE2
-	hdr.Roll = float32(hdr_base.Roll) / SCALE2
-	hdr.Heave = float32(hdr_base.Heave) / SCALE2
-	hdr.Course = float32(hdr_base.Course) / SCALE2
-	hdr.Speed = float32(hdr_base.Speed) / SCALE2
-	hdr.Height = float32(hdr_base.Height) / SCALE3
-	hdr.Separation = float32(hdr_base.Separation) / SCALE3
-	hdr.GPS_tide_corrector = float32(hdr_base.GPS_tide_corrector) / SCALE3
+	hdr.Tide_corrector = float32(hdr_base.Tide_corrector) / SCALE_2_F32
+	hdr.Depth_corrector = float64(hdr_base.Depth_corrector) / SCALE_2_F64
+	hdr.Heading = float32(hdr_base.Heading) / SCALE_2_F32
+	hdr.Pitch = float32(hdr_base.Pitch) / SCALE_2_F32
+	hdr.Roll = float32(hdr_base.Roll) / SCALE_2_F32
+	hdr.Heave = float32(hdr_base.Heave) / SCALE_2_F32
+	hdr.Course = float32(hdr_base.Course) / SCALE_2_F32
+	hdr.Speed = float32(hdr_base.Speed) / SCALE_2_F32
+	hdr.Height = float64(hdr_base.Height) / SCALE_3_F64
+	hdr.Separation = float64(hdr_base.Separation) / SCALE_3_F64
+	hdr.GPS_tide_corrector = float64(hdr_base.GPS_tide_corrector) / SCALE_3_F64
 
 	return hdr
 }

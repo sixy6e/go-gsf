@@ -95,10 +95,10 @@ func DecodeAttitude(buffer []byte) Attitude {
 		// the offset is scaled by 1000, indicating the units are now in milliseconds
 		offset = time.Duration(base.Time_offset)
 		attitude.Timestamp[i] = att_hdr.Timestamp.Add(time.Millisecond * offset)
-		attitude.Pitch[i] = float32(base.Pitch) / SCALE2
-		attitude.Roll[i] = float32(base.Roll) / SCALE2
-		attitude.Heave[i] = float32(base.Heave) / SCALE2
-		attitude.Heading[i] = float32(base.Heading) / SCALE2
+		attitude.Pitch[i] = float32(base.Pitch) / SCALE_2_F32
+		attitude.Roll[i] = float32(base.Roll) / SCALE_2_F32
+		attitude.Heave[i] = float32(base.Heave) / SCALE_2_F32
+		attitude.Heading[i] = float32(base.Heading) / SCALE_2_F32
 	}
 
 	return attitude

@@ -17,8 +17,8 @@ type SwathBathySummary struct {
 	Max_longitude  float64
 	Min_latitude   float64
 	Max_latitude   float64
-	Min_depth      float32
-	Max_depth      float32
+	Min_depth      float64
+	Max_depth      float64
 }
 
 // DecodeSwathBathySummary acts as the constructor for SwathBathySummary by decoding
@@ -45,12 +45,12 @@ func DecodeSwathBathySummary(reader *bytes.Reader) SwathBathySummary {
 	summary := SwathBathySummary{
 		Start_datetime: time.Unix(int64(buffer.First_ping_sec), int64(buffer.First_ping_nano_sec)).UTC(),
 		End_datetime:   time.Unix(int64(buffer.Last_ping_sec), int64(buffer.Last_ping_nano_sec)).UTC(),
-		Min_longitude:  float64(float32(buffer.Min_lon) / SCALE1),
-		Max_longitude:  float64(float32(buffer.Max_lon) / SCALE1),
-		Min_latitude:   float64(float32(buffer.Min_lat) / SCALE1),
-		Max_latitude:   float64(float32(buffer.Max_lat) / SCALE1),
-		Min_depth:      float32(buffer.Min_depth) / SCALE2,
-		Max_depth:      float32(buffer.Max_depth) / SCALE2,
+		Min_longitude:  float64(buffer.Min_lon) / SCALE_7_F64,
+		Max_longitude:  float64(buffer.Max_lon) / SCALE_7_F64,
+		Min_latitude:   float64(buffer.Min_lat) / SCALE_7_F64,
+		Max_latitude:   float64(buffer.Max_lat) / SCALE_7_F64,
+		Min_depth:      float64(buffer.Min_depth) / SCALE_2_F64,
+		Max_depth:      float64(buffer.Max_depth) / SCALE_2_F64,
 	}
 
 	return summary

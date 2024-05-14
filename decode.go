@@ -11,10 +11,32 @@ type SensorID uint16
 const (
 	NEXT_RECORD        RecordID = 0
 	BEAM_WIDTH_UNKNOWN float32  = -1.0
-	SCALE1             float32  = 10_000_000
-	SCALE2             float32  = 100
-	SCALE3             float32  = 1000
-	SCALE4             int64    = 1_000_000 // TODO; convert to proper named type (int32, int64 etc)
+)
+
+// float32 and float64 scale factors
+// in general I think they're a bit more readable than 1.0e7
+// they're easy to change if there is some desire to in future
+const (
+	SCALE_1_F32  float32 = 10.0
+	SCALE_1_F64  float64 = 10.0
+	SCALE_2_F32  float32 = 100.0
+	SCALE_2_F64  float64 = 100.0
+	SCALE_3_F32  float32 = 1_000.0
+	SCALE_3_F64  float64 = 1_000.0
+	SCALE_4_F32  float32 = 10_000.0
+	SCALE_4_F64  float64 = 10_000.0
+	SCALE_5_F32  float32 = 100_000.0
+	SCALE_5_F64  float64 = 100_000.0
+	SCALE_6_F32  float32 = 1_000_000.0
+	SCALE_6_F64  float64 = 1_000_000.0
+	SCALE_7_F32  float32 = 10_000_000.0
+	SCALE_7_F64  float64 = 10_000_000.0
+	SCALE_8_F32  float32 = 100_000_000.0
+	SCALE_8_F64  float64 = 100_000_000.0
+	SCALE_9_F32  float32 = 1_000_000_000.0
+	SCALE_9_F64  float64 = 1_000_000_000.0
+	SCALE_10_F32 float32 = 10_000_000_000.0
+	SCALE_10_F64 float64 = 10_000_000_000.0
 )
 
 const (

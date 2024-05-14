@@ -37,10 +37,10 @@ type SoundVelocityProfile struct {
 	Applied_timestamp     []time.Time `tiledb:"dtype=datetime_ns,ftype=attr" filters:"zstd(level=16)"`
 	Longitude             []float64   `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
 	Latitude              []float64   `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
-	Depth                 [][]float32 `tiledb:"dtype=float32,ftype=attr,var" filters:"zstd(level=16)"`
-	Sound_velocity        [][]float32 `tiledb:"dtype=float32,ftype=attr,var" filters:"zstd(level=16)"`
-	depth                 []float32
-	sound_velocity        []float32
+	Depth                 [][]float64 `tiledb:"dtype=float64,ftype=attr,var" filters:"zstd(level=16)"`
+	Sound_velocity        [][]float64 `tiledb:"dtype=float64,ftype=attr,var" filters:"zstd(level=16)"`
+	depth                 []float64
+	sound_velocity        []float64
 	n_points              uint64
 }
 
@@ -73,8 +73,8 @@ func svp_header(reader *bytes.Reader) (hdr svp_hdr) {
 	hdr.Applied_timestamp = time.Unix(int64(base.App_seconds), int64(base.App_nano_seconds)).UTC()
 
 	// all the provided sample files have 0.0 for the lon and lat; WTH‽
-	hdr.Longitude = float64(float32(base.Longitude) / SCALE2)
-	hdr.Latitude = float64(float32(base.Latitude) / SCALE2)
+	hdr.Longitude = float64(base.Longitude) / SCALE_7_F64
+	hdr.Latitude = float64(base.Latitude) / SCALE_7_F64
 
 	hdr.N_points = uint64(base.N_points)
 
@@ -90,8 +90,8 @@ func svp_header(reader *bytes.Reader) (hdr svp_hdr) {
 func DecodeSoundVelocityProfile(buffer []byte) SoundVelocityProfile {
 	var (
 		base      []int32
-		depth_f32 []float32
-		svp_f32   []float32
+		depth_f64 []float64
+		svp_f64   []float64
 		svp       SoundVelocityProfile
 		i         uint64
 	)
@@ -123,19 +123,19 @@ func DecodeSoundVelocityProfile(buffer []byte) SoundVelocityProfile {
 	svp.Longitude = []float64{hdr.Longitude}
 	svp.Latitude = []float64{hdr.Latitude}
 
-	depth_f32 = make([]float32, 0, hdr.N_points)
-	svp_f32 = make([]float32, 0, hdr.N_points)
+	depth_f64 = make([]float64, 0, hdr.N_points)
+	svp_f64 = make([]float64, 0, hdr.N_points)
 
 	for i = 0; i < 2*hdr.N_points; i += 2 {
-		depth_f32 = append(depth_f32, float32(base[i])/SCALE2)
-		svp_f32 = append(svp_f32, float32(base[i+1])/SCALE2)
+		depth_f64 = append(depth_f64, float64(base[i])/SCALE_2_F64)
+		svp_f64 = append(svp_f64, float64(base[i+1])/SCALE_2_F64)
 	}
 
-	svp.depth = depth_f32
-	svp.sound_velocity = svp_f32
+	svp.depth = depth_f64
+	svp.sound_velocity = svp_f64
 
-	svp.Depth = [][]float32{svp.depth}
-	svp.Sound_velocity = [][]float32{svp.sound_velocity}
+	svp.Depth = [][]float64{svp.depth}
+	svp.Sound_velocity = [][]float64{svp.sound_velocity}
 
 	svp.n_points = hdr.N_points
 
@@ -150,11 +150,11 @@ func (g *GsfFile) SoundVelocityProfileRecords(fi *FileInfo) (svp SoundVelocityPr
 		app_time           []time.Time
 		lon                []float64
 		lat                []float64
-		depth              []float32
-		velocity           []float32
+		depth              []float64
+		velocity           []float64
 		count              []uint64
-		depth_nd_slices    [][]float32
-		velocity_nd_slices [][]float32
+		depth_nd_slices    [][]float64
+		velocity_nd_slices [][]float64
 	)
 	rec_counts := fi.Record_Counts["SOUND_VELOCITY_PROFILE"]
 
@@ -164,8 +164,8 @@ func (g *GsfFile) SoundVelocityProfileRecords(fi *FileInfo) (svp SoundVelocityPr
 	lat = make([]float64, 0, rec_counts)
 	count = make([]uint64, 0, rec_counts)
 
-	depth = make([]float32, 0, fi.Metadata.Measurement_Counts["SOUND_VELOCITY_PROFILE"])
-	velocity = make([]float32, 0, fi.Metadata.Measurement_Counts["SOUND_VELOCITY_PROFILE"])
+	depth = make([]float64, 0, fi.Metadata.Measurement_Counts["SOUND_VELOCITY_PROFILE"])
+	velocity = make([]float64, 0, fi.Metadata.Measurement_Counts["SOUND_VELOCITY_PROFILE"])
 
 	// get the original starting point so we can jump back when done
 	original_pos, _ := Tell(g.Stream)
@@ -187,8 +187,8 @@ func (g *GsfFile) SoundVelocityProfileRecords(fi *FileInfo) (svp SoundVelocityPr
 	}
 
 	// generate the 2D slices that are ideally views of the 1D slice
-	depth_nd_slices = make([][]float32, rec_counts)
-	velocity_nd_slices = make([][]float32, rec_counts)
+	depth_nd_slices = make([][]float64, rec_counts)
+	velocity_nd_slices = make([][]float64, rec_counts)
 	start_idx := uint64(0)
 	end_idx := uint64(0)
 	for i, val := range count {
