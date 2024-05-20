@@ -55,10 +55,10 @@ type svp_hdr struct {
 func svp_header(reader *bytes.Reader) (hdr svp_hdr) {
 	var (
 		base struct {
-			Obs_seconds      int32
-			Obs_nano_seconds int32
-			App_seconds      int32
-			App_nano_seconds int32
+			Obs_seconds      uint32
+			Obs_nano_seconds uint32
+			App_seconds      uint32
+			App_nano_seconds uint32
 			Longitude        int32
 			Latitude         int32
 			N_points         int32
