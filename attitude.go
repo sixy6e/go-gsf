@@ -70,7 +70,7 @@ func DecodeAttitude(buffer []byte) Attitude {
 			Pitch       int16
 			Roll        int16
 			Heave       int16
-			Heading     int16
+			Heading     uint16
 		}
 		offset time.Duration
 	)
@@ -92,13 +92,13 @@ func DecodeAttitude(buffer []byte) Attitude {
 	for i := uint64(0); i < att_hdr.Measurements; i++ {
 		_ = binary.Read(reader, binary.BigEndian, &base)
 
-		// the offset is scaled by 1000, indicating the units are now in milliseconds
+		// the offset is scaled by 1000, meaning the scaled units are in milliseconds
 		offset = time.Duration(base.Time_offset)
 		attitude.Timestamp[i] = att_hdr.Timestamp.Add(time.Millisecond * offset)
-		attitude.Pitch[i] = float32(base.Pitch) / SCALE_2_F32
-		attitude.Roll[i] = float32(base.Roll) / SCALE_2_F32
-		attitude.Heave[i] = float32(base.Heave) / SCALE_2_F32
-		attitude.Heading[i] = float32(base.Heading) / SCALE_2_F32
+		attitude.Pitch[i] = float32(float64(base.Pitch) / SCALE_2_F64)
+		attitude.Roll[i] = float32(float64(base.Roll) / SCALE_2_F64)
+		attitude.Heave[i] = float32(float64(base.Heave) / SCALE_2_F64)
+		attitude.Heading[i] = float32(float64(base.Heading) / SCALE_2_F64)
 	}
 
 	return attitude
