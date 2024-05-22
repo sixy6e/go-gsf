@@ -15,7 +15,7 @@ import (
 
 // BrbIntensity
 type BrbIntensity struct {
-	TimeSeries []float32 `tiledb:"dtype=float32,ftype=attr,var" filters:"zstd(level=16)"`
+	TimeSeries []float64 `tiledb:"dtype=float64,ftype=attr,var" filters:"zstd(level=16)"`
 	// BottomDetect      []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
 	BottomDetectIndex []uint16 `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
 	StartRange        []uint16 `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
@@ -34,7 +34,7 @@ type BrbIntensity struct {
 // was in the 60s.
 func newBrbIntensity(number_beams int) (brb_int BrbIntensity) {
 	brb_int = BrbIntensity{
-		make([]float32, 0, number_beams*66), // 66 ... just becasuse
+		make([]float64, 0, number_beams*66), // 66 ... just becasuse
 		// make([]float32, 0, number_beams),
 		make([]uint16, 0, number_beams),
 		make([]uint16, 0, number_beams),
@@ -64,11 +64,11 @@ func DecodeBrbIntensity(reader *bytes.Reader, nbeams uint16, sensor_id SubRecord
 		detect []uint16
 		st_rng []uint16
 		// detect_val   []float32
-		timeseries   []float32
+		timeseries   []float64
 		samples_u1   []uint8
 		samples_u2   []uint16
 		samples_u4   []uint32
-		samples_f32  []float32
+		samples_f64  []float64
 		three_bytes  [3]byte
 		unpack_bytes [4]byte
 		scl_off      ScaleOffset
@@ -81,7 +81,7 @@ func DecodeBrbIntensity(reader *bytes.Reader, nbeams uint16, sensor_id SubRecord
 	detect = make([]uint16, 0, nbeams)
 	// detect_val = make([]float32, 0, nbeams)
 	st_rng = make([]uint16, 0, nbeams)
-	timeseries = make([]float32, 0, nbeams*66) // 66 ... just becasuse
+	timeseries = make([]float64, 0, nbeams*66) // 66 ... just becasuse
 
 	_ = binary.Read(reader, binary.BigEndian, &base)
 
@@ -122,7 +122,7 @@ func DecodeBrbIntensity(reader *bytes.Reader, nbeams uint16, sensor_id SubRecord
 		// is an implementation (of sorts) based on the gsf code base
 		if base.Bits_per_sample == 12 {
 			// TODO
-			samples_f32 = make([]float32, base2.Sample_count)
+			samples_f64 = make([]float64, base2.Sample_count)
 			samples_u4 = make([]uint32, base2.Sample_count)
 
 			// 3 bytes of data are bit compacted and decompress into 2 samples
@@ -156,28 +156,28 @@ func DecodeBrbIntensity(reader *bytes.Reader, nbeams uint16, sensor_id SubRecord
 			}
 
 			for k, v := range samples_u4 {
-				samples_f32[k] = float32(v)
+				samples_f64[k] = float64(v)
 			}
 		} else {
-			samples_f32 = make([]float32, base2.Sample_count)
+			samples_f64 = make([]float64, base2.Sample_count)
 			switch bytes_per_sample {
 			case 1:
 				samples_u1 = make([]uint8, base2.Sample_count)
 				_ = binary.Read(reader, binary.BigEndian, samples_u1)
 				for k, v := range samples_u1 {
-					samples_f32[k] = float32(v)
+					samples_f64[k] = float64(v)
 				}
 			case 2:
 				samples_u2 = make([]uint16, base2.Sample_count)
 				_ = binary.Read(reader, binary.BigEndian, samples_u2)
 				for k, v := range samples_u2 {
-					samples_f32[k] = float32(v)
+					samples_f64[k] = float64(v)
 				}
 			case 4:
 				samples_u4 = make([]uint32, base2.Sample_count)
 				_ = binary.Read(reader, binary.BigEndian, samples_u4)
 				for k, v := range samples_u4 {
-					samples_f32[k] = float32(v)
+					samples_f64[k] = float64(v)
 				}
 			}
 		}
@@ -188,16 +188,17 @@ func DecodeBrbIntensity(reader *bytes.Reader, nbeams uint16, sensor_id SubRecord
 		// used, unfortunately, some of the sample files had incorrect
 		// scale factors due to a bug in the source software that
 		// generated the file.
+		// dB_value = (value - offset) / scale
 		switch sensor_id {
 		case EM120, EM120_RAW, EM300, EM300_RAW, EM1002, EM1002_RAW, EM2000, EM2000_RAW, EM3000, EM3000_RAW, EM3002, EM3002_RAW, EM3000D, EM3000D_RAW, EM3002D, EM3002D_RAW, EM121A_SIS, EM121A_SIS_RAW:
 			// TODO; loop over length, as range may copy the array
-			for k, v := range samples_f32 {
-				samples_f32[k] = (v - float32(img_md.EM3_imagery.offset[0])) / float32(2)
+			for k, v := range samples_f64 {
+				samples_f64[k] = (v - float64(img_md.EM3_imagery.offset[0])) / float64(2)
 			}
 		case EM122, EM302, EM710, EM2040:
 			// TODO; loop over length, as range may copy the array
-			for k, v := range samples_f32 {
-				samples_f32[k] = (v - scl_off.Offset) / float32(10)
+			for k, v := range samples_f64 {
+				samples_f64[k] = (v - scl_off.Offset) / SCALE_1_F64
 			}
 		}
 
@@ -206,13 +207,13 @@ func DecodeBrbIntensity(reader *bytes.Reader, nbeams uint16, sensor_id SubRecord
 		// as well as the beam locations
 		// NaN should be fine to indicate a missing observation
 		if base2.Sample_count == 0 {
-			samples_f32 = make([]float32, 1)
-			samples_f32[0] = float32(math.NaN())
+			samples_f64 = make([]float64, 1)
+			samples_f64[0] = math.NaN()
 		}
 
 		// append
-		// detect_val = append(detect_val, samples_f32[base2.Detect_sample])
-		timeseries = append(timeseries, samples_f32...)
+		// detect_val = append(detect_val, samples_f64[base2.Detect_sample])
+		timeseries = append(timeseries, samples_f64...)
 	}
 
 	intensity.TimeSeries = timeseries

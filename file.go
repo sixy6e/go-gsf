@@ -237,6 +237,23 @@ func (g *GsfFile) Info() FileInfo {
 	// start at front of the stream
 	pos, _ := g.Stream.Seek(0, 0)
 
+	// this first part is presumptive, but there is good reason the
+	// GSF version details would be the first record.
+	// It is needed for ping info which is version dependent
+	rec = DecodeRecordHdr(g.Stream)
+	if rec.Id != HEADER {
+		// bail for now
+		panic(errors.New("GSF HEADER is not the first record"))
+	}
+	buffer = make([]byte, rec.Datasize)
+	_ = binary.Read(g.Stream, binary.BigEndian, &buffer)
+
+	version = DecodeHeader(buffer)
+	gsfd := GsfDetails{GSF_URI: g.Uri, GSF_Version: version.Version, Size: g.filesize}
+
+	// reset
+	pos, _ = g.Stream.Seek(0, 0)
+
 	// reading the byte stream and build record index information
 	for uint64(pos) < g.filesize {
 		// TODO; test that pos moves after we read a header
@@ -254,7 +271,7 @@ func (g *GsfFile) Info() FileInfo {
 			_ = binary.Read(g.Stream, binary.BigEndian, &buffer)
 			reader = bytes.NewReader(buffer)
 
-			pinfo = ping_info(reader, rec)
+			pinfo = ping_info(reader, rec, gsfd)
 			pings = append(pings, pinfo)
 
 			// increment sub-record count

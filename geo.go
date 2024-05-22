@@ -76,8 +76,8 @@ func (ba *BeamArray) BeamsLonLat(lon, lat float64, heading float32, coef *GeoCoe
 	lat2 := make([]float64, n)
 
 	for i := 0; i < n; i++ {
-		acr_trck = float64(ba.AcrossTrack[i])
-		aln_trck = float64(ba.AlongTrack[i])
+		acr_trck = ba.AcrossTrack[i]
+		aln_trck = ba.AlongTrack[i]
 		lon2[i] = lon + delta_y/lon_sf*acr_trck + delta_x/lon_sf*aln_trck
 		lat2[i] = lat - delta_x/lat_sf*acr_trck + delta_y/lat_sf*aln_trck
 	}

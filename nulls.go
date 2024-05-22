@@ -26,63 +26,63 @@ func (pd *PingData) fillNulls(singlePing *PingData) error {
 		switch subr_id {
 		case DEPTH:
 			for i := uint16(0); i < nbeams; i++ {
-				pd.Beam_array.Z = append(pd.Beam_array.Z, NULL_DEPTH)
+				pd.Beam_array.Z = append(pd.Beam_array.Z, NULL_DEPTH_F64)
 			}
 		case ACROSS_TRACK:
 			for i := uint16(0); i < nbeams; i++ {
-				pd.Beam_array.AcrossTrack = append(pd.Beam_array.AcrossTrack, NULL_ACROSS_TRACK)
+				pd.Beam_array.AcrossTrack = append(pd.Beam_array.AcrossTrack, NULL_ACROSS_TRACK_F64)
 			}
 		case ALONG_TRACK:
 			for i := uint16(0); i < nbeams; i++ {
-				pd.Beam_array.AlongTrack = append(pd.Beam_array.AlongTrack, NULL_ALONG_TRACK)
+				pd.Beam_array.AlongTrack = append(pd.Beam_array.AlongTrack, NULL_ALONG_TRACK_F64)
 			}
 		case TRAVEL_TIME:
 			for i := uint16(0); i < nbeams; i++ {
-				pd.Beam_array.TravelTime = append(pd.Beam_array.TravelTime, NULL_TRAVEL_TIME)
+				pd.Beam_array.TravelTime = append(pd.Beam_array.TravelTime, NULL_TRAVEL_TIME_F64)
 			}
 		case BEAM_ANGLE:
 			for i := uint16(0); i < nbeams; i++ {
-				pd.Beam_array.BeamAngle = append(pd.Beam_array.BeamAngle, NULL_BEAM_ANGLE)
+				pd.Beam_array.BeamAngle = append(pd.Beam_array.BeamAngle, NULL_BEAM_ANGLE_F32)
 			}
 		case MEAN_CAL_AMPLITUDE:
 			for i := uint16(0); i < nbeams; i++ {
-				pd.Beam_array.MeanCalAmplitude = append(pd.Beam_array.MeanCalAmplitude, NULL_MC_AMPLITUDE)
+				pd.Beam_array.MeanCalAmplitude = append(pd.Beam_array.MeanCalAmplitude, NULL_MC_AMPLITUDE_F32)
 			}
 		case MEAN_REL_AMPLITUDE:
 			for i := uint16(0); i < nbeams; i++ {
-				pd.Beam_array.MeanRelAmplitude = append(pd.Beam_array.MeanRelAmplitude, NULL_MR_AMPLITUDE)
+				pd.Beam_array.MeanRelAmplitude = append(pd.Beam_array.MeanRelAmplitude, NULL_MR_AMPLITUDE_F32)
 			}
 		case ECHO_WIDTH:
 			for i := uint16(0); i < nbeams; i++ {
-				pd.Beam_array.EchoWidth = append(pd.Beam_array.EchoWidth, NULL_ECHO_WIDTH)
+				pd.Beam_array.EchoWidth = append(pd.Beam_array.EchoWidth, NULL_ECHO_WIDTH_F32)
 			}
 		case QUALITY_FACTOR:
 			for i := uint16(0); i < nbeams; i++ {
-				pd.Beam_array.QualityFactor = append(pd.Beam_array.QualityFactor, NULL_QUALITY_FACTOR)
+				pd.Beam_array.QualityFactor = append(pd.Beam_array.QualityFactor, NULL_QUALITY_FACTOR_F32)
 			}
 		case RECEIVE_HEAVE:
 			for i := uint16(0); i < nbeams; i++ {
-				pd.Beam_array.RecieveHeave = append(pd.Beam_array.RecieveHeave, NULL_RECEIVE_HEAVE)
+				pd.Beam_array.RecieveHeave = append(pd.Beam_array.RecieveHeave, NULL_RECEIVE_HEAVE_F32)
 			}
 		case DEPTH_ERROR:
 			for i := uint16(0); i < nbeams; i++ {
-				pd.Beam_array.DepthError = append(pd.Beam_array.DepthError, NULL_DEPTH_ERROR)
+				pd.Beam_array.DepthError = append(pd.Beam_array.DepthError, NULL_DEPTH_ERROR_F32)
 			}
 		case ACROSS_TRACK_ERROR:
 			for i := uint16(0); i < nbeams; i++ {
-				pd.Beam_array.AcrossTrackError = append(pd.Beam_array.AcrossTrackError, NULL_ACROSS_TRACK_ERROR)
+				pd.Beam_array.AcrossTrackError = append(pd.Beam_array.AcrossTrackError, NULL_ACROSS_TRACK_ERROR_F32)
 			}
 		case ALONG_TRACK_ERROR:
 			for i := uint16(0); i < nbeams; i++ {
-				pd.Beam_array.AlongTrackError = append(pd.Beam_array.AlongTrackError, NULL_ALONG_TRACK_ERROR)
+				pd.Beam_array.AlongTrackError = append(pd.Beam_array.AlongTrackError, NULL_ALONG_TRACK_ERROR_F32)
 			}
 		case NOMINAL_DEPTH:
 			for i := uint16(0); i < nbeams; i++ {
-				pd.Beam_array.NominalDepth = append(pd.Beam_array.NominalDepth, NULL_FLOAT32_ZERO)
+				pd.Beam_array.NominalDepth = append(pd.Beam_array.NominalDepth, NULL_FLOAT64_ZERO)
 			}
 		case QUALITY_FLAGS:
 			for i := uint16(0); i < nbeams; i++ {
-				pd.Beam_array.QualityFlags = append(pd.Beam_array.QualityFlags, NULL_FLOAT32_ZERO)
+				pd.Beam_array.QualityFlags = append(pd.Beam_array.QualityFlags, NULL_UINT8_ZERO)
 			}
 		case BEAM_FLAGS:
 			// TODO; look at what an ideal null would be for the beam bitflag
@@ -109,7 +109,7 @@ func (pd *PingData) fillNulls(singlePing *PingData) error {
 			// each beam has a series of values, so not sure what the best approach is
 			// maybe a single value of 0? Also means, the sample count is 1 (needed for var array)
 			for i := uint16(0); i < nbeams; i++ {
-				pd.Brb_intensity.TimeSeries = append(pd.Brb_intensity.TimeSeries, NULL_FLOAT32_ZERO)
+				pd.Brb_intensity.TimeSeries = append(pd.Brb_intensity.TimeSeries, NULL_FLOAT64_ZERO)
 				// pd.Brb_intensity.BottomDetect = append(pd.Brb_intensity.BottomDetect, NULL_FLOAT32_ZERO)
 				pd.Brb_intensity.BottomDetectIndex = append(pd.Brb_intensity.BottomDetectIndex, NULL_UINT16_ZERO)
 				pd.Brb_intensity.StartRange = append(pd.Brb_intensity.StartRange, NULL_UINT16_ZERO)
@@ -117,11 +117,11 @@ func (pd *PingData) fillNulls(singlePing *PingData) error {
 			}
 		case SECTOR_NUMBER:
 			for i := uint16(0); i < nbeams; i++ {
-				pd.Beam_array.SectorNumber = append(pd.Beam_array.SectorNumber, NULL_FLOAT32_ZERO)
+				pd.Beam_array.SectorNumber = append(pd.Beam_array.SectorNumber, NULL_UINT16_ZERO)
 			}
 		case DETECTION_INFO:
 			for i := uint16(0); i < nbeams; i++ {
-				pd.Beam_array.DetectionInfo = append(pd.Beam_array.DetectionInfo, NULL_FLOAT32_ZERO)
+				pd.Beam_array.DetectionInfo = append(pd.Beam_array.DetectionInfo, NULL_UINT16_ZERO)
 			}
 		case INCIDENT_BEAM_ADJ:
 			for i := uint16(0); i < nbeams; i++ {
@@ -129,7 +129,7 @@ func (pd *PingData) fillNulls(singlePing *PingData) error {
 			}
 		case SYSTEM_CLEANING:
 			for i := uint16(0); i < nbeams; i++ {
-				pd.Beam_array.SystemCleaning = append(pd.Beam_array.SystemCleaning, NULL_FLOAT32_ZERO)
+				pd.Beam_array.SystemCleaning = append(pd.Beam_array.SystemCleaning, NULL_UINT16_ZERO)
 			}
 		case DOPPLER_CORRECTION:
 			for i := uint16(0); i < nbeams; i++ {
@@ -145,11 +145,11 @@ func (pd *PingData) fillNulls(singlePing *PingData) error {
 			}
 		case DETECTION_WINDOW:
 			for i := uint16(0); i < nbeams; i++ {
-				pd.Beam_array.DetectionWindow = append(pd.Beam_array.DetectionWindow, NULL_FLOAT32_ZERO)
+				pd.Beam_array.DetectionWindow = append(pd.Beam_array.DetectionWindow, NULL_FLOAT64_ZERO)
 			}
 		case MEAN_ABS_COEF:
 			for i := uint16(0); i < nbeams; i++ {
-				pd.Beam_array.MeanAbsCoef = append(pd.Beam_array.MeanAbsCoef, NULL_FLOAT32_ZERO)
+				pd.Beam_array.MeanAbsCoef = append(pd.Beam_array.MeanAbsCoef, NULL_FLOAT64_ZERO)
 			}
 
 		}

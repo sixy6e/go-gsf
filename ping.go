@@ -35,7 +35,7 @@ type PingHeader struct {
 	Height             float64
 	Separation         float64
 	GPS_tide_corrector float64
-	Ping_flags         int16
+	Ping_flags         uint16
 }
 
 type PingHeaders struct {
@@ -55,7 +55,7 @@ type PingHeaders struct {
 	Height             []float64   `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
 	Separation         []float64   `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
 	GPS_tide_corrector []float64   `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
-	Ping_flags         []int16     `tiledb:"dtype=int16,ftype=attr" filters:"zstd(level=16)"`
+	Ping_flags         []uint16    `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
 }
 
 // newPingHeaders is a helper func for initialising PingHeaders where
@@ -70,8 +70,8 @@ func newPingHeaders(number_pings int) (ping_headers PingHeaders) {
 }
 
 type ScaleOffset struct {
-	Scale  float32
-	Offset float32
+	Scale  float64
+	Offset float64
 }
 
 type ScaleFactor struct {
@@ -83,10 +83,11 @@ type ScaleFactor struct {
 }
 
 type BeamArray struct {
-	Z                    []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
-	AcrossTrack          []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
-	AlongTrack           []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
-	TravelTime           []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	Z                    []float64 `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
+	NominalDepth         []float64 `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
+	AcrossTrack          []float64 `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
+	AlongTrack           []float64 `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
+	TravelTime           []float64 `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
 	BeamAngle            []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
 	MeanCalAmplitude     []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
 	MeanRelAmplitude     []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
@@ -96,23 +97,22 @@ type BeamArray struct {
 	DepthError           []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"` // obsolete
 	AcrossTrackError     []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"` // obsolete
 	AlongTrackError      []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"` // obsolete
-	NominalDepth         []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
-	QualityFlags         []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
 	BeamFlags            []uint8   `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
+	QualityFlags         []uint8   `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
 	SignalToNoise        []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
 	BeamAngleForward     []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
 	VerticalError        []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
 	HorizontalError      []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
 	IntensitySeries      []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"` // TODO; check that this field can be removed
-	SectorNumber         []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
-	DetectionInfo        []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	SectorNumber         []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	DetectionInfo        []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
 	IncidentBeamAdj      []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
-	SystemCleaning       []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	SystemCleaning       []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
 	DopplerCorrection    []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
 	SonarVertUncertainty []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
 	SonarHorzUncertainty []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
-	DetectionWindow      []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
-	MeanAbsCoef          []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	DetectionWindow      []float64 `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
+	MeanAbsCoef          []float64 `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
 }
 
 // newBeamArray is a helper func for initialising BeamArray where
@@ -331,53 +331,72 @@ func (fi *FileInfo) PGroups() {
 	fi.Index.Ping_Groups = groups
 }
 
-func decode_ping_hdr(reader *bytes.Reader) PingHeader {
+// decode_ping_hdr reads and unscales the ping header information.
+// Most fields are unscaled into float64 and then converted to float32.
+// Fields that were encoded as 4bytes (int32, uint32) are returned as float64.
+func decode_ping_hdr(reader *bytes.Reader, gsfd GsfDetails) PingHeader {
 	var (
 		hdr_base struct {
-			Seconds            int32
-			Nano_seconds       int32
-			Longitude          int32
-			Latitude           int32
-			Number_beams       uint16
-			Centre_beam        uint16
-			Ping_flags         int16
-			Reserved           int16
-			Tide_corrector     int16
-			Depth_corrector    int32
-			Heading            uint16
-			Pitch              int16
-			Roll               int16
-			Heave              int16
-			Course             uint16
-			Speed              uint16
+			Seconds         uint32
+			Nano_seconds    uint32
+			Longitude       int32
+			Latitude        int32
+			Number_beams    uint16
+			Centre_beam     uint16
+			Ping_flags      uint16
+			Reserved        uint16
+			Tide_corrector  int16
+			Depth_corrector int32
+			Heading         uint16
+			Pitch           int16
+			Roll            int16
+			Heave           int16
+			Course          uint16
+			Speed           uint16
+		}
+		hdr_xtra struct {
 			Height             int32
 			Separation         int32
 			GPS_tide_corrector int32
-			Spare              int16
+			Spare              [2]byte
 		}
-		hdr PingHeader
+		hdr    PingHeader
+		height float64
+		sep    float64
+		gps_tc float64
 	)
 
 	_ = binary.Read(reader, binary.BigEndian, &hdr_base)
 
-	// TODO; cater for <gsfv3 for height, sep, gps
+	major, _ := gsfd.MajorMinor()
+	if major > 2 {
+		_ = binary.Read(reader, binary.BigEndian, &hdr_xtra)
+		height = float64(hdr_xtra.Height) / SCALE_3_F64
+		sep = float64(hdr_xtra.Separation) / SCALE_3_F64
+		gps_tc = float64(hdr_xtra.GPS_tide_corrector) / SCALE_3_F64
+	} else {
+		height = NULL_HEIGHT
+		sep = NULL_SEP
+		gps_tc = NULL_GPS_TIDE_CORRECTOR
+	}
+
 	hdr.Timestamp = time.Unix(int64(hdr_base.Seconds), int64(hdr_base.Nano_seconds)).UTC()
 	hdr.Longitude = float64(hdr_base.Longitude) / SCALE_7_F64
 	hdr.Latitude = float64(hdr_base.Latitude) / SCALE_7_F64
 	hdr.Number_beams = hdr_base.Number_beams
 	hdr.Centre_beam = hdr_base.Centre_beam
 	hdr.Ping_flags = hdr_base.Ping_flags
-	hdr.Tide_corrector = float32(hdr_base.Tide_corrector) / SCALE_2_F32
+	hdr.Tide_corrector = float32(float64(hdr_base.Tide_corrector) / SCALE_2_F64)
 	hdr.Depth_corrector = float64(hdr_base.Depth_corrector) / SCALE_2_F64
-	hdr.Heading = float32(hdr_base.Heading) / SCALE_2_F32
-	hdr.Pitch = float32(hdr_base.Pitch) / SCALE_2_F32
-	hdr.Roll = float32(hdr_base.Roll) / SCALE_2_F32
-	hdr.Heave = float32(hdr_base.Heave) / SCALE_2_F32
-	hdr.Course = float32(hdr_base.Course) / SCALE_2_F32
-	hdr.Speed = float32(hdr_base.Speed) / SCALE_2_F32
-	hdr.Height = float64(hdr_base.Height) / SCALE_3_F64
-	hdr.Separation = float64(hdr_base.Separation) / SCALE_3_F64
-	hdr.GPS_tide_corrector = float64(hdr_base.GPS_tide_corrector) / SCALE_3_F64
+	hdr.Heading = float32(float64(hdr_base.Heading) / SCALE_2_F64)
+	hdr.Pitch = float32(float64(hdr_base.Pitch) / SCALE_2_F64)
+	hdr.Roll = float32(float64(hdr_base.Roll) / SCALE_2_F64)
+	hdr.Heave = float32(float64(hdr_base.Heave) / SCALE_2_F64)
+	hdr.Course = float32(float64(hdr_base.Course) / SCALE_2_F64)
+	hdr.Speed = float32(float64(hdr_base.Speed) / SCALE_2_F64)
+	hdr.Height = height
+	hdr.Separation = sep
+	hdr.GPS_tide_corrector = gps_tc
 
 	return hdr
 }
@@ -420,7 +439,7 @@ func scale_factors_rec(reader *bytes.Reader) (scale_factors map[SubRecordID]Scal
 
 		scale_factor = ScaleFactor{
 			Id:               cnvrt_subid,
-			ScaleOffset:      ScaleOffset{float32(data[1]), float32(data[2])},
+			ScaleOffset:      ScaleOffset{float64(data[1]), float64(data[2])},
 			Compression_flag: comp_flag, // TODO; implement compression decoder
 			Compressed:       comp,
 			Field_size:       field_size, // this field doesn't appear to be used in the C code ???
@@ -434,7 +453,7 @@ func scale_factors_rec(reader *bytes.Reader) (scale_factors map[SubRecordID]Scal
 	return scale_factors, nbytes
 }
 
-func ping_info(reader *bytes.Reader, rec RecordHdr) PingInfo {
+func ping_info(reader *bytes.Reader, rec RecordHdr, gsfd GsfDetails) PingInfo {
 	var (
 		idx     int64 = 0
 		pinfo   PingInfo
@@ -446,7 +465,7 @@ func ping_info(reader *bytes.Reader, rec RecordHdr) PingInfo {
 
 	datasize := int64(rec.Datasize)
 
-	hdr := decode_ping_hdr(reader)
+	hdr := decode_ping_hdr(reader, gsfd)
 	idx += 56 // 56 bytes read for ping header
 	offset := rec.Byte_index + idx
 
@@ -496,10 +515,10 @@ func ping_info(reader *bytes.Reader, rec RecordHdr) PingInfo {
 // Another instance was a duplicate ping. Same timestamp, location, depth, but zero values
 // for supporting attributes/sub-records/fields (heading, course, +others). Again, this
 // appeared to have never been encountered before (or never looked).
-func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor_id SubRecordID) (PingData, error) {
+func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor_id SubRecordID, gsfd GsfDetails) (PingData, error) {
 	var (
 		idx        int64 = 0
-		beam_data  []float32
+		beam_data  []float64
 		ping_data  PingData
 		beam_array BeamArray
 		img_md     SensorImageryMetadata
@@ -512,7 +531,7 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 
 	reader := bytes.NewReader(buffer)
 
-	hdr := decode_ping_hdr(reader)
+	hdr := decode_ping_hdr(reader, gsfd)
 	idx += 56 // 56 bytes read for ping header
 
 	for reader.Len() > 4 {
@@ -583,7 +602,7 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 			// converting to Z-axis domain (integrate with elevation)
 			// TODO; loop over length, as range may copy the array
 			for k, v := range beam_data {
-				beam_data[k] = v * float32(-1.0)
+				beam_data[k] = v * float64(-1.0)
 			}
 			beam_array.Z = beam_data
 			ba_read = append(ba_read, pascalCase(SubRecordNames[DEPTH]))
@@ -625,7 +644,7 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 				BYTES_PER_BEAM_TWO,
 				true,
 			)
-			beam_array.BeamAngle = beam_data
+			beam_array.BeamAngle = f64_to_f32(beam_data)
 			ba_read = append(ba_read, pascalCase(SubRecordNames[BEAM_ANGLE]))
 		case MEAN_CAL_AMPLITUDE:
 			beam_data = sub_rec.DecodeSubRecArray(
@@ -635,7 +654,7 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 				bytes_per_beam,
 				true,
 			)
-			beam_array.MeanCalAmplitude = beam_data
+			beam_array.MeanCalAmplitude = f64_to_f32(beam_data)
 			ba_read = append(ba_read, pascalCase(SubRecordNames[MEAN_CAL_AMPLITUDE]))
 		case MEAN_REL_AMPLITUDE:
 			beam_data = sub_rec.DecodeSubRecArray(
@@ -645,7 +664,7 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 				bytes_per_beam,
 				false,
 			)
-			beam_array.MeanRelAmplitude = beam_data
+			beam_array.MeanRelAmplitude = f64_to_f32(beam_data)
 			ba_read = append(ba_read, pascalCase(SubRecordNames[MEAN_REL_AMPLITUDE]))
 		case ECHO_WIDTH:
 			beam_data = sub_rec.DecodeSubRecArray(
@@ -655,7 +674,7 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 				bytes_per_beam,
 				false,
 			)
-			beam_array.EchoWidth = beam_data
+			beam_array.EchoWidth = f64_to_f32(beam_data)
 			ba_read = append(ba_read, pascalCase(SubRecordNames[ECHO_WIDTH]))
 		case QUALITY_FACTOR:
 			beam_data = sub_rec.DecodeSubRecArray(
@@ -665,7 +684,7 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 				BYTES_PER_BEAM_ONE,
 				false,
 			)
-			beam_array.QualityFactor = beam_data
+			beam_array.QualityFactor = f64_to_f32(beam_data)
 			ba_read = append(ba_read, pascalCase(SubRecordNames[QUALITY_FACTOR]))
 		case RECEIVE_HEAVE:
 			beam_data = sub_rec.DecodeSubRecArray(
@@ -675,7 +694,7 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 				BYTES_PER_BEAM_ONE,
 				true,
 			)
-			beam_array.RecieveHeave = beam_data
+			beam_array.RecieveHeave = f64_to_f32(beam_data)
 			ba_read = append(ba_read, pascalCase(SubRecordNames[RECEIVE_HEAVE]))
 		case DEPTH_ERROR:
 			beam_data = sub_rec.DecodeSubRecArray(
@@ -685,7 +704,7 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 				BYTES_PER_BEAM_TWO,
 				false,
 			)
-			beam_array.DepthError = beam_data
+			beam_array.DepthError = f64_to_f32(beam_data)
 			ba_read = append(ba_read, pascalCase(SubRecordNames[DEPTH_ERROR]))
 		case ACROSS_TRACK_ERROR:
 			beam_data = sub_rec.DecodeSubRecArray(
@@ -695,7 +714,7 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 				BYTES_PER_BEAM_TWO,
 				false,
 			)
-			beam_array.AcrossTrackError = beam_data
+			beam_array.AcrossTrackError = f64_to_f32(beam_data)
 			ba_read = append(ba_read, pascalCase(SubRecordNames[ACROSS_TRACK_ERROR]))
 		case ALONG_TRACK_ERROR:
 			beam_data = sub_rec.DecodeSubRecArray(
@@ -705,7 +724,7 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 				BYTES_PER_BEAM_TWO,
 				false,
 			)
-			beam_array.AlongTrackError = beam_data
+			beam_array.AlongTrackError = f64_to_f32(beam_data)
 			ba_read = append(ba_read, pascalCase(SubRecordNames[ALONG_TRACK_ERROR]))
 		case NOMINAL_DEPTH:
 			beam_data = sub_rec.DecodeSubRecArray(
@@ -717,16 +736,16 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 			)
 			beam_array.NominalDepth = beam_data
 			ba_read = append(ba_read, pascalCase(SubRecordNames[NOMINAL_DEPTH]))
-		case QUALITY_FLAGS:
-			// obselete
-			// TODO; has specific decoder
-			panic("QUALITY_FLAGS subrecord has been superceded")
 		case BEAM_FLAGS:
 			beam_array.BeamFlags = DecodeBeamFlagsArray(
 				reader,
 				pinfo.Number_Beams,
 			)
 			ba_read = append(ba_read, pascalCase(SubRecordNames[BEAM_FLAGS]))
+		case QUALITY_FLAGS:
+			// obselete
+			// TODO; has specific decoder
+			panic("QUALITY_FLAGS subrecord has been superceded")
 		case SIGNAL_TO_NOISE:
 			beam_data = sub_rec.DecodeSubRecArray(
 				reader,
@@ -735,7 +754,7 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 				BYTES_PER_BEAM_ONE,
 				true,
 			)
-			beam_array.SignalToNoise = beam_data
+			beam_array.SignalToNoise = f64_to_f32(beam_data)
 			ba_read = append(ba_read, pascalCase(SubRecordNames[SIGNAL_TO_NOISE]))
 		case BEAM_ANGLE_FORWARD:
 			beam_data = sub_rec.DecodeSubRecArray(
@@ -743,9 +762,9 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 				pinfo.Number_Beams,
 				pinfo.scale_factors[sub_rec.Id],
 				BYTES_PER_BEAM_TWO,
-				true, // c-code says unsigned, lib-pdf says signed???
+				false,
 			)
-			beam_array.BeamAngleForward = beam_data
+			beam_array.BeamAngleForward = f64_to_f32(beam_data)
 			ba_read = append(ba_read, pascalCase(SubRecordNames[BEAM_ANGLE_FORWARD]))
 		case VERTICAL_ERROR:
 			beam_data = sub_rec.DecodeSubRecArray(
@@ -755,7 +774,7 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 				BYTES_PER_BEAM_TWO,
 				false,
 			)
-			beam_array.VerticalError = beam_data
+			beam_array.VerticalError = f64_to_f32(beam_data)
 			ba_read = append(ba_read, pascalCase(SubRecordNames[VERTICAL_ERROR]))
 		case HORIZONTAL_ERROR:
 			beam_data = sub_rec.DecodeSubRecArray(
@@ -765,7 +784,7 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 				BYTES_PER_BEAM_TWO,
 				false,
 			)
-			beam_array.HorizontalError = beam_data
+			beam_array.HorizontalError = f64_to_f32(beam_data)
 			ba_read = append(ba_read, pascalCase(SubRecordNames[HORIZONTAL_ERROR]))
 		case INTENSITY_SERIES:
 			intensity, img_md = DecodeBrbIntensity(reader, pinfo.Number_Beams, sensor_id)
@@ -778,7 +797,7 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 				BYTES_PER_BEAM_ONE,
 				false,
 			)
-			beam_array.SectorNumber = beam_data
+			beam_array.SectorNumber = f64_to_u16(beam_data)
 			ba_read = append(ba_read, pascalCase(SubRecordNames[SECTOR_NUMBER]))
 		case DETECTION_INFO:
 			beam_data = sub_rec.DecodeSubRecArray(
@@ -788,7 +807,7 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 				BYTES_PER_BEAM_ONE,
 				false,
 			)
-			beam_array.DetectionInfo = beam_data
+			beam_array.DetectionInfo = f64_to_u16(beam_data)
 			ba_read = append(ba_read, pascalCase(SubRecordNames[DETECTION_INFO]))
 		case INCIDENT_BEAM_ADJ:
 			beam_data = sub_rec.DecodeSubRecArray(
@@ -798,7 +817,7 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 				BYTES_PER_BEAM_ONE,
 				true,
 			)
-			beam_array.IncidentBeamAdj = beam_data
+			beam_array.IncidentBeamAdj = f64_to_f32(beam_data)
 			ba_read = append(ba_read, pascalCase(SubRecordNames[INCIDENT_BEAM_ADJ]))
 		case SYSTEM_CLEANING:
 			beam_data = sub_rec.DecodeSubRecArray(
@@ -808,7 +827,7 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 				BYTES_PER_BEAM_ONE,
 				false,
 			)
-			beam_array.SystemCleaning = beam_data
+			beam_array.SystemCleaning = f64_to_u16(beam_data)
 			ba_read = append(ba_read, pascalCase(SubRecordNames[SYSTEM_CLEANING]))
 		case DOPPLER_CORRECTION:
 			beam_data = sub_rec.DecodeSubRecArray(
@@ -818,7 +837,7 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 				BYTES_PER_BEAM_ONE,
 				true,
 			)
-			beam_array.DopplerCorrection = beam_data
+			beam_array.DopplerCorrection = f64_to_f32(beam_data)
 			ba_read = append(ba_read, pascalCase(SubRecordNames[DOPPLER_CORRECTION]))
 		case SONAR_VERT_UNCERTAINTY:
 			beam_data = sub_rec.DecodeSubRecArray(
@@ -828,7 +847,7 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 				BYTES_PER_BEAM_TWO,
 				false,
 			)
-			beam_array.SonarVertUncertainty = beam_data
+			beam_array.SonarVertUncertainty = f64_to_f32(beam_data)
 			ba_read = append(ba_read, pascalCase(SubRecordNames[SONAR_VERT_UNCERTAINTY]))
 		case SONAR_HORZ_UNCERTAINTY:
 			beam_data = sub_rec.DecodeSubRecArray(
@@ -838,7 +857,7 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 				BYTES_PER_BEAM_TWO,
 				false,
 			)
-			beam_array.SonarHorzUncertainty = beam_data
+			beam_array.SonarHorzUncertainty = f64_to_f32(beam_data)
 			ba_read = append(ba_read, pascalCase(SubRecordNames[SONAR_HORZ_UNCERTAINTY]))
 		case DETECTION_WINDOW:
 			beam_data = sub_rec.DecodeSubRecArray(
@@ -902,7 +921,7 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 			// DecodeEM3
 		case EM710, EM302, EM122, EM2040:
 			// DecodeEM4
-			sen_md.EM_4 = DecodeEM4Specific(reader)
+			sen_md.Em_4 = DecodeEm4Specific(reader)
 			// ping_data.Sensor_metadata.EM_4 = DecodeEM4Specific(sr_reader)  // COMMENTED for now, TODO; check it isn't needed
 		case GEOSWATH_PLUS:
 			// DecodeGeoSwathPlus
@@ -955,17 +974,17 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 		[]uint16{hdr.Number_beams},
 		[]uint16{hdr.Centre_beam},
 		[]float32{hdr.Tide_corrector},
-		[]float32{hdr.Depth_corrector},
+		[]float64{hdr.Depth_corrector},
 		[]float32{hdr.Heading},
 		[]float32{hdr.Pitch},
 		[]float32{hdr.Roll},
 		[]float32{hdr.Heave},
 		[]float32{hdr.Course},
 		[]float32{hdr.Speed},
-		[]float32{hdr.Height},
-		[]float32{hdr.Separation},
-		[]float32{hdr.GPS_tide_corrector},
-		[]int16{hdr.Ping_flags},
+		[]float64{hdr.Height},
+		[]float64{hdr.Separation},
+		[]float64{hdr.GPS_tide_corrector},
+		[]uint16{hdr.Ping_flags},
 	}
 
 	ping_data.Ping_headers = ping_headers
@@ -1544,7 +1563,7 @@ func (g *GsfFile) SbpToTileDB(fi *FileInfo, config_uri string) error {
 
 			buffer := make([]byte, rec.Datasize)
 			_ = binary.Read(g.Stream, binary.BigEndian, &buffer)
-			ping_data, err = SwathBathymetryPingRec(buffer, rec, pinfo, sensor_id)
+			ping_data, err = SwathBathymetryPingRec(buffer, rec, pinfo, sensor_id, fi.Metadata.GSF_Details)
 			if err != nil {
 				// for the time being, rather than stop and return,
 				// log an issue, and keep processing

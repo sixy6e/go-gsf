@@ -178,45 +178,80 @@ const (
 )
 
 // Null values for missing data.
+// Defining both float32 and float64 types for now, whereas
+// in future only one specific type may be needed.
 const (
-	NULL_LATITUDE               float32 = 91.0
-	NULL_LONGITUDE              float32 = 181.0
-	NULL_HEADING                float32 = 361.0
-	NULL_COURSE                 float32 = 361.0
-	NULL_SPEED                  float32 = 99.0
-	NULL_PITCH                  float32 = 99.0
-	NULL_ROLL                   float32 = 99.0
-	NULL_HEAVE                  float32 = 99.0
-	NULL_DRAFT                  float32 = 0.0
-	NULL_DEPTH_CORRECTOR        float32 = 99.99
-	NULL_TIDE_CORRECTOR         float32 = 99.99
-	NULL_SOUND_SPEED_CORRECTION float32 = 99.99
-	NULL_HORIZONTAL_ERROR       float32 = -1.00
-	NULL_VERTICAL_ERROR         float32 = -1.00
-	NULL_HEIGHT                 float32 = 9999.99
-	NULL_SEP                    float32 = 9999.99
-	NULL_SEP_UNCERTAINTY        float32 = 0.0
+	NULL_LATITUDE_F32               float32 = 91.0
+	NULL_LONGITUDE_F32              float32 = 181.0
+	NULL_HEADING_F32                float32 = 361.0
+	NULL_COURSE_F32                 float32 = 361.0
+	NULL_SPEED_F32                  float32 = 99.0
+	NULL_PITCH_F32                  float32 = 99.0
+	NULL_ROLL_F32                   float32 = 99.0
+	NULL_HEAVE_F32                  float32 = 99.0
+	NULL_DRAFT_F32                  float32 = 0.0
+	NULL_DEPTH_CORRECTOR_F32        float32 = 99.99
+	NULL_TIDE_CORRECTOR_F32         float32 = 99.99
+	NULL_SOUND_SPEED_CORRECTION_F32 float32 = 99.99
+	NULL_HORIZONTAL_ERROR_F32       float32 = -1.00
+	NULL_VERTICAL_ERROR_F32         float32 = -1.00
+	NULL_HEIGHT                     float64 = 9999.99
+	NULL_SEP                        float64 = 9999.99
+	NULL_SEP_UNCERTAINTY            float32 = 0.0
+	NULL_GPS_TIDE_CORRECTOR         float64 = 99.99
+	NULL_LATITUDE_F64               float64 = 91.0
+	NULL_LONGITUDE_F64              float64 = 181.0
+	NULL_HEADING_F64                float64 = 361.0
+	NULL_COURSE_F64                 float64 = 361.0
+	NULL_SPEED_F64                  float64 = 99.0
+	NULL_PITCH_F64                  float64 = 99.0
+	NULL_ROLL_F64                   float64 = 99.0
+	NULL_HEAVE_F64                  float64 = 99.0
+	NULL_DRAFT_F64                  float64 = 0.0
+	NULL_DEPTH_CORRECTOR_F64        float64 = 99.99
+	NULL_TIDE_CORRECTOR_F64         float64 = 99.99
+	NULL_SOUND_SPEED_CORRECTION_F64 float64 = 99.99
+	NULL_HORIZONTAL_ERROR_F64       float64 = -1.00
+	NULL_VERTICAL_ERROR_F64         float64 = -1.00
+	NULL_SEP_UNCERTAINTY_F64        float64 = 0.0
 )
 
 // Null values for swath bathymetry ping subrecords.
+// Defining both float32 and float64 types for now, whereas
+// in future only one specific type may be needed.
 const (
-	NULL_DEPTH              float32 = 0.0
-	NULL_ACROSS_TRACK       float32 = 0.0
-	NULL_ALONG_TRACK        float32 = 0.0
-	NULL_TRAVEL_TIME        float32 = 0.0
-	NULL_BEAM_ANGLE         float32 = 0.0
-	NULL_MC_AMPLITUDE       float32 = 0.0
-	NULL_MR_AMPLITUDE       float32 = 0.0
-	NULL_ECHO_WIDTH         float32 = 0.0
-	NULL_QUALITY_FACTOR     float32 = 0.0
-	NULL_RECEIVE_HEAVE      float32 = 0.0
-	NULL_DEPTH_ERROR        float32 = 0.0
-	NULL_ACROSS_TRACK_ERROR float32 = 0.0
-	NULL_ALONG_TRACK_ERROR  float32 = 0.0
-	NULL_NAP_POS_ERROR      float32 = 0.0
-	NULL_FLOAT32_ZERO       float32 = 0.0 // Would NaN be better?
-	NULL_UINT8_ZERO         uint8   = 0
-	NULL_UINT16_ZERO        uint16  = 0
+	NULL_DEPTH_F32              float32 = 0.0
+	NULL_ACROSS_TRACK_F32       float32 = 0.0
+	NULL_ALONG_TRACK_F32        float32 = 0.0
+	NULL_TRAVEL_TIME_F32        float32 = 0.0
+	NULL_BEAM_ANGLE_F32         float32 = 0.0
+	NULL_MC_AMPLITUDE_F32       float32 = 0.0
+	NULL_MR_AMPLITUDE_F32       float32 = 0.0
+	NULL_ECHO_WIDTH_F32         float32 = 0.0
+	NULL_QUALITY_FACTOR_F32     float32 = 0.0
+	NULL_RECEIVE_HEAVE_F32      float32 = 0.0
+	NULL_DEPTH_ERROR_F32        float32 = 0.0
+	NULL_ACROSS_TRACK_ERROR_F32 float32 = 0.0
+	NULL_ALONG_TRACK_ERROR_F32  float32 = 0.0
+	NULL_NAP_POS_ERROR_F32      float32 = 0.0
+	NULL_FLOAT32_ZERO           float32 = 0.0 // Would NaN be better?
+	NULL_DEPTH_F64              float64 = 0.0
+	NULL_ACROSS_TRACK_F64       float64 = 0.0
+	NULL_ALONG_TRACK_F64        float64 = 0.0
+	NULL_TRAVEL_TIME_F64        float64 = 0.0
+	NULL_BEAM_ANGLE_F64         float64 = 0.0
+	NULL_MC_AMPLITUDE_F64       float64 = 0.0
+	NULL_MR_AMPLITUDE_F64       float64 = 0.0
+	NULL_ECHO_WIDTH_F64         float64 = 0.0
+	NULL_QUALITY_FACTOR_F64     float64 = 0.0
+	NULL_RECEIVE_HEAVE_F64      float64 = 0.0
+	NULL_DEPTH_ERROR_F64        float64 = 0.0
+	NULL_ACROSS_TRACK_ERROR_F64 float64 = 0.0
+	NULL_ALONG_TRACK_ERROR_F64  float64 = 0.0
+	NULL_NAP_POS_ERROR_F64      float64 = 0.0
+	NULL_FLOAT64_ZERO           float64 = 0.0 // Would NaN be better?
+	NULL_UINT8_ZERO             uint8   = 0
+	NULL_UINT16_ZERO            uint16  = 0
 )
 
 // Field sizes for ping subarrays
