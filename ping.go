@@ -883,58 +883,82 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 		// sensor specific subrecords
 		case SEABEAM:
 			// DecodeSeabeam
+			sen_md.Seabeam = DecodeSeabeamSpecific(reader)
 		case EM12:
 			// DecodeEM12
+			sen_md.Em12 = DecodeEm12Specific(reader)
 		case EM100:
 			// DecodeEM100
+			sen_md.Em100 = DecodeEm100Specific(reader)
 		case EM950:
 			// DecodeEM950
+			sen_md.Em950 = DecodeEm950Specific(reader)
 		case EM121A:
 			// DecodeEM121A
+			sen_md.Em121A = DecodeEm121ASpecific(reader)
 		case EM121:
 			// DecodeEM121
+			sen_md.Em121 = DecodeEm121Specific(reader)
 		case SASS: // obsolete
 			// DecodeSASS
+			sen_md.Sass = DecodeSassSpecfic(reader)
 		case SEAMAP:
 			// DecodeSeaMap
+			sen_md.Seamap = DecodeSeamapSpecific(reader, gsfd)
 		case SEABAT:
 			// DecodeSeaBat
+			sen_md.Seabat = DecodeSeabatSpecific(reader)
 		case EM1000:
 			// DecodeEM1000
+			sen_md.Em1000 = DecodeEm1000Specific(reader)
 		case TYPEIII_SEABEAM: // obsolete
 			// DecodeTypeIII
+			sen_md.TypeIIISeabeam = DecodeTypeIIISeabeamSpecific(reader)
 		case SB_AMP:
 			// DecodeSBAmp
+			sen_md.SbAmp = DecodeSbAmpSeabeamSpecific(reader)
 		case SEABAT_II:
 			// DecodeSeaBatII
+			sen_md.SeabatII = DecodeSeabatIISpecific(reader)
 		case SEABAT_8101:
 			// DecodeSeaBat8101
+			sen_md.Seabat8101 = DecodeSeabat8101Specific(reader)
 		case SEABEAM_2112:
 			// DecodeSeaBeam2112
+			sen_md.Seabeam2112 = DecodeSeabeam2112Specific(reader)
 		case ELAC_MKII:
 			// DecodeElacMkII
+			sen_md.ElacMkII = DecodeElacMkIISpecific(reader)
 		case CMP_SAAS: // CMP (compressed), should be used in place of SASS
 			// DecodeCmpSass
+			sen_md.CmpSass = DecodeCmpSass(reader)
 		case RESON_8101, RESON_8111, RESON_8124, RESON_8125, RESON_8150, RESON_8160:
 			// DecodeReson8100
+			sen_md.Reson8100 = DecodeReson8100(reader)
 		case EM120, EM300, EM1002, EM2000, EM3000, EM3002, EM3000D, EM3002D, EM121A_SIS:
 			// DecodeEM3
 		case EM710, EM302, EM122, EM2040:
 			// DecodeEM4
-			sen_md.Em_4 = DecodeEm4Specific(reader)
+			sen_md.Em4 = DecodeEm4Specific(reader)
 			// ping_data.Sensor_metadata.EM_4 = DecodeEM4Specific(sr_reader)  // COMMENTED for now, TODO; check it isn't needed
 		case GEOSWATH_PLUS:
 			// DecodeGeoSwathPlus
+			sen_md.GeoSwathPlus = DecodeGeoSwathPlusSpecific(reader)
 		case KLEIN_5410_BSS:
 			// DecodeKlein5410Bss
+			sen_md.Klein5410Bss = DecodeKlein5410BssSpecific(reader)
 		case RESON_7125:
 			// DecodeReson7100
+			sen_md.Reson7100 = DecodeReson7100Specific(reader)
 		case EM300_RAW, EM1002_RAW, EM2000_RAW, EM3000_RAW, EM120_RAW, EM3002_RAW, EM3000D_RAW, EM3002D_RAW, EM121A_SIS_RAW:
 			// DecodeEM3Raw
+			sen_md.Em3Raw = DecodeEm3RawSpecific(reader)
 		case DELTA_T:
 			// DecodeDeltaT
+			sen_md.DeltaT = DecodeDeltaTSpecific(reader)
 		case R2SONIC_2022, R2SONIC_2024, R2SONIC_2020:
 			// DecodeR2Sonic
+			sen_md.R2Sonic = DecodeR2SonicSpecific(reader)
 		case SR_NOT_DEFINED: // the spec makes no mention of ID 154
 			errn := errors.Join(
 				errors.New("Error, Subrecord ID 154 is not defined."),
@@ -947,8 +971,10 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 			panic(errn)
 		case RESON_TSERIES:
 			// DecodeResonTSeries
+			sen_md.ResonTSeries = DecodeResonTSeriesSonicSpecific(reader)
 		case KMALL:
 			// DecodeKMALL
+			sen_md.Kmall = DecodeKmallSpecific(reader)
 
 			// single beam swath sensor specific subrecords
 		case SWATH_ECHOTRAC, SWATH_BATHY2000, SWATH_PDD:

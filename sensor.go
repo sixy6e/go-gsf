@@ -12,8 +12,34 @@ var ErrSensor = errors.New("Sensor not supported")
 var ErrWriteSensorMd = errors.New("Error writing sensor metadata")
 
 type SensorMetadata struct {
-	Em_3 Em3
-	Em_4 Em4
+	Seabeam        Seabeam
+	Em12           Em12
+	Em100          Em100
+	Em950          Em950
+	Em121A         Em121A
+	Em121          Em121
+	Sass           Sass
+	Seamap         Seamap
+	Seabat         Seabat
+	Em1000         Em1000
+	TypeIIISeabeam TypeIIISeabeam
+	SbAmp          SbAmp
+	SeabatII       SeabatII
+	Seabat8101     Seabat8101
+	Seabeam2112    Seabeam2112
+	ElacMkII       ElacMkII
+	CmpSass        CmpSass
+	Reson8100      Reson8100
+	Em3            Em3
+	Em4            Em4
+	GeoSwathPlus   GeoSwathPlus
+	Klein5410Bss   Klein5410Bss
+	Reson7100      Reson7100
+	Em3Raw         Em3Raw
+	DeltaT         DeltaT
+	R2Sonic        R2Sonic
+	ResonTSeries   ResonTSeries
+	Kmall          Kmall
 }
 
 // writeSensorMetadata handles the serialisation of specific sensor related
