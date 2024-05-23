@@ -89,24 +89,52 @@ func DecodeBrbIntensity(reader *bytes.Reader, nbeams uint16, sensor_id SubRecord
 
 	case EM120, EM120_RAW, EM300, EM300_RAW, EM1002, EM1002_RAW, EM2000, EM2000_RAW, EM3000, EM3000_RAW, EM3002, EM3002_RAW, EM3000D, EM3000D_RAW, EM3002D, EM3002D_RAW, EM121A_SIS, EM121A_SIS_RAW:
 		// DecodeEM3Imagery
+		em3img, scl__off := DecodeEm3Imagery(reader)
+		img_md.Em3_imagery = em3img
+		scl_off.Scale = scl__off.Scale
+		scl_off.Offset = scl__off.Offset
 	case RESON_7125:
 		// DecodeReson7100Imagery
+		reson7100, scl__off := DecodeReson7100Imagery(reader)
+		img_md.Reson7100_imagery = reson7100
+		scl_off.Scale = scl__off.Scale
+		scl_off.Offset = scl__off.Offset
 	case RESON_TSERIES:
 		// DecodeResonTSeriesImagery
+		tseries, scl__off := DecodeResonTSeriesImagery(reader)
+		img_md.ResonTSeries_imagery = tseries
+		scl_off.Scale = scl__off.Scale
+		scl_off.Offset = scl__off.Offset
 	case RESON_8101, RESON_8111, RESON_8124, RESON_8125, RESON_8150, RESON_8160:
 		// DecodeReson8100Imagery
+		reson8100, scl__off := DecodeReson8100Imagery(reader)
+		img_md.Reson8100_imagery = reson8100
+		scl_off.Scale = scl__off.Scale
+		scl_off.Offset = scl__off.Offset
 	case EM122, EM302, EM710, EM2040:
 		// DecodeEM4Imagery
-		em4img, scl__off := DecodeEM4Imagery(reader)
-		img_md.EM4_imagery = em4img
+		em4img, scl__off := DecodeEm4Imagery(reader)
+		img_md.Em4_imagery = em4img
 		scl_off.Scale = scl__off.Scale
 		scl_off.Offset = scl__off.Offset
 	case KLEIN_5410_BSS:
 		// DecodeKlein5410BssImagery
+		klein, scl__off := DecodeKlein5410BssImagery(reader)
+		img_md.Klein5410Bss_imagery = klein
+		scl_off.Scale = scl__off.Scale
+		scl_off.Offset = scl__off.Offset
 	case KMALL:
 		// DecodeKMALLImagery
+		kmall, scl__off := DecodeKmallImagery(reader)
+		img_md.Kmall_imagery = kmall
+		scl_off.Scale = scl__off.Scale
+		scl_off.Offset = scl__off.Offset
 	case R2SONIC_2020, R2SONIC_2022, R2SONIC_2024:
 		// DecodeR2SonicImagery
+		r2sonic, scl__off := DecodeR2SonicImagery(reader)
+		img_md.R2Sonic_imagery = r2sonic
+		scl_off.Scale = scl__off.Scale
+		scl_off.Offset = scl__off.Offset
 	}
 
 	bytes_per_sample := base.Bits_per_sample / 8
@@ -191,16 +219,17 @@ func DecodeBrbIntensity(reader *bytes.Reader, nbeams uint16, sensor_id SubRecord
 		// dB_value = (value - offset) / scale
 		switch sensor_id {
 		case EM120, EM120_RAW, EM300, EM300_RAW, EM1002, EM1002_RAW, EM2000, EM2000_RAW, EM3000, EM3000_RAW, EM3002, EM3002_RAW, EM3000D, EM3000D_RAW, EM3002D, EM3002D_RAW, EM121A_SIS, EM121A_SIS_RAW:
-			// TODO; loop over length, as range may copy the array
 			for k, v := range samples_f64 {
-				samples_f64[k] = (v - float64(img_md.EM3_imagery.offset[0])) / float64(2)
+				samples_f64[k] = (v - scl_off.Offset) / float64(2)
 			}
 		case EM122, EM302, EM710, EM2040:
-			// TODO; loop over length, as range may copy the array
 			for k, v := range samples_f64 {
 				samples_f64[k] = (v - scl_off.Offset) / SCALE_1_F64
 			}
 		}
+
+		// other sensor types don't contain a scale and offset value in their
+		// imagery metadata. so i guess we do nothing
 
 		// need to handle the case where base2.Sample_count == 0
 		// not recording a value will upset the variable length offsets
