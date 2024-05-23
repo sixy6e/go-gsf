@@ -306,7 +306,7 @@ type Seabat struct {
 	ReceiveGain          []uint8   `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
 }
 
-func DecodeSeabatSpecific(reader *bytes.Reader, gsfd GsfDetails) (sensor_data Seabat) {
+func DecodeSeabatSpecific(reader *bytes.Reader) (sensor_data Seabat) {
 	var buffer struct {
 		PingNumber           uint16
 		SurfaceSoundVelocity uint16
