@@ -12,6 +12,7 @@ var ErrSensor = errors.New("Sensor not supported")
 var ErrWriteSensorMd = errors.New("Error writing sensor metadata")
 
 type SensorMetadata struct {
+	Em_3 Em3
 	Em_4 Em4
 }
 
@@ -204,8 +205,14 @@ func newSensorMetadata(number_pings int, sensor_id SubRecordID) (sen_md SensorMe
 }
 
 type SensorImageryMetadata struct {
-	EM3_imagery EM3Imagery
-	EM4_imagery EM4Imagery
+	Em3_imagery          Em3Imagery
+	Em4_imagery          Em4Imagery
+	Reson7100_imagery    Reson7100Imagery
+	ResonTSeries_imagery ResonTSeriesImagery
+	Reson8100_imagery    Reson8100Imagery
+	Kmall_imagery        KmallImagery
+	Klein5410Bss_imagery Klein5410BssImagery
+	R2Sonic_imagery      R2SonicImagery
 }
 
 // writeSensorImageryMetadata handles the serialisation of specific sensor related
@@ -243,13 +250,13 @@ func (sim *SensorImageryMetadata) writeSensorImageryMetadata(ctx *tiledb.Context
 
 	switch sensor_id {
 	case EM710, EM302, EM122, EM2040:
-		err := setStructFieldBuffers(query, &sim.EM4_imagery)
+		err := setStructFieldBuffers(query, &sim.Em4_imagery)
 		if err != nil {
 			errn := errors.New("Error writing SensorImageryMetadata")
 			return errors.Join(err, errn)
 		}
-	case EM120, EM300, EM1002, EM2000, EM3000, EM3002, EM3000D, EM3002D, EM121A_SIS:
-		err := setStructFieldBuffers(query, &sim.EM3_imagery)
+	case EM120, EM120_RAW, EM300, EM300_RAW, EM1002, EM1002_RAW, EM2000, EM2000_RAW, EM3000, EM3000_RAW, EM3002, EM3002_RAW, EM3000D, EM3000D_RAW, EM3002D, EM3002D_RAW, EM121A_SIS, EM121A_SIS_RAW:
+		err := setStructFieldBuffers(query, &sim.Em3_imagery)
 		if err != nil {
 			errn := errors.New("Error writing SensorImageryMetadata")
 			return errors.Join(err, errn)
@@ -286,7 +293,7 @@ func (sim *SensorImageryMetadata) attachAttrs(schema *tiledb.ArraySchema, ctx *t
 	case RESON_8101, RESON_8111, RESON_8124, RESON_8125, RESON_8150, RESON_8160:
 		// DecodeReson8100Imagery
 	case EM122, EM302, EM710, EM2040:
-		err = schemaAttrs(&EM4Imagery{}, schema, ctx)
+		err = schemaAttrs(&Em4Imagery{}, schema, ctx)
 		if err != nil {
 			err_md := errors.New("Error creating SensorImageryMetadata.EM4_imagery attributes")
 			return errors.Join(err, err_md)
@@ -308,8 +315,8 @@ func (sim *SensorImageryMetadata) appendSensorImageryMetadata(sp *SensorImageryM
 	switch sensor_id {
 	case EM710, EM302, EM122, EM2040:
 		// EM4
-		rf_pd := reflect.ValueOf(&sim.EM4_imagery).Elem()
-		rf_sp := reflect.ValueOf(&sp.EM4_imagery).Elem()
+		rf_pd := reflect.ValueOf(&sim.Em4_imagery).Elem()
+		rf_sp := reflect.ValueOf(&sp.Em4_imagery).Elem()
 		types := rf_pd.Type()
 
 		for i := 0; i < rf_pd.NumField(); i++ {
@@ -318,10 +325,10 @@ func (sim *SensorImageryMetadata) appendSensorImageryMetadata(sp *SensorImageryM
 			field_sp := rf_sp.FieldByName(name)
 			field_pd.Set(reflect.AppendSlice(field_pd, field_sp))
 		}
-	case EM120, EM300, EM1002, EM2000, EM3000, EM3002, EM3000D, EM3002D, EM121A_SIS:
+	case EM120, EM120_RAW, EM300, EM300_RAW, EM1002, EM1002_RAW, EM2000, EM2000_RAW, EM3000, EM3000_RAW, EM3002, EM3002_RAW, EM3000D, EM3000D_RAW, EM3002D, EM3002D_RAW, EM121A_SIS, EM121A_SIS_RAW:
 		// EM3
-		rf_pd := reflect.ValueOf(&sim.EM3_imagery).Elem()
-		rf_sp := reflect.ValueOf(&sp.EM3_imagery).Elem()
+		rf_pd := reflect.ValueOf(&sim.Em3_imagery).Elem()
+		rf_sp := reflect.ValueOf(&sp.Em3_imagery).Elem()
 		types := rf_pd.Type()
 
 		for i := 0; i < rf_pd.NumField(); i++ {
@@ -348,14 +355,14 @@ func newSensorImageryMetadata(number_pings int, sensor_id SubRecordID) (sen_img_
 	switch sensor_id {
 	case EM710, EM302, EM122, EM2040:
 		// EM4
-		em4i := EM4Imagery{}
+		em4i := Em4Imagery{}
 		chunkedStructSlices(&em4i, number_pings)
-		sen_img_md.EM4_imagery = em4i
-	case EM120, EM300, EM1002, EM2000, EM3000, EM3002, EM3000D, EM3002D, EM121A_SIS:
+		sen_img_md.Em4_imagery = em4i
+	case EM120, EM120_RAW, EM300, EM300_RAW, EM1002, EM1002_RAW, EM2000, EM2000_RAW, EM3000, EM3000_RAW, EM3002, EM3002_RAW, EM3000D, EM3000D_RAW, EM3002D, EM3002D_RAW, EM121A_SIS, EM121A_SIS_RAW:
 		// EM3
-		em3i := EM3Imagery{}
+		em3i := Em3Imagery{}
 		chunkedStructSlices(&em3i, number_pings)
-		sen_img_md.EM3_imagery = em3i
+		sen_img_md.Em3_imagery = em3i
 	default:
 		// TODO; update return sig to allow return of an err rather than simply panic
 		panic(errors.Join(ErrSensor, errors.New(strconv.Itoa(int(sensor_id)))))
