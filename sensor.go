@@ -19,13 +19,13 @@ type SensorMetadata struct {
 	Em121A         Em121A
 	Em121          Em121
 	Sass           Sass
-	Seamap         Seamap
-	Seabat         Seabat
+	SeaMap         SeaMap
+	SeaBat         SeaBat
 	Em1000         Em1000
 	TypeIIISeabeam TypeIIISeabeam
 	SbAmp          SbAmp
-	SeabatII       SeabatII
-	Seabat8101     Seabat8101
+	SeaBatII       SeaBatII
+	SeaBat8101     SeaBat8101
 	Seabeam2112    Seabeam2112
 	ElacMkII       ElacMkII
 	CmpSass        CmpSass
@@ -41,7 +41,7 @@ type SensorMetadata struct {
 	ResonTSeries   ResonTSeries
 	Kmall          Kmall
 	SbEchotrac     SbEchotrac
-	Mgd77          Mgd77
+	SbMgd77        SbMgd77
 	SbBdb          SbBdb
 	SbNoShDb       SbNoShDb
 	SbNavisound    SbNavisound

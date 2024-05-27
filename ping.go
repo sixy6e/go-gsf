@@ -883,82 +883,161 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 		// sensor specific subrecords
 		case SEABEAM:
 			// DecodeSeabeam
-			sen_md.Seabeam = DecodeSeabeamSpecific(reader)
+			sen_md.Seabeam, err = DecodeSeabeamSpecific(reader)
+			if err != nil {
+				return ping_data, err
+			}
 		case EM12:
 			// DecodeEM12
-			sen_md.Em12 = DecodeEm12Specific(reader)
+			sen_md.Em12, err = DecodeEm12Specific(reader)
+			if err != nil {
+				return ping_data, err
+			}
 		case EM100:
 			// DecodeEM100
-			sen_md.Em100 = DecodeEm100Specific(reader)
+			sen_md.Em100, err = DecodeEm100Specific(reader)
+			if err != nil {
+				return ping_data, err
+			}
 		case EM950:
 			// DecodeEM950
-			sen_md.Em950 = DecodeEm950Specific(reader)
+			sen_md.Em950, err = DecodeEm950Specific(reader)
+			if err != nil {
+				return ping_data, err
+			}
 		case EM121A:
 			// DecodeEM121A
-			sen_md.Em121A = DecodeEm121ASpecific(reader)
+			sen_md.Em121A, err = DecodeEm121ASpecific(reader)
+			if err != nil {
+				return ping_data, err
+			}
 		case EM121:
 			// DecodeEM121
-			sen_md.Em121 = DecodeEm121Specific(reader)
+			sen_md.Em121, err = DecodeEm121Specific(reader)
+			if err != nil {
+				return ping_data, err
+			}
 		case SASS: // obsolete
 			// DecodeSASS
-			sen_md.Sass = DecodeSassSpecfic(reader)
+			sen_md.Sass, err = DecodeSassSpecfic(reader)
+			if err != nil {
+				return ping_data, err
+			}
 		case SEAMAP:
 			// DecodeSeaMap
-			sen_md.Seamap = DecodeSeamapSpecific(reader, gsfd)
+			sen_md.SeaMap, err = DecodeSeaMapSpecific(reader, gsfd)
+			if err != nil {
+				return ping_data, err
+			}
 		case SEABAT:
 			// DecodeSeaBat
-			sen_md.Seabat = DecodeSeabatSpecific(reader)
+			sen_md.SeaBat, err = DecodeSeaBatSpecific(reader)
+			if err != nil {
+				return ping_data, err
+			}
 		case EM1000:
 			// DecodeEM1000
-			sen_md.Em1000 = DecodeEm1000Specific(reader)
+			sen_md.Em1000, err = DecodeEm1000Specific(reader)
+			if err != nil {
+				return ping_data, err
+			}
 		case TYPEIII_SEABEAM: // obsolete
 			// DecodeTypeIII
-			sen_md.TypeIIISeabeam = DecodeTypeIIISeabeamSpecific(reader)
+			sen_md.TypeIIISeabeam, err = DecodeTypeIIISeabeamSpecific(reader)
+			if err != nil {
+				return ping_data, err
+			}
 		case SB_AMP:
 			// DecodeSBAmp
-			sen_md.SbAmp = DecodeSbAmpSeabeamSpecific(reader)
+			sen_md.SbAmp, err = DecodeSbAmpSpecific(reader)
+			if err != nil {
+				return ping_data, err
+			}
 		case SEABAT_II:
 			// DecodeSeaBatII
-			sen_md.SeabatII = DecodeSeabatIISpecific(reader)
+			sen_md.SeaBatII, err = DecodeSeaBatIISpecific(reader)
+			if err != nil {
+				return ping_data, err
+			}
 		case SEABAT_8101:
 			// DecodeSeaBat8101
-			sen_md.Seabat8101 = DecodeSeabat8101Specific(reader)
+			sen_md.SeaBat8101, err = DecodeSeaBat8101Specific(reader)
+			if err != nil {
+				return ping_data, err
+			}
 		case SEABEAM_2112:
 			// DecodeSeaBeam2112
-			sen_md.Seabeam2112 = DecodeSeabeam2112Specific(reader)
+			sen_md.Seabeam2112, err = DecodeSeabeam2112Specific(reader)
+			if err != nil {
+				return ping_data, err
+			}
 		case ELAC_MKII:
 			// DecodeElacMkII
-			sen_md.ElacMkII = DecodeElacMkIISpecific(reader)
+			sen_md.ElacMkII, err = DecodeElacMkIISpecific(reader)
+			if err != nil {
+				return ping_data, err
+			}
 		case CMP_SAAS: // CMP (compressed), should be used in place of SASS
 			// DecodeCmpSass
-			sen_md.CmpSass = DecodeCmpSass(reader)
+			sen_md.CmpSass, err = DecodeCmpSass(reader)
+			if err != nil {
+				return ping_data, err
+			}
 		case RESON_8101, RESON_8111, RESON_8124, RESON_8125, RESON_8150, RESON_8160:
 			// DecodeReson8100
-			sen_md.Reson8100 = DecodeReson8100(reader)
+			sen_md.Reson8100, err = DecodeReson8100(reader)
+			if err != nil {
+				return ping_data, err
+			}
 		case EM120, EM300, EM1002, EM2000, EM3000, EM3002, EM3000D, EM3002D, EM121A_SIS:
 			// DecodeEM3
+			sen_md.Em3, err = DecodeEm3Specific(reader)
+			if err != nil {
+				return ping_data, err
+			}
 		case EM710, EM302, EM122, EM2040:
 			// DecodeEM4
-			sen_md.Em4 = DecodeEm4Specific(reader)
+			sen_md.Em4, err = DecodeEm4Specific(reader)
+			if err != nil {
+				return ping_data, err
+			}
 			// ping_data.Sensor_metadata.EM_4 = DecodeEM4Specific(sr_reader)  // COMMENTED for now, TODO; check it isn't needed
 		case GEOSWATH_PLUS:
 			// DecodeGeoSwathPlus
-			sen_md.GeoSwathPlus = DecodeGeoSwathPlusSpecific(reader)
+			sen_md.GeoSwathPlus, err = DecodeGeoSwathPlusSpecific(reader)
+			if err != nil {
+				return ping_data, err
+			}
 		case KLEIN_5410_BSS:
 			// DecodeKlein5410Bss
-			sen_md.Klein5410Bss = DecodeKlein5410BssSpecific(reader)
+			sen_md.Klein5410Bss, err = DecodeKlein5410BssSpecific(reader)
+			if err != nil {
+				return ping_data, err
+			}
 		case RESON_7125:
 			// DecodeReson7100
-			sen_md.Reson7100 = DecodeReson7100Specific(reader)
+			sen_md.Reson7100, err = DecodeReson7100Specific(reader)
+			if err != nil {
+				return ping_data, err
+			}
 		case EM300_RAW, EM1002_RAW, EM2000_RAW, EM3000_RAW, EM120_RAW, EM3002_RAW, EM3000D_RAW, EM3002D_RAW, EM121A_SIS_RAW:
 			// DecodeEM3Raw
-			sen_md.Em3Raw = DecodeEm3RawSpecific(reader)
+			sen_md.Em3Raw, err = DecodeEm3RawSpecific(reader)
+			if err != nil {
+				return ping_data, err
+			}
 		case DELTA_T:
 			// DecodeDeltaT
-			sen_md.DeltaT = DecodeDeltaTSpecific(reader)
+			sen_md.DeltaT, err = DecodeDeltaTSpecific(reader)
+			if err != nil {
+				return ping_data, err
+			}
 		case R2SONIC_2022, R2SONIC_2024, R2SONIC_2020:
 			// DecodeR2Sonic
-			sen_md.R2Sonic = DecodeR2SonicSpecific(reader)
+			sen_md.R2Sonic, err = DecodeR2SonicSpecific(reader)
+			if err != nil {
+				return ping_data, err
+			}
 		case SR_NOT_DEFINED: // the spec makes no mention of ID 154
 			errn := errors.Join(
 				errors.New("Error, Subrecord ID 154 is not defined."),
@@ -971,27 +1050,48 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 			panic(errn)
 		case RESON_TSERIES:
 			// DecodeResonTSeries
-			sen_md.ResonTSeries = DecodeResonTSeriesSonicSpecific(reader)
+			sen_md.ResonTSeries, err = DecodeResonTSeriesSonicSpecific(reader)
+			if err != nil {
+				return ping_data, err
+			}
 		case KMALL:
 			// DecodeKMALL
-			sen_md.Kmall = DecodeKmallSpecific(reader)
+			sen_md.Kmall, err = DecodeKmallSpecific(reader)
+			if err != nil {
+				return ping_data, err
+			}
 
 			// single beam swath sensor specific subrecords
 		case SWATH_ECHOTRAC, SWATH_BATHY2000, SWATH_PDD:
 			// DecodeSBEchotrac
-			sen_md.SbEchotrac = DecodeSbEchotracSpecific(reader)
+			sen_md.SbEchotrac, err = DecodeSbEchotracSpecific(reader)
+			if err != nil {
+				return ping_data, err
+			}
 		case SWATH_MGD77:
 			// DecodeSBMGD77
-			sen_md.Mgd77 = DecodeSBMGD77Specific(reader)
+			sen_md.SbMgd77, err = DecodeSBMGD77Specific(reader)
+			if err != nil {
+				return ping_data, err
+			}
 		case SWATH_BDB:
 			// DecodeSBBDB
-			sen_md.SbBdb = DecodeSbBdbSpecific(reader)
+			sen_md.SbBdb, err = DecodeSbBdbSpecific(reader)
+			if err != nil {
+				return ping_data, err
+			}
 		case SWATH_NOSHDB:
 			// DecodeSBNOSHDB
-			sen_md.SbNoShDb = DecodeSbNoShDbSpecific(reader)
+			sen_md.SbNoShDb, err = DecodeSbNoShDbSpecific(reader)
+			if err != nil {
+				return ping_data, err
+			}
 		case SWATH_NAVISOUND:
 			// DecodeSBNavisound
-			sen_md.SbNavisound = DecodeSbNavisoundSpecific(reader)
+			sen_md.SbNavisound, err = DecodeSbNavisoundSpecific(reader)
+			if err != nil {
+				return ping_data, err
+			}
 		}
 	}
 

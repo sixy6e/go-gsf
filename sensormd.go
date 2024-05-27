@@ -3,6 +3,7 @@ package gsf
 import (
 	"bytes"
 	"encoding/binary"
+	"errors"
 	"time"
 )
 
@@ -22,18 +23,26 @@ import (
 // we'll keep as uint16 and not promote to int32.
 // TODO; look at the int8 assignments and confirm if *p is unsigned
 
+var ErrSensorMetata = errors.New("Error reading Sensor Metadata")
+
 type Seabeam struct {
 	EclipseTime []uint16 `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
 }
 
-func DecodeSeabeamSpecific(reader *bytes.Reader) (sensor_data Seabeam) {
+func DecodeSeabeamSpecific(reader *bytes.Reader) (sensor_data Seabeam, err error) {
 	var buffer struct {
 		EclipseTime uint16
 	}
-	_ = binary.Read(reader, binary.BigEndian, &buffer)
+	err = binary.Read(reader, binary.BigEndian, &buffer)
+	if err != nil {
+		errn := errors.New("Seabeam sensor")
+		err = errors.Join(err, ErrSensorMetata, errn)
+		return sensor_data, err
+	}
+
 	sensor_data.EclipseTime = []uint16{buffer.EclipseTime}
 
-	return sensor_data
+	return sensor_data, err
 }
 
 type Em12 struct {
@@ -44,7 +53,7 @@ type Em12 struct {
 	Mode          []uint8   `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
 }
 
-func DecodeEm12Specific(reader *bytes.Reader) (sensor_data Em12) {
+func DecodeEm12Specific(reader *bytes.Reader) (sensor_data Em12, err error) {
 	var buffer struct {
 		PingNumber    uint16
 		Resolution    uint8
@@ -53,7 +62,12 @@ func DecodeEm12Specific(reader *bytes.Reader) (sensor_data Em12) {
 		Mode          uint8
 		Spare         [4]int32
 	}
-	_ = binary.Read(reader, binary.BigEndian, &buffer)
+	err = binary.Read(reader, binary.BigEndian, &buffer)
+	if err != nil {
+		errn := errors.New("EM12 sensor")
+		err = errors.Join(err, ErrSensorMetata, errn)
+		return sensor_data, err
+	}
 
 	sensor_data.PingNumber = []uint16{buffer.PingNumber}
 	sensor_data.Resolution = []uint8{buffer.Resolution}
@@ -61,7 +75,7 @@ func DecodeEm12Specific(reader *bytes.Reader) (sensor_data Em12) {
 	sensor_data.SoundVelocity = []float32{float32(buffer.SoundVelocity) / 10.0}
 	sensor_data.Mode = []uint8{buffer.Mode}
 
-	return sensor_data
+	return sensor_data, err
 }
 
 type Em100 struct {
@@ -75,7 +89,7 @@ type Em100 struct {
 	Counter         []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
 }
 
-func DecodeEm100Specific(reader *bytes.Reader) (sensor_data Em100) {
+func DecodeEm100Specific(reader *bytes.Reader) (sensor_data Em100, err error) {
 	var buffer struct {
 		ShipPitch       int16
 		TransducerPitch int16
@@ -86,7 +100,12 @@ func DecodeEm100Specific(reader *bytes.Reader) (sensor_data Em100) {
 		PulseLength     uint8
 		Counter         uint16
 	}
-	_ = binary.Read(reader, binary.BigEndian, &buffer)
+	err = binary.Read(reader, binary.BigEndian, &buffer)
+	if err != nil {
+		errn := errors.New("EM100 sensor")
+		err = errors.Join(err, ErrSensorMetata, errn)
+		return sensor_data, err
+	}
 
 	sensor_data.ShipPitch = []float32{float32(buffer.ShipPitch) / SCALE_2_F32}
 	sensor_data.TransducerPitch = []float32{float32(buffer.TransducerPitch) / SCALE_2_F32}
@@ -97,7 +116,7 @@ func DecodeEm100Specific(reader *bytes.Reader) (sensor_data Em100) {
 	sensor_data.PulseLength = []uint8{buffer.PulseLength}
 	sensor_data.Counter = []uint16{buffer.Counter}
 
-	return sensor_data
+	return sensor_data, err
 }
 
 type Em950 struct {
@@ -109,7 +128,7 @@ type Em950 struct {
 	SurfaceSoundVelocity []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
 }
 
-func DecodeEm950Specific(reader *bytes.Reader) (sensor_data Em950) {
+func DecodeEm950Specific(reader *bytes.Reader) (sensor_data Em950, err error) {
 	var buffer struct {
 		PingNumber           uint16
 		Mode                 uint8
@@ -118,7 +137,12 @@ func DecodeEm950Specific(reader *bytes.Reader) (sensor_data Em950) {
 		TransducerPitch      int16
 		SurfaceSoundVelocity uint16
 	}
-	_ = binary.Read(reader, binary.BigEndian, &buffer)
+	err = binary.Read(reader, binary.BigEndian, &buffer)
+	if err != nil {
+		errn := errors.New("EM950 sensor")
+		err = errors.Join(err, ErrSensorMetata, errn)
+		return sensor_data, err
+	}
 
 	sensor_data.PingNumber = []uint16{buffer.PingNumber}
 	sensor_data.Mode = []uint8{buffer.Mode}
@@ -127,7 +151,7 @@ func DecodeEm950Specific(reader *bytes.Reader) (sensor_data Em950) {
 	sensor_data.TransducerPitch = []float32{float32(buffer.TransducerPitch) / SCALE_2_F32}
 	sensor_data.SurfaceSoundVelocity = []float32{float32(buffer.SurfaceSoundVelocity) / SCALE_1_F32}
 
-	return sensor_data
+	return sensor_data, err
 }
 
 type Em121A struct {
@@ -142,7 +166,7 @@ type Em121A struct {
 	SurfaceSoundVelocity []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
 }
 
-func DecodeEm121ASpecific(reader *bytes.Reader) (sensor_data Em121A) {
+func DecodeEm121ASpecific(reader *bytes.Reader) (sensor_data Em121A, err error) {
 	var buffer struct {
 		PingNumber           uint16
 		Mode                 uint8
@@ -154,7 +178,12 @@ func DecodeEm121ASpecific(reader *bytes.Reader) (sensor_data Em121A) {
 		ReceiveStatus        uint8
 		SurfaceSoundVelocity uint16
 	}
-	_ = binary.Read(reader, binary.BigEndian, &buffer)
+	err = binary.Read(reader, binary.BigEndian, &buffer)
+	if err != nil {
+		errn := errors.New("EM121A sensor")
+		err = errors.Join(err, ErrSensorMetata, errn)
+		return sensor_data, err
+	}
 
 	sensor_data.PingNumber = []uint16{buffer.PingNumber}
 	sensor_data.Mode = []uint8{buffer.Mode}
@@ -166,7 +195,7 @@ func DecodeEm121ASpecific(reader *bytes.Reader) (sensor_data Em121A) {
 	sensor_data.ReceiveStatus = []uint8{buffer.ReceiveStatus}
 	sensor_data.SurfaceSoundVelocity = []float32{float32(buffer.ReceiveStatus) / SCALE_1_F32}
 
-	return sensor_data
+	return sensor_data, err
 }
 
 type Em121 struct {
@@ -181,7 +210,7 @@ type Em121 struct {
 	SurfaceSoundVelocity []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
 }
 
-func DecodeEm121Specific(reader *bytes.Reader) (sensor_data Em121) {
+func DecodeEm121Specific(reader *bytes.Reader) (sensor_data Em121, err error) {
 	var buffer struct {
 		PingNumber           uint16
 		Mode                 uint8
@@ -193,7 +222,12 @@ func DecodeEm121Specific(reader *bytes.Reader) (sensor_data Em121) {
 		ReceiveStatus        uint8
 		SurfaceSoundVelocity uint16
 	}
-	_ = binary.Read(reader, binary.BigEndian, &buffer)
+	err = binary.Read(reader, binary.BigEndian, &buffer)
+	if err != nil {
+		errn := errors.New("EM121 sensor")
+		err = errors.Join(err, ErrSensorMetata, errn)
+		return sensor_data, err
+	}
 
 	sensor_data.PingNumber = []uint16{buffer.PingNumber}
 	sensor_data.Mode = []uint8{buffer.Mode}
@@ -205,7 +239,7 @@ func DecodeEm121Specific(reader *bytes.Reader) (sensor_data Em121) {
 	sensor_data.ReceiveStatus = []uint8{buffer.ReceiveStatus}
 	sensor_data.SurfaceSoundVelocity = []float32{float32(buffer.ReceiveStatus) / SCALE_1_F32}
 
-	return sensor_data
+	return sensor_data, err
 }
 
 type Sass struct {
@@ -217,7 +251,7 @@ type Sass struct {
 	MissionNumber      []uint16 `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
 }
 
-func DecodeSassSpecfic(reader *bytes.Reader) (sensor_data Sass) {
+func DecodeSassSpecfic(reader *bytes.Reader) (sensor_data Sass, err error) {
 	var buffer struct {
 		LeftMostBeam       uint16
 		RightMostBeam      uint16
@@ -226,7 +260,12 @@ func DecodeSassSpecfic(reader *bytes.Reader) (sensor_data Sass) {
 		PingNumber         uint16
 		MissionNumber      uint16
 	}
-	_ = binary.Read(reader, binary.BigEndian, &buffer)
+	err = binary.Read(reader, binary.BigEndian, &buffer)
+	if err != nil {
+		errn := errors.New("SASS sensor")
+		err = errors.Join(err, ErrSensorMetata, errn)
+		return sensor_data, err
+	}
 
 	sensor_data.LeftMostBeam = []uint16{buffer.LeftMostBeam}
 	sensor_data.RightMostBeam = []uint16{buffer.RightMostBeam}
@@ -235,10 +274,10 @@ func DecodeSassSpecfic(reader *bytes.Reader) (sensor_data Sass) {
 	sensor_data.PingNumber = []uint16{buffer.PingNumber}
 	sensor_data.MissionNumber = []uint16{buffer.MissionNumber}
 
-	return sensor_data
+	return sensor_data, err
 }
 
-type Seamap struct {
+type SeaMap struct {
 	PortTransmit1        []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
 	PortTransmit2        []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
 	StarboardTransmit1   []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
@@ -252,7 +291,7 @@ type Seamap struct {
 	Temperature          []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
 }
 
-func DecodeSeamapSpecific(reader *bytes.Reader, gsfd GsfDetails) (sensor_data Seamap) {
+func DecodeSeaMapSpecific(reader *bytes.Reader, gsfd GsfDetails) (sensor_data SeaMap, err error) {
 	var (
 		buffer1 struct {
 			PortTransmit1        uint16
@@ -270,17 +309,32 @@ func DecodeSeamapSpecific(reader *bytes.Reader, gsfd GsfDetails) (sensor_data Se
 			Temperature uint16
 		}
 	)
-	_ = binary.Read(reader, binary.BigEndian, &buffer1)
+	err = binary.Read(reader, binary.BigEndian, &buffer1)
+	if err != nil {
+		errn := errors.New("SeaMap sensor")
+		err = errors.Join(err, ErrSensorMetata, errn)
+		return sensor_data, err
+	}
 
 	major, minor := gsfd.MajorMinor()
 
 	if major > 2 || (major == 2 && minor > 7) {
-		_ = binary.Read(reader, binary.BigEndian, &pressure_depth)
+		err = binary.Read(reader, binary.BigEndian, &pressure_depth)
+		if err != nil {
+			errn := errors.New("SeaMap sensor")
+			err = errors.Join(err, ErrSensorMetata, errn)
+			return sensor_data, err
+		}
 	} else {
 		pressure_depth = 0 // treating as null
 	}
 
-	_ = binary.Read(reader, binary.BigEndian, &buffer2)
+	err = binary.Read(reader, binary.BigEndian, &buffer2)
+	if err != nil {
+		errn := errors.New("SeaMap sensor")
+		err = errors.Join(err, ErrSensorMetata, errn)
+		return sensor_data, err
+	}
 
 	sensor_data.PortTransmit1 = []float32{float32(buffer1.PortTransmit1) / SCALE_1_F32}
 	sensor_data.PortTransmit2 = []float32{float32(buffer1.PortTransmit2) / SCALE_1_F32}
@@ -294,10 +348,10 @@ func DecodeSeamapSpecific(reader *bytes.Reader, gsfd GsfDetails) (sensor_data Se
 	sensor_data.Altitude = []float32{float32(buffer2.Altitude) / SCALE_1_F32}
 	sensor_data.Temperature = []float32{float32(buffer2.Temperature) / SCALE_1_F32}
 
-	return sensor_data
+	return sensor_data, err
 }
 
-type Seabat struct {
+type SeaBat struct {
 	PingNumber           []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
 	SurfaceSoundVelocity []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
 	Mode                 []uint8   `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
@@ -306,7 +360,7 @@ type Seabat struct {
 	ReceiveGain          []uint8   `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
 }
 
-func DecodeSeabatSpecific(reader *bytes.Reader) (sensor_data Seabat) {
+func DecodeSeaBatSpecific(reader *bytes.Reader) (sensor_data SeaBat, err error) {
 	var buffer struct {
 		PingNumber           uint16
 		SurfaceSoundVelocity uint16
@@ -315,7 +369,12 @@ func DecodeSeabatSpecific(reader *bytes.Reader) (sensor_data Seabat) {
 		TransmitPower        uint8
 		ReceiveGain          uint8
 	}
-	_ = binary.Read(reader, binary.BigEndian, &buffer)
+	err = binary.Read(reader, binary.BigEndian, &buffer)
+	if err != nil {
+		errn := errors.New("SeaBat sensor")
+		err = errors.Join(err, ErrSensorMetata, errn)
+		return sensor_data, err
+	}
 
 	sensor_data.PingNumber = []uint16{buffer.PingNumber}
 	sensor_data.SurfaceSoundVelocity = []float32{float32(buffer.SurfaceSoundVelocity) / SCALE_1_F32}
@@ -324,7 +383,7 @@ func DecodeSeabatSpecific(reader *bytes.Reader) (sensor_data Seabat) {
 	sensor_data.TransmitPower = []uint8{buffer.TransmitPower}
 	sensor_data.ReceiveGain = []uint8{buffer.ReceiveGain}
 
-	return sensor_data
+	return sensor_data, err
 }
 
 type Em1000 struct {
@@ -336,7 +395,7 @@ type Em1000 struct {
 	SurfaceSoundVelocity []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
 }
 
-func DecodeEm1000Specific(reader *bytes.Reader) (sensor_data Em1000) {
+func DecodeEm1000Specific(reader *bytes.Reader) (sensor_data Em1000, err error) {
 	var buffer struct {
 		PingNumber           uint16
 		Mode                 uint8
@@ -345,7 +404,12 @@ func DecodeEm1000Specific(reader *bytes.Reader) (sensor_data Em1000) {
 		TransducerPitch      int16
 		SurfaceSoundVelocity uint16
 	}
-	_ = binary.Read(reader, binary.BigEndian, &buffer)
+	err = binary.Read(reader, binary.BigEndian, &buffer)
+	if err != nil {
+		errn := errors.New("EM1000 sensor")
+		err = errors.Join(err, ErrSensorMetata, errn)
+		return sensor_data, err
+	}
 
 	sensor_data.PingNumber = []uint16{buffer.PingNumber}
 	sensor_data.Mode = []uint8{buffer.Mode}
@@ -354,7 +418,7 @@ func DecodeEm1000Specific(reader *bytes.Reader) (sensor_data Em1000) {
 	sensor_data.TransducerPitch = []float32{float32(buffer.TransducerPitch) / SCALE_2_F32}
 	sensor_data.SurfaceSoundVelocity = []float32{float32(buffer.SurfaceSoundVelocity) / SCALE_1_F32}
 
-	return sensor_data
+	return sensor_data, err
 }
 
 type TypeIIISeabeam struct {
@@ -366,7 +430,7 @@ type TypeIIISeabeam struct {
 	MissionNumber      []uint16 `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
 }
 
-func DecodeTypeIIISeabeamSpecific(reader *bytes.Reader) (sensor_data TypeIIISeabeam) {
+func DecodeTypeIIISeabeamSpecific(reader *bytes.Reader) (sensor_data TypeIIISeabeam, err error) {
 	var buffer struct {
 		LeftMostBeam       uint16
 		RightMostBeam      uint16
@@ -375,7 +439,12 @@ func DecodeTypeIIISeabeamSpecific(reader *bytes.Reader) (sensor_data TypeIIISeab
 		PingNumber         uint16
 		MissionNumber      uint16
 	}
-	_ = binary.Read(reader, binary.BigEndian, &buffer)
+	err = binary.Read(reader, binary.BigEndian, &buffer)
+	if err != nil {
+		errn := errors.New("TypeIIISeaBeam sensor")
+		err = errors.Join(err, ErrSensorMetata, errn)
+		return sensor_data, err
+	}
 
 	sensor_data.LeftMostBeam = []uint16{buffer.LeftMostBeam}
 	sensor_data.RightMostBeam = []uint16{buffer.RightMostBeam}
@@ -384,7 +453,7 @@ func DecodeTypeIIISeabeamSpecific(reader *bytes.Reader) (sensor_data TypeIIISeab
 	sensor_data.PingNumber = []uint16{buffer.PingNumber}
 	sensor_data.MissionNumber = []uint16{buffer.MissionNumber}
 
-	return sensor_data
+	return sensor_data, err
 }
 
 type SbAmp struct {
@@ -396,7 +465,7 @@ type SbAmp struct {
 	AvgGateDepth []uint16 `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
 }
 
-func DecodeSbAmpSeabeamSpecific(reader *bytes.Reader) (sensor_data SbAmp) {
+func DecodeSbAmpSpecific(reader *bytes.Reader) (sensor_data SbAmp, err error) {
 	var buffer struct {
 		Hour         uint8
 		Minute       uint8
@@ -405,7 +474,12 @@ func DecodeSbAmpSeabeamSpecific(reader *bytes.Reader) (sensor_data SbAmp) {
 		BlockNumber  uint32
 		AvgGateDepth uint16
 	}
-	_ = binary.Read(reader, binary.BigEndian, &buffer)
+	err = binary.Read(reader, binary.BigEndian, &buffer)
+	if err != nil {
+		errn := errors.New("SBAmp sensor")
+		err = errors.Join(err, ErrSensorMetata, errn)
+		return sensor_data, err
+	}
 
 	sensor_data.Hour = []uint8{buffer.Hour}
 	sensor_data.Minute = []uint8{buffer.Minute}
@@ -414,10 +488,10 @@ func DecodeSbAmpSeabeamSpecific(reader *bytes.Reader) (sensor_data SbAmp) {
 	sensor_data.BlockNumber = []uint32{buffer.BlockNumber}
 	sensor_data.AvgGateDepth = []uint16{buffer.AvgGateDepth}
 
-	return sensor_data
+	return sensor_data, err
 }
 
-type SeabatII struct {
+type SeaBatII struct {
 	PingNumber           []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
 	SurfaceSoundVelocity []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
 	Mode                 []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
@@ -428,7 +502,7 @@ type SeabatII struct {
 	AthwartBandwidth     []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
 }
 
-func DecodeSeabatIISpecific(reader *bytes.Reader) (sensor_data SeabatII) {
+func DecodeSeaBatIISpecific(reader *bytes.Reader) (sensor_data SeaBatII, err error) {
 	var buffer struct {
 		PingNumber           uint16
 		SurfaceSoundVelocity uint16
@@ -440,7 +514,12 @@ func DecodeSeabatIISpecific(reader *bytes.Reader) (sensor_data SeabatII) {
 		AthwartBandwidth     uint8
 		Spare                int32
 	}
-	_ = binary.Read(reader, binary.BigEndian, &buffer)
+	err = binary.Read(reader, binary.BigEndian, &buffer)
+	if err != nil {
+		errn := errors.New("SeaBatII sensor")
+		err = errors.Join(err, ErrSensorMetata, errn)
+		return sensor_data, err
+	}
 
 	sensor_data.PingNumber = []uint16{buffer.PingNumber}
 	sensor_data.SurfaceSoundVelocity = []float32{float32(buffer.SurfaceSoundVelocity) / SCALE_1_F32}
@@ -451,10 +530,10 @@ func DecodeSeabatIISpecific(reader *bytes.Reader) (sensor_data SeabatII) {
 	sensor_data.ForeAftBandwidth = []float32{float32(buffer.ForeAftBandwidth) / SCALE_1_F32}
 	sensor_data.AthwartBandwidth = []float32{float32(buffer.AthwartBandwidth) / SCALE_1_F32}
 
-	return sensor_data
+	return sensor_data, err
 }
 
-type Seabat8101 struct {
+type SeaBat8101 struct {
 	PingNumber           []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
 	SurfaceSoundVelocity []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
 	Mode                 []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
@@ -473,7 +552,7 @@ type Seabat8101 struct {
 	ProjectorType        []uint8   `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
 }
 
-func DecodeSeabat8101Specific(reader *bytes.Reader) (sensor_data Seabat8101) {
+func DecodeSeaBat8101Specific(reader *bytes.Reader) (sensor_data SeaBat8101, err error) {
 	var buffer struct {
 		PingNumber           uint16
 		SurfaceSoundVelocity uint16
@@ -493,7 +572,12 @@ func DecodeSeabat8101Specific(reader *bytes.Reader) (sensor_data Seabat8101) {
 		ProjectorType        uint8
 		Spare                [4]byte
 	}
-	_ = binary.Read(reader, binary.BigEndian, &buffer)
+	err = binary.Read(reader, binary.BigEndian, &buffer)
+	if err != nil {
+		errn := errors.New("SeaBat8101 sensor")
+		err = errors.Join(err, ErrSensorMetata, errn)
+		return sensor_data, err
+	}
 
 	sensor_data.PingNumber = []uint16{buffer.PingNumber}
 	sensor_data.SurfaceSoundVelocity = []float32{float32(buffer.SurfaceSoundVelocity) / SCALE_1_F32}
@@ -512,7 +596,7 @@ func DecodeSeabat8101Specific(reader *bytes.Reader) (sensor_data Seabat8101) {
 	sensor_data.DepthFilterMax = []float32{float32(buffer.DepthFilterMax)}
 	sensor_data.ProjectorType = []uint8{buffer.ProjectorType}
 
-	return sensor_data
+	return sensor_data, err
 }
 
 type Seabeam2112 struct {
@@ -526,7 +610,7 @@ type Seabeam2112 struct {
 	AlgorithmOrder         []string  `tiledb:"dtype=string,ftype=attr" filters:"zstd(level=16)"`
 }
 
-func DecodeSeabeam2112Specific(reader *bytes.Reader) (sensor_data Seabeam2112) {
+func DecodeSeabeam2112Specific(reader *bytes.Reader) (sensor_data Seabeam2112, err error) {
 	var buffer struct {
 		Mode                   uint8
 		SurfaceSoundVelocity   uint16
@@ -538,7 +622,12 @@ func DecodeSeabeam2112Specific(reader *bytes.Reader) (sensor_data Seabeam2112) {
 		AlgorithmOrder         [5]byte
 		Spare                  [2]byte
 	}
-	_ = binary.Read(reader, binary.BigEndian, &buffer)
+	err = binary.Read(reader, binary.BigEndian, &buffer)
+	if err != nil {
+		errn := errors.New("Seabeam2112 sensor")
+		err = errors.Join(err, ErrSensorMetata, errn)
+		return sensor_data, err
+	}
 
 	sensor_data.Mode = []uint8{buffer.Mode}
 	sensor_data.SurfaceSoundVelocity = []float64{(float64(buffer.SurfaceSoundVelocity) + 130000.0) / SCALE_2_F64}
@@ -549,7 +638,7 @@ func DecodeSeabeam2112Specific(reader *bytes.Reader) (sensor_data Seabeam2112) {
 	sensor_data.NumberAlgorithms = []uint8{buffer.NumberAlgorithms}
 	sensor_data.AlgorithmOrder = []string{string(buffer.AlgorithmOrder[:])}
 
-	return sensor_data
+	return sensor_data, err
 }
 
 type ElacMkII struct {
@@ -561,7 +650,7 @@ type ElacMkII struct {
 	ReceiverGainPort      []uint8  `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
 }
 
-func DecodeElacMkIISpecific(reader *bytes.Reader) (sensor_data ElacMkII) {
+func DecodeElacMkIISpecific(reader *bytes.Reader) (sensor_data ElacMkII, err error) {
 	var buffer struct {
 		Mode                  uint8
 		PingNumber            uint16
@@ -571,7 +660,12 @@ func DecodeElacMkIISpecific(reader *bytes.Reader) (sensor_data ElacMkII) {
 		ReceiverGainPort      uint8
 		Spare                 int16
 	}
-	_ = binary.Read(reader, binary.BigEndian, &buffer)
+	err = binary.Read(reader, binary.BigEndian, &buffer)
+	if err != nil {
+		errn := errors.New("ElacMkII sensor")
+		err = errors.Join(err, ErrSensorMetata, errn)
+		return sensor_data, err
+	}
 
 	sensor_data.Mode = []uint8{buffer.Mode}
 	sensor_data.PingNumber = []uint16{buffer.PingNumber}
@@ -580,7 +674,7 @@ func DecodeElacMkIISpecific(reader *bytes.Reader) (sensor_data ElacMkII) {
 	sensor_data.ReceiverGainStarboard = []uint8{buffer.ReceiverGainStarboard}
 	sensor_data.ReceiverGainPort = []uint8{buffer.ReceiverGainPort}
 
-	return sensor_data
+	return sensor_data, err
 }
 
 type CmpSass struct {
@@ -588,17 +682,22 @@ type CmpSass struct {
 	Lntens []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
 }
 
-func DecodeCmpSass(reader *bytes.Reader) (sensor_data CmpSass) {
+func DecodeCmpSass(reader *bytes.Reader) (sensor_data CmpSass, err error) {
 	var buffer struct {
 		Lfreq  uint16
 		Lntens uint16
 	}
-	_ = binary.Read(reader, binary.BigEndian, &buffer)
+	err = binary.Read(reader, binary.BigEndian, &buffer)
+	if err != nil {
+		errn := errors.New("CmpSASS sensor")
+		err = errors.Join(err, ErrSensorMetata, errn)
+		return sensor_data, err
+	}
 
 	sensor_data.Lfreq = []float32{float32(buffer.Lfreq) / SCALE_1_F32}
 	sensor_data.Lntens = []float32{float32(buffer.Lntens) / SCALE_1_F32}
 
-	return sensor_data
+	return sensor_data, err
 }
 
 type Reson8100 struct {
@@ -630,7 +729,7 @@ type Reson8100 struct {
 	BeamSpacing          []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
 }
 
-func DecodeReson8100(reader *bytes.Reader) (sensor_data Reson8100) {
+func DecodeReson8100(reader *bytes.Reader) (sensor_data Reson8100, err error) {
 	var buffer struct {
 		Latency              uint16
 		PingNumber           uint16
@@ -660,7 +759,12 @@ func DecodeReson8100(reader *bytes.Reader) (sensor_data Reson8100) {
 		BeamSpacing          uint16
 		Spare                int16
 	}
-	_ = binary.Read(reader, binary.BigEndian, &buffer)
+	err = binary.Read(reader, binary.BigEndian, &buffer)
+	if err != nil {
+		errn := errors.New("Reson8100 sensor")
+		err = errors.Join(err, ErrSensorMetata, errn)
+		return sensor_data, err
+	}
 
 	sensor_data.Latency = []uint16{buffer.Latency}
 	sensor_data.PingNumber = []uint16{buffer.PingNumber}
@@ -689,7 +793,7 @@ func DecodeReson8100(reader *bytes.Reader) (sensor_data Reson8100) {
 	sensor_data.Temperature = []uint16{buffer.Temperature}
 	sensor_data.BeamSpacing = []float32{float32(buffer.BeamSpacing) / SCALE_4_F32}
 
-	return sensor_data
+	return sensor_data, err
 }
 
 type Em3 struct {
@@ -732,7 +836,7 @@ type Em3 struct {
 	RunTimeCoverageSector          [][]uint16    `tiledb:"dtype=uint16,ftype=attr,var" filters:"zstd(level=16)"`
 }
 
-func DecodeEm3(reader *bytes.Reader) (sensor_data Em3) {
+func DecodeEm3Specific(reader *bytes.Reader) (sensor_data Em3, err error) {
 	var (
 		buffer struct {
 			ModelNumber          uint16
@@ -833,7 +937,12 @@ func DecodeEm3(reader *bytes.Reader) (sensor_data Em3) {
 	swath_width := make([]uint16, 0, 2)
 	coverage_sector := make([]uint16, 0, 2)
 
-	_ = binary.Read(reader, binary.BigEndian, &buffer)
+	err = binary.Read(reader, binary.BigEndian, &buffer)
+	if err != nil {
+		errn := errors.New("EM3 sensor")
+		err = errors.Join(err, ErrSensorMetata, errn)
+		return sensor_data, err
+	}
 
 	// base set of values
 	sensor_data.ModelNumber = []uint16{buffer.ModelNumber}
@@ -848,7 +957,12 @@ func DecodeEm3(reader *bytes.Reader) (sensor_data Em3) {
 
 	// runtime values
 	if (buffer.RunTimeID & 0x00000001) != 0 {
-		_ = binary.Read(reader, binary.BigEndian, &rt1)
+		err = binary.Read(reader, binary.BigEndian, &rt1)
+		if err != nil {
+			errn := errors.New("EM3 sensor")
+			err = errors.Join(err, ErrSensorMetata, errn)
+			return sensor_data, err
+		}
 		model_number = append(model_number, rt1.ModelNumber)
 		dg_time = append(dg_time, time.Unix(int64(rt1.TvSec), int64(rt1.TvNSec)).UTC())
 		ping_number = append(ping_number, rt1.PingNumber)
@@ -896,7 +1010,12 @@ func DecodeEm3(reader *bytes.Reader) (sensor_data Em3) {
 		}
 
 		if (buffer.RunTimeID & 0x00000002) != 0 {
-			_ = binary.Read(reader, binary.BigEndian, &rt2)
+			err = binary.Read(reader, binary.BigEndian, &rt2)
+			if err != nil {
+				errn := errors.New("EM3 sensor")
+				err = errors.Join(err, ErrSensorMetata, errn)
+				return sensor_data, err
+			}
 			model_number = append(model_number, rt2.ModelNumber)
 			dg_time = append(dg_time, time.Unix(int64(rt2.TvSec), int64(rt2.TvNSec)).UTC())
 			ping_number = append(ping_number, rt2.PingNumber)
@@ -973,7 +1092,7 @@ func DecodeEm3(reader *bytes.Reader) (sensor_data Em3) {
 	sensor_data.RunTimeSwathWidth = [][]uint16{swath_width}
 	sensor_data.RunTimeCoverageSector = [][]uint16{coverage_sector}
 
-	return sensor_data
+	return sensor_data, err
 }
 
 // float64 may be overkill
@@ -1037,7 +1156,7 @@ type Em4 struct {
 	ProcessorUnitYawStabilization     []float32   `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
 }
 
-func DecodeEm4Specific(reader *bytes.Reader) (sensor_data Em4) {
+func DecodeEm4Specific(reader *bytes.Reader) (sensor_data Em4, err error) {
 
 	var (
 		buffer struct {
@@ -1125,13 +1244,23 @@ func DecodeEm4Specific(reader *bytes.Reader) (sensor_data Em4) {
 	)
 
 	// first 46 bytes
-	_ = binary.Read(reader, binary.BigEndian, &buffer)
+	err = binary.Read(reader, binary.BigEndian, &buffer)
+	if err != nil {
+		errn := errors.New("EM4 sensor")
+		err = errors.Join(err, ErrSensorMetata, errn)
+		return sensor_data, err
+	}
 	// n_bytes += 46
 
 	// sector arrays
 	// what if TransmitSectors == 0???
 	for i := uint16(0); i < buffer.TransmitSectors; i++ {
-		_ = binary.Read(reader, binary.BigEndian, &sector_buffer_base)
+		err = binary.Read(reader, binary.BigEndian, &sector_buffer_base)
+		if err != nil {
+			errn := errors.New("EM4 sensor")
+			err = errors.Join(err, ErrSensorMetata, errn)
+			return sensor_data, err
+		}
 		sector_buffer.TiltAngle = append(
 			sector_buffer.TiltAngle,
 			float32(sector_buffer_base.TiltAngle)/SCALE_2_F32,
@@ -1171,13 +1300,28 @@ func DecodeEm4Specific(reader *bytes.Reader) (sensor_data Em4) {
 	}
 
 	// spare 16 bytes
-	_ = binary.Read(reader, binary.BigEndian, &spare_buffer)
+	err = binary.Read(reader, binary.BigEndian, &spare_buffer)
+	if err != nil {
+		errn := errors.New("EM4 sensor")
+		err = errors.Join(err, ErrSensorMetata, errn)
+		return sensor_data, err
+	}
 
 	// next 63 bytes for the RunTime info
-	_ = binary.Read(reader, binary.BigEndian, &runtime_buffer)
+	err = binary.Read(reader, binary.BigEndian, &runtime_buffer)
+	if err != nil {
+		errn := errors.New("EM4 sensor")
+		err = errors.Join(err, ErrSensorMetata, errn)
+		return sensor_data, err
+	}
 
 	// next 23 bytes for the processing unit info
-	_ = binary.Read(reader, binary.BigEndian, &proc_buffer)
+	err = binary.Read(reader, binary.BigEndian, &proc_buffer)
+	if err != nil {
+		errn := errors.New("EM4 sensor")
+		err = errors.Join(err, ErrSensorMetata, errn)
+		return sensor_data, err
+	}
 
 	// populate generic
 	sensor_data.ModelNumber = []uint16{buffer.ModelNumber}
@@ -1243,7 +1387,7 @@ func DecodeEm4Specific(reader *bytes.Reader) (sensor_data Em4) {
 	sensor_data.ProcessorUnitAchievedStbdCoverage = []uint8{proc_buffer.ProcessorUnitAchievedStbdCoverage}
 	sensor_data.ProcessorUnitYawStabilization = []float32{float32(proc_buffer.ProcessorUnitYawStabilization) / SCALE_2_F32}
 
-	return sensor_data
+	return sensor_data, err
 }
 
 // GeoSwathPlus TODO; change DataSource and Side types from uint16 to uint8.
@@ -1277,7 +1421,7 @@ type GeoSwathPlus struct {
 	AngleUncertainty      []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
 }
 
-func DecodeGeoSwathPlusSpecific(reader *bytes.Reader) (sensor_data GeoSwathPlus) {
+func DecodeGeoSwathPlusSpecific(reader *bytes.Reader) (sensor_data GeoSwathPlus, err error) {
 	var buffer struct {
 		DataSource            uint16
 		Side                  uint16
@@ -1305,7 +1449,12 @@ func DecodeGeoSwathPlusSpecific(reader *bytes.Reader) (sensor_data GeoSwathPlus)
 		AngleUncertainty      float32
 		Spare                 [4]int32
 	}
-	_ = binary.Read(reader, binary.BigEndian, &buffer)
+	err = binary.Read(reader, binary.BigEndian, &buffer)
+	if err != nil {
+		errn := errors.New("GeoSwathPlus sensor")
+		err = errors.Join(err, ErrSensorMetata, errn)
+		return sensor_data, err
+	}
 
 	sensor_data.DataSource = []uint16{buffer.DataSource}
 	sensor_data.Side = []uint16{buffer.Side}
@@ -1332,7 +1481,7 @@ func DecodeGeoSwathPlusSpecific(reader *bytes.Reader) (sensor_data GeoSwathPlus)
 	sensor_data.RangeUncertainty = []float32{float32(buffer.RangeUncertainty) / SCALE_3_F32}
 	sensor_data.AngleUncertainty = []float32{float32(buffer.AngleUncertainty) / SCALE_2_F32}
 
-	return sensor_data
+	return sensor_data, err
 }
 
 // DecodeKlein5410Bss TODO; change DataSource and Side types from uint16 to uint8.
@@ -1356,7 +1505,7 @@ type Klein5410Bss struct {
 	RawDataConfig     []uint32  `tiledb:"dtype=uint32,ftype=attr" filters:"zstd(level=16)"`
 }
 
-func DecodeKlein5410BssSpecific(reader *bytes.Reader) (sensor_data Klein5410Bss) {
+func DecodeKlein5410BssSpecific(reader *bytes.Reader) (sensor_data Klein5410Bss, err error) {
 	var buffer struct {
 		DataSource        uint16
 		Side              uint16
@@ -1376,7 +1525,12 @@ func DecodeKlein5410BssSpecific(reader *bytes.Reader) (sensor_data Klein5410Bss)
 		RawDataConfig     uint32
 		Spare             [32]byte
 	}
-	_ = binary.Read(reader, binary.BigEndian, &buffer)
+	err = binary.Read(reader, binary.BigEndian, &buffer)
+	if err != nil {
+		errn := errors.New("Klein5410BSS sensor")
+		err = errors.Join(err, ErrSensorMetata, errn)
+		return sensor_data, err
+	}
 
 	sensor_data.DataSource = []uint16{buffer.DataSource}
 	sensor_data.Side = []uint16{buffer.Side}
@@ -1395,7 +1549,7 @@ func DecodeKlein5410BssSpecific(reader *bytes.Reader) (sensor_data Klein5410Bss)
 	sensor_data.Altimeter = []uint16{buffer.Altimeter}
 	sensor_data.RawDataConfig = []uint32{buffer.RawDataConfig}
 
-	return sensor_data
+	return sensor_data, err
 }
 
 type Reson7100 struct {
@@ -1445,7 +1599,7 @@ type Reson7100 struct {
 	// TxPulseReserved                   []uint32  `tiledb:"dtype=uint32,ftype=attr" filters:"zstd(level=16)"`
 }
 
-func DecodeReson7100Specific(reader *bytes.Reader) (sensor_data Reson7100) {
+func DecodeReson7100Specific(reader *bytes.Reader) (sensor_data Reson7100, err error) {
 	var buffer struct {
 		ProtocolVersion                   uint16
 		DeviceID                          uint32
@@ -1495,7 +1649,12 @@ func DecodeReson7100Specific(reader *bytes.Reader) (sensor_data Reson7100) {
 		LayerCompFlag                     uint8
 		Reserved3                         [8]byte
 	}
-	_ = binary.Read(reader, binary.BigEndian, &buffer)
+	err = binary.Read(reader, binary.BigEndian, &buffer)
+	if err != nil {
+		errn := errors.New("Reson7100 sensor")
+		err = errors.Join(err, ErrSensorMetata, errn)
+		return sensor_data, err
+	}
 
 	sensor_data.ProtocolVersion = []uint16{buffer.ProtocolVersion}
 	sensor_data.DeviceID = []uint32{buffer.DeviceID}
@@ -1541,7 +1700,7 @@ func DecodeReson7100Specific(reader *bytes.Reader) (sensor_data Reson7100) {
 	sensor_data.SvSource = []uint8{buffer.SvSource}
 	sensor_data.LayerCompFlag = []uint8{buffer.LayerCompFlag}
 
-	return sensor_data
+	return sensor_data, err
 }
 
 type Em3Raw struct {
@@ -1601,7 +1760,7 @@ type Em3Raw struct {
 	PuStatusYawStabilization          []float32   `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
 }
 
-func DecodeEm3RawSpecific(reader *bytes.Reader) (sensor_data Em3Raw) {
+func DecodeEm3RawSpecific(reader *bytes.Reader) (sensor_data Em3Raw, err error) {
 	var (
 		buffer struct {
 			ModelNumber        uint16
@@ -1676,7 +1835,12 @@ func DecodeEm3RawSpecific(reader *bytes.Reader) (sensor_data Em3Raw) {
 	)
 
 	// first block
-	_ = binary.Read(reader, binary.BigEndian, &buffer)
+	err = binary.Read(reader, binary.BigEndian, &buffer)
+	if err != nil {
+		errn := errors.New("EM3Raw sensor")
+		err = errors.Join(err, ErrSensorMetata, errn)
+		return sensor_data, err
+	}
 	sensor_data.ModelNumber = []uint16{buffer.ModelNumber}
 	sensor_data.PingCounter = []uint16{buffer.PingCounter}
 	sensor_data.SerialNumber = []uint16{buffer.SerialNumber}
@@ -1701,7 +1865,12 @@ func DecodeEm3RawSpecific(reader *bytes.Reader) (sensor_data Em3Raw) {
 	signal_bandwidth := make([]float64, 0, nsectors)
 
 	for i := 0; i < nsectors; i++ {
-		_ = binary.Read(reader, binary.BigEndian, &var_buff)
+		err = binary.Read(reader, binary.BigEndian, &var_buff)
+		if err != nil {
+			errn := errors.New("EM3Raw sensor")
+			err = errors.Join(err, ErrSensorMetata, errn)
+			return sensor_data, err
+		}
 		tilt_angle = append(tilt_angle, float32(var_buff.TiltAngle)/SCALE_2_F32)
 		focus_range = append(focus_range, float32(var_buff.FocusRange)/SCALE_1_F32)
 		signal_length = append(signal_length, float64(var_buff.SignalLength)/SCALE_6_F64)
@@ -1722,7 +1891,12 @@ func DecodeEm3RawSpecific(reader *bytes.Reader) (sensor_data Em3Raw) {
 	sensor_data.SignalBandwidth = [][]float64{signal_bandwidth}
 
 	// third block (runtime)
-	_ = binary.Read(reader, binary.BigEndian, &rt_buff)
+	err = binary.Read(reader, binary.BigEndian, &rt_buff)
+	if err != nil {
+		errn := errors.New("EM3Raw sensor")
+		err = errors.Join(err, ErrSensorMetata, errn)
+		return sensor_data, err
+	}
 	sensor_data.RunTimeModelNumber = []uint16{rt_buff.RunTimeModelNumber}
 	sensor_data.RunTimeDgTime = []time.Time{time.Unix(int64(rt_buff.RunTimeDgTimeSec), int64(rt_buff.RunTimeDgTimeNSec)).UTC()}
 	sensor_data.RunTimePingCounter = []uint16{rt_buff.RunTimePingCounter}
@@ -1753,7 +1927,12 @@ func DecodeEm3RawSpecific(reader *bytes.Reader) (sensor_data Em3Raw) {
 
 	switch rt_buff.RunTimeModelNumber {
 	case 1002:
-		_ = binary.Read(reader, binary.BigEndian, &RunTimeDurotongSpeed)
+		err = binary.Read(reader, binary.BigEndian, &RunTimeDurotongSpeed)
+		if err != nil {
+			errn := errors.New("EM3Raw sensor")
+			err = errors.Join(err, ErrSensorMetata, errn)
+			return sensor_data, err
+		}
 		sensor_data.RunTimeDurotongSpeed = []float32{float32(RunTimeDurotongSpeed) / SCALE_1_F32}
 		sensor_data.RunTimeTxAlongTilt = []float32{NULL_FLOAT32_ZERO}
 	case 300:
@@ -1764,10 +1943,20 @@ func DecodeEm3RawSpecific(reader *bytes.Reader) (sensor_data Em3Raw) {
 		sensor_data.RunTimeTxAlongTilt = []float32{NULL_FLOAT32_ZERO}
 	case 3020:
 		sensor_data.RunTimeDurotongSpeed = []float32{NULL_FLOAT32_ZERO}
-		_ = binary.Read(reader, binary.BigEndian, &RunTimeTxAlongTilt)
+		err = binary.Read(reader, binary.BigEndian, &RunTimeTxAlongTilt)
+		if err != nil {
+			errn := errors.New("EM3Raw sensor")
+			err = errors.Join(err, ErrSensorMetata, errn)
+			return sensor_data, err
+		}
 		sensor_data.RunTimeTxAlongTilt = []float32{float32(RunTimeTxAlongTilt) / SCALE_2_F32}
 	default:
-		_ = binary.Read(reader, binary.BigEndian, &Spare)
+		err = binary.Read(reader, binary.BigEndian, &Spare)
+		if err != nil {
+			errn := errors.New("EM3Raw sensor")
+			err = errors.Join(err, ErrSensorMetata, errn)
+			return sensor_data, err
+		}
 	}
 
 	// appears that this piece is incomplete in the C-code and awaiting info from KM
@@ -1776,19 +1965,29 @@ func DecodeEm3RawSpecific(reader *bytes.Reader) (sensor_data Em3Raw) {
 	// So merely replicating what they've constructed
 	switch rt_buff.RunTimeModelNumber {
 	default:
-		_ = binary.Read(reader, binary.BigEndian, &RunTimeHiLoAbsorptionRatio)
+		err = binary.Read(reader, binary.BigEndian, &RunTimeHiLoAbsorptionRatio)
+		if err != nil {
+			errn := errors.New("EM3Raw sensor")
+			err = errors.Join(err, ErrSensorMetata, errn)
+			return sensor_data, err
+		}
 		sensor_data.RunTimeHiLoAbsorptionRatio = []uint8{RunTimeHiLoAbsorptionRatio}
 	}
 
 	// fourth block (process unit)
-	_ = binary.Read(reader, binary.BigEndian, &pu_buff)
+	err = binary.Read(reader, binary.BigEndian, &pu_buff)
+	if err != nil {
+		errn := errors.New("EM3Raw sensor")
+		err = errors.Join(err, ErrSensorMetata, errn)
+		return sensor_data, err
+	}
 	sensor_data.PuStatusPuCpuLoad = []uint8{pu_buff.PuStatusPuCpuLoad}
 	sensor_data.PuStatusSensorStatus = []uint16{pu_buff.PuStatusSensorStatus}
 	sensor_data.PuStatusAchievedPortCoverage = []uint8{pu_buff.PuStatusAchievedPortCoverage}
 	sensor_data.PuStatusAchievedStarboardCoverage = []uint8{pu_buff.PuStatusAchievedStarboardCoverage}
 	sensor_data.PuStatusYawStabilization = []float32{float32(pu_buff.PuStatusYawStabilization) / SCALE_2_F32}
 
-	return sensor_data
+	return sensor_data, err
 }
 
 type DeltaT struct {
@@ -1822,7 +2021,7 @@ type DeltaT struct {
 	AthwartBeamwidth     []float32
 }
 
-func DecodeDeltaTSpecific(reader *bytes.Reader) (sensor_data DeltaT) {
+func DecodeDeltaTSpecific(reader *bytes.Reader) (sensor_data DeltaT, err error) {
 	var buffer struct {
 		FileExtension        [4]byte
 		Version              uint8
@@ -1855,7 +2054,12 @@ func DecodeDeltaTSpecific(reader *bytes.Reader) (sensor_data DeltaT) {
 		AthwartBeamwidth     uint8
 		Spare                [32]byte
 	}
-	_ = binary.Read(reader, binary.BigEndian, &buffer)
+	err = binary.Read(reader, binary.BigEndian, &buffer)
+	if err != nil {
+		errn := errors.New("DeltaT sensor")
+		err = errors.Join(err, ErrSensorMetata, errn)
+		return sensor_data, err
+	}
 
 	sensor_data.FileExtension = []string{string(buffer.FileExtension[:])}
 	sensor_data.Version = []uint8{buffer.Version}
@@ -1886,7 +2090,7 @@ func DecodeDeltaTSpecific(reader *bytes.Reader) (sensor_data DeltaT) {
 	sensor_data.ForeAftBeamwidth = []float32{float32(buffer.ForeAftBeamwidth) / SCALE_1_F32}
 	sensor_data.AthwartBeamwidth = []float32{float32(buffer.AthwartBeamwidth) / SCALE_1_F32}
 
-	return sensor_data
+	return sensor_data, err
 }
 
 type R2Sonic struct {
@@ -1920,7 +2124,7 @@ type R2Sonic struct {
 	G0DepthGateSlope []float64
 }
 
-func DecodeR2SonicSpecific(reader *bytes.Reader) (sensor_data R2Sonic) {
+func DecodeR2SonicSpecific(reader *bytes.Reader) (sensor_data R2Sonic, err error) {
 	var (
 		buffer1 struct {
 			ModelNumber      [12]byte
@@ -1962,7 +2166,12 @@ func DecodeR2SonicSpecific(reader *bytes.Reader) (sensor_data R2Sonic) {
 	)
 
 	// block one
-	_ = binary.Read(reader, binary.BigEndian, &buffer1)
+	err = binary.Read(reader, binary.BigEndian, &buffer1)
+	if err != nil {
+		errn := errors.New("R2Sonic sensor")
+		err = errors.Join(err, ErrSensorMetata, errn)
+		return sensor_data, err
+	}
 	sensor_data.ModelNumber = []string{string(buffer1.ModelNumber[:])}
 	sensor_data.SerialNumber = []string{string(buffer1.SerialNumber[:])}
 	sensor_data.DgTime = []time.Time{time.Unix(int64(buffer1.TvSec), int64(buffer1.TvNsec)).UTC()}
@@ -1988,7 +2197,12 @@ func DecodeR2SonicSpecific(reader *bytes.Reader) (sensor_data R2Sonic) {
 	sensor_data.NumberBeams = []uint16{buffer1.NumberBeams}
 
 	// block two (var length arrays)
-	_ = binary.Read(reader, binary.BigEndian, &var_buf)
+	err = binary.Read(reader, binary.BigEndian, &var_buf)
+	if err != nil {
+		errn := errors.New("R2Sonic sensor")
+		err = errors.Join(err, ErrSensorMetata, errn)
+		return sensor_data, err
+	}
 	A0MoreInfo := make([]float64, 0, 6)
 	A2MoreInfo := make([]float64, 0, 6)
 
@@ -2001,12 +2215,17 @@ func DecodeR2SonicSpecific(reader *bytes.Reader) (sensor_data R2Sonic) {
 	sensor_data.A2MoreInfo = [][]float64{A2MoreInfo}
 
 	// block three
-	_ = binary.Read(reader, binary.BigEndian, &buffer2)
+	err = binary.Read(reader, binary.BigEndian, &buffer2)
+	if err != nil {
+		errn := errors.New("R2Sonic sensor")
+		err = errors.Join(err, ErrSensorMetata, errn)
+		return sensor_data, err
+	}
 	sensor_data.G0DepthGateMin = []float64{float64(buffer2.G0DepthGateMin) / SCALE_6_F64}
 	sensor_data.G0DepthGateMax = []float64{float64(buffer2.G0DepthGateMax) / SCALE_6_F64}
 	sensor_data.G0DepthGateSlope = []float64{float64(buffer2.G0DepthGateSlope) / SCALE_6_F64}
 
-	return sensor_data
+	return sensor_data, err
 }
 
 type ResonTSeries struct {
@@ -2067,7 +2286,7 @@ type ResonTSeries struct {
 	DeviceDescription                 []string
 }
 
-func DecodeResonTSeriesSonicSpecific(reader *bytes.Reader) (sensor_data ResonTSeries) {
+func DecodeResonTSeriesSonicSpecific(reader *bytes.Reader) (sensor_data ResonTSeries, err error) {
 	var buffer struct {
 		ProtocolVersion                   uint16
 		DeviceID                          uint32
@@ -2131,7 +2350,12 @@ func DecodeResonTSeriesSonicSpecific(reader *bytes.Reader) (sensor_data ResonTSe
 		Reserved7027                      [416]byte
 		Reserved3                         [32]byte
 	}
-	_ = binary.Read(reader, binary.BigEndian, &buffer)
+	err = binary.Read(reader, binary.BigEndian, &buffer)
+	if err != nil {
+		errn := errors.New("ResonTSeries sensor")
+		err = errors.Join(err, ErrSensorMetata, errn)
+		return sensor_data, err
+	}
 
 	sensor_data.ProtocolVersion = []uint16{buffer.ProtocolVersion}
 	sensor_data.DeviceID = []uint32{buffer.DeviceID}
@@ -2194,7 +2418,7 @@ func DecodeResonTSeriesSonicSpecific(reader *bytes.Reader) (sensor_data ResonTSe
 		sensor_data.SoundVelocity = []float64{float64(buffer.SoundVelocity2) / SCALE_6_F64}
 	}
 
-	return sensor_data
+	return sensor_data, err
 }
 
 type Kmall struct {
@@ -2285,7 +2509,7 @@ type Kmall struct {
 	AlarmFlag                          [][]uint8
 }
 
-func DecodeKmallSpecific(reader *bytes.Reader) (sensor_data Kmall) {
+func DecodeKmallSpecific(reader *bytes.Reader) (sensor_data Kmall, err error) {
 	var (
 		buffer struct {
 			KmallVersion  uint8
@@ -2398,14 +2622,24 @@ func DecodeKmallSpecific(reader *bytes.Reader) (sensor_data Kmall) {
 	)
 
 	// block one
-	_ = binary.Read(reader, binary.BigEndian, &buffer)
+	err = binary.Read(reader, binary.BigEndian, &buffer)
+	if err != nil {
+		errn := errors.New("Kmall sensor")
+		err = errors.Join(err, ErrSensorMetata, errn)
+		return sensor_data, err
+	}
 	sensor_data.KmallVersion = []uint8{buffer.KmallVersion}
 	sensor_data.DgmType = []uint8{buffer.DgmType}
 	sensor_data.DgmVersion = []uint8{buffer.DgmVersion}
 	sensor_data.EchoSounderID = []uint16{buffer.EchoSounderID}
 
 	// block two (Cmn part)
-	_ = binary.Read(reader, binary.BigEndian, &cmn_buf)
+	err = binary.Read(reader, binary.BigEndian, &cmn_buf)
+	if err != nil {
+		errn := errors.New("Kmall sensor")
+		err = errors.Join(err, ErrSensorMetata, errn)
+		return sensor_data, err
+	}
 	sensor_data.NumBytesCmnPart = []uint16{cmn_buf.NumBytesCmnPart}
 	sensor_data.PingCounter = []uint16{cmn_buf.PingCounter}
 	sensor_data.RxFansPerRing = []uint8{cmn_buf.RxFansPerRing}
@@ -2418,7 +2652,12 @@ func DecodeKmallSpecific(reader *bytes.Reader) (sensor_data Kmall) {
 	sensor_data.AlgorithmType = []uint8{cmn_buf.AlgorithmType}
 
 	// block three (ping data)
-	_ = binary.Read(reader, binary.BigEndian, &cmn_buf)
+	err = binary.Read(reader, binary.BigEndian, &cmn_buf)
+	if err != nil {
+		errn := errors.New("Kmall sensor")
+		err = errors.Join(err, ErrSensorMetata, errn)
+		return sensor_data, err
+	}
 	sensor_data.NumBytesInfoData = []uint16{ping_buf.NumBytesInfoData}
 	sensor_data.PingRateHz = []float64{float64(ping_buf.PingRateHz) / SCALE_5_F64}
 	sensor_data.BeamSpacing = []uint8{ping_buf.BeamSpacing}
@@ -2480,7 +2719,12 @@ func DecodeKmallSpecific(reader *bytes.Reader) (sensor_data Kmall) {
 	SignalWaveForm := make([]uint8, 0, nsectors)
 
 	for i := uint16(0); i < ping_buf.NumTxSectors; i++ {
-		_ = binary.Read(reader, binary.BigEndian, &sec_buf)
+		err = binary.Read(reader, binary.BigEndian, &sec_buf)
+		if err != nil {
+			errn := errors.New("Kmall sensor")
+			err = errors.Join(err, ErrSensorMetata, errn)
+			return sensor_data, err
+		}
 		TxSectorNumber = append(TxSectorNumber, sec_buf.TxSectorNumber)
 		TxArrayNumber = append(TxArrayNumber, sec_buf.TxArrayNumber)
 		TxSubArray = append(TxSubArray, sec_buf.TxSubArray)
@@ -2509,7 +2753,12 @@ func DecodeKmallSpecific(reader *bytes.Reader) (sensor_data Kmall) {
 	sensor_data.SignalWaveForm = [][]uint8{SignalWaveForm}
 
 	// block five (rx info)
-	_ = binary.Read(reader, binary.BigEndian, &rx_buf)
+	err = binary.Read(reader, binary.BigEndian, &rx_buf)
+	if err != nil {
+		errn := errors.New("Kmall sensor")
+		err = errors.Join(err, ErrSensorMetata, errn)
+		return sensor_data, err
+	}
 	sensor_data.NumBytesRxInfo = []uint16{rx_buf.NumBytesRxInfo}
 	sensor_data.NumSoundingsMaxMain = []uint16{rx_buf.NumSoundingsMaxMain}
 	sensor_data.NumSoundingsValidMain = []uint16{rx_buf.NumSoundingsValidMain}
@@ -2529,7 +2778,12 @@ func DecodeKmallSpecific(reader *bytes.Reader) (sensor_data Kmall) {
 	AlarmFlag := make([]uint8, 0, nclasses)
 
 	for i := 0; i < nclasses; i++ {
-		_ = binary.Read(reader, binary.BigEndian, &cls_buf)
+		err = binary.Read(reader, binary.BigEndian, &cls_buf)
+		if err != nil {
+			errn := errors.New("Kmall sensor")
+			err = errors.Join(err, ErrSensorMetata, errn)
+			return sensor_data, err
+		}
 		NumExtraDetectionInClass = append(NumExtraDetectionInClass, cls_buf.NumExtraDetectionInClass)
 		AlarmFlag = append(AlarmFlag, cls_buf.AlarmFlag)
 	}
@@ -2537,9 +2791,14 @@ func DecodeKmallSpecific(reader *bytes.Reader) (sensor_data Kmall) {
 	sensor_data.NumExtraDetectionInClass = [][]uint16{NumExtraDetectionInClass}
 	sensor_data.AlarmFlag = [][]uint8{AlarmFlag}
 
-	_ = binary.Read(reader, binary.BigEndian, &final_spare)
+	err = binary.Read(reader, binary.BigEndian, &final_spare)
+	if err != nil {
+		errn := errors.New("Kmall sensor")
+		err = errors.Join(err, ErrSensorMetata, errn)
+		return sensor_data, err
+	}
 
-	return sensor_data
+	return sensor_data, err
 }
 
 // Single beam types
@@ -2551,7 +2810,7 @@ type SbEchotrac struct {
 	DynamicDraft    []float32
 }
 
-func DecodeSbEchotracSpecific(reader *bytes.Reader) (sensor_data SbEchotrac) {
+func DecodeSbEchotracSpecific(reader *bytes.Reader) (sensor_data SbEchotrac, err error) {
 	var buffer struct {
 		NavigationError uint16
 		MppSource       uint8
@@ -2559,17 +2818,22 @@ func DecodeSbEchotracSpecific(reader *bytes.Reader) (sensor_data SbEchotrac) {
 		DynamicDraft    int16
 		Spare           [4]byte
 	}
-	_ = binary.Read(reader, binary.BigEndian, &buffer)
+	err = binary.Read(reader, binary.BigEndian, &buffer)
+	if err != nil {
+		errn := errors.New("SBEchotrac or Swath_Bathy2000 or Swath_PDD sensors")
+		err = errors.Join(err, ErrSensorMetata, errn)
+		return sensor_data, err
+	}
 
 	sensor_data.NavigationError = []uint16{buffer.NavigationError}
 	sensor_data.MppSource = []uint8{buffer.MppSource}
 	sensor_data.TideSource = []uint8{buffer.TideSource}
 	sensor_data.DynamicDraft = []float32{float32(buffer.DynamicDraft) / SCALE_2_F32}
 
-	return sensor_data
+	return sensor_data, err
 }
 
-type Mgd77 struct {
+type SbMgd77 struct {
 	TimeZoneCorrection []uint16
 	PositionTypeCode   []uint16
 	CorrectionCode     []uint16
@@ -2578,7 +2842,7 @@ type Mgd77 struct {
 	TravelTime         []float64
 }
 
-func DecodeSBMGD77Specific(reader *bytes.Reader) (sensor_data Mgd77) {
+func DecodeSBMGD77Specific(reader *bytes.Reader) (sensor_data SbMgd77, err error) {
 	var buffer struct {
 		TimeZoneCorrection uint16
 		PositionTypeCode   uint16
@@ -2588,7 +2852,12 @@ func DecodeSBMGD77Specific(reader *bytes.Reader) (sensor_data Mgd77) {
 		TravelTime         uint32
 		Spare              [4]byte
 	}
-	_ = binary.Read(reader, binary.BigEndian, &buffer)
+	err = binary.Read(reader, binary.BigEndian, &buffer)
+	if err != nil {
+		errn := errors.New("SBMGD77 sensor")
+		err = errors.Join(err, ErrSensorMetata, errn)
+		return sensor_data, err
+	}
 
 	sensor_data.TimeZoneCorrection = []uint16{buffer.TimeZoneCorrection}
 	sensor_data.PositionTypeCode = []uint16{buffer.PositionTypeCode}
@@ -2597,7 +2866,7 @@ func DecodeSBMGD77Specific(reader *bytes.Reader) (sensor_data Mgd77) {
 	sensor_data.QualityCode = []uint16{buffer.QualityCode}
 	sensor_data.TravelTime = []float64{float64(buffer.TravelTime) / SCALE_4_F64}
 
-	return sensor_data
+	return sensor_data, err
 }
 
 type SbBdb struct {
@@ -2610,7 +2879,7 @@ type SbBdb struct {
 	DatumFlag            []uint8
 }
 
-func DecodeSbBdbSpecific(reader *bytes.Reader) (sensor_data SbBdb) {
+func DecodeSbBdbSpecific(reader *bytes.Reader) (sensor_data SbBdb, err error) {
 	var buffer struct {
 		TravelTime           uint32
 		EvaluationFlag       uint8
@@ -2621,7 +2890,12 @@ func DecodeSbBdbSpecific(reader *bytes.Reader) (sensor_data SbBdb) {
 		DatumFlag            uint8
 		Spare                [4]byte
 	}
-	_ = binary.Read(reader, binary.BigEndian, &buffer)
+	err = binary.Read(reader, binary.BigEndian, &buffer)
+	if err != nil {
+		errn := errors.New("SBBDB sensor")
+		err = errors.Join(err, ErrSensorMetata, errn)
+		return sensor_data, err
+	}
 
 	sensor_data.TravelTime = []uint32{buffer.TravelTime}
 	sensor_data.EvaluationFlag = []uint8{buffer.EvaluationFlag}
@@ -2631,7 +2905,7 @@ func DecodeSbBdbSpecific(reader *bytes.Reader) (sensor_data SbBdb) {
 	sensor_data.PointOrTrackLineFlag = []uint8{buffer.PointOrTrackLineFlag}
 	sensor_data.DatumFlag = []uint8{buffer.DatumFlag}
 
-	return sensor_data
+	return sensor_data, err
 }
 
 type SbNoShDb struct {
@@ -2639,32 +2913,42 @@ type SbNoShDb struct {
 	CartographicCode []uint16
 }
 
-func DecodeSbNoShDbSpecific(reader *bytes.Reader) (sensor_data SbNoShDb) {
+func DecodeSbNoShDbSpecific(reader *bytes.Reader) (sensor_data SbNoShDb, err error) {
 	var buffer struct {
 		TypeCode         uint16
 		CartographicCode uint16
 		Spare            [4]byte
 	}
-	_ = binary.Read(reader, binary.BigEndian, &buffer)
+	err = binary.Read(reader, binary.BigEndian, &buffer)
+	if err != nil {
+		errn := errors.New("SBNOSHDB sensor")
+		err = errors.Join(err, ErrSensorMetata, errn)
+		return sensor_data, err
+	}
 
 	sensor_data.TypeCode = []uint16{buffer.TypeCode}
 	sensor_data.CartographicCode = []uint16{buffer.CartographicCode}
 
-	return sensor_data
+	return sensor_data, err
 }
 
 type SbNavisound struct {
 	PulseLength []float32
 }
 
-func DecodeSbNavisoundSpecific(reader *bytes.Reader) (sensor_data SbNavisound) {
+func DecodeSbNavisoundSpecific(reader *bytes.Reader) (sensor_data SbNavisound, err error) {
 	var buffer struct {
 		PulseLength uint16
 		Spare       [8]byte
 	}
-	_ = binary.Read(reader, binary.BigEndian, &buffer)
+	err = binary.Read(reader, binary.BigEndian, &buffer)
+	if err != nil {
+		errn := errors.New("SBNavisound sensor")
+		err = errors.Join(err, ErrSensorMetata, errn)
+		return sensor_data, err
+	}
 
 	sensor_data.PulseLength = []float32{float32(buffer.PulseLength) / SCALE_2_F32}
 
-	return sensor_data
+	return sensor_data, err
 }
