@@ -40,6 +40,11 @@ type SensorMetadata struct {
 	R2Sonic        R2Sonic
 	ResonTSeries   ResonTSeries
 	Kmall          Kmall
+	SbEchotrac     SbEchotrac
+	Mgd77          Mgd77
+	SbBdb          SbBdb
+	SbNoShDb       SbNoShDb
+	SbNavisound    SbNavisound
 }
 
 // writeSensorMetadata handles the serialisation of specific sensor related

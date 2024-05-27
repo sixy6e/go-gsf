@@ -979,14 +979,19 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 			// single beam swath sensor specific subrecords
 		case SWATH_ECHOTRAC, SWATH_BATHY2000, SWATH_PDD:
 			// DecodeSBEchotrac
+			sen_md.SbEchotrac = DecodeSbEchotracSpecific(reader)
 		case SWATH_MGD77:
 			// DecodeSBMGD77
+			sen_md.Mgd77 = DecodeSBMGD77Specific(reader)
 		case SWATH_BDB:
 			// DecodeSBBDB
+			sen_md.SbBdb = DecodeSbBdbSpecific(reader)
 		case SWATH_NOSHDB:
 			// DecodeSBNOSHDB
+			sen_md.SbNoShDb = DecodeSbNoShDbSpecific(reader)
 		case SWATH_NAVISOUND:
 			// DecodeSBNavisound
+			sen_md.SbNavisound = DecodeSbNavisoundSpecific(reader)
 		}
 	}
 
