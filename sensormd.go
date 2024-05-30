@@ -23,7 +23,7 @@ import (
 // we'll keep as uint16 and not promote to int32.
 // TODO; look at the int8 assignments and confirm if *p is unsigned
 
-var ErrSensorMetata = errors.New("Error reading Sensor Metadata")
+var ErrSensorMetadata = errors.New("Error reading Sensor Metadata")
 
 type Seabeam struct {
 	EclipseTime []uint16 `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
@@ -36,7 +36,7 @@ func DecodeSeabeamSpecific(reader *bytes.Reader) (sensor_data Seabeam, err error
 	err = binary.Read(reader, binary.BigEndian, &buffer)
 	if err != nil {
 		errn := errors.New("Seabeam sensor")
-		err = errors.Join(err, ErrSensorMetata, errn)
+		err = errors.Join(err, ErrSensorMetadata, errn)
 		return sensor_data, err
 	}
 
@@ -65,7 +65,7 @@ func DecodeEm12Specific(reader *bytes.Reader) (sensor_data Em12, err error) {
 	err = binary.Read(reader, binary.BigEndian, &buffer)
 	if err != nil {
 		errn := errors.New("EM12 sensor")
-		err = errors.Join(err, ErrSensorMetata, errn)
+		err = errors.Join(err, ErrSensorMetadata, errn)
 		return sensor_data, err
 	}
 
@@ -103,7 +103,7 @@ func DecodeEm100Specific(reader *bytes.Reader) (sensor_data Em100, err error) {
 	err = binary.Read(reader, binary.BigEndian, &buffer)
 	if err != nil {
 		errn := errors.New("EM100 sensor")
-		err = errors.Join(err, ErrSensorMetata, errn)
+		err = errors.Join(err, ErrSensorMetadata, errn)
 		return sensor_data, err
 	}
 
@@ -140,7 +140,7 @@ func DecodeEm950Specific(reader *bytes.Reader) (sensor_data Em950, err error) {
 	err = binary.Read(reader, binary.BigEndian, &buffer)
 	if err != nil {
 		errn := errors.New("EM950 sensor")
-		err = errors.Join(err, ErrSensorMetata, errn)
+		err = errors.Join(err, ErrSensorMetadata, errn)
 		return sensor_data, err
 	}
 
@@ -181,7 +181,7 @@ func DecodeEm121ASpecific(reader *bytes.Reader) (sensor_data Em121A, err error) 
 	err = binary.Read(reader, binary.BigEndian, &buffer)
 	if err != nil {
 		errn := errors.New("EM121A sensor")
-		err = errors.Join(err, ErrSensorMetata, errn)
+		err = errors.Join(err, ErrSensorMetadata, errn)
 		return sensor_data, err
 	}
 
@@ -225,7 +225,7 @@ func DecodeEm121Specific(reader *bytes.Reader) (sensor_data Em121, err error) {
 	err = binary.Read(reader, binary.BigEndian, &buffer)
 	if err != nil {
 		errn := errors.New("EM121 sensor")
-		err = errors.Join(err, ErrSensorMetata, errn)
+		err = errors.Join(err, ErrSensorMetadata, errn)
 		return sensor_data, err
 	}
 
@@ -263,7 +263,7 @@ func DecodeSassSpecfic(reader *bytes.Reader) (sensor_data Sass, err error) {
 	err = binary.Read(reader, binary.BigEndian, &buffer)
 	if err != nil {
 		errn := errors.New("SASS sensor")
-		err = errors.Join(err, ErrSensorMetata, errn)
+		err = errors.Join(err, ErrSensorMetadata, errn)
 		return sensor_data, err
 	}
 
@@ -312,7 +312,7 @@ func DecodeSeaMapSpecific(reader *bytes.Reader, gsfd GsfDetails) (sensor_data Se
 	err = binary.Read(reader, binary.BigEndian, &buffer1)
 	if err != nil {
 		errn := errors.New("SeaMap sensor")
-		err = errors.Join(err, ErrSensorMetata, errn)
+		err = errors.Join(err, ErrSensorMetadata, errn)
 		return sensor_data, err
 	}
 
@@ -322,7 +322,7 @@ func DecodeSeaMapSpecific(reader *bytes.Reader, gsfd GsfDetails) (sensor_data Se
 		err = binary.Read(reader, binary.BigEndian, &pressure_depth)
 		if err != nil {
 			errn := errors.New("SeaMap sensor")
-			err = errors.Join(err, ErrSensorMetata, errn)
+			err = errors.Join(err, ErrSensorMetadata, errn)
 			return sensor_data, err
 		}
 	} else {
@@ -332,7 +332,7 @@ func DecodeSeaMapSpecific(reader *bytes.Reader, gsfd GsfDetails) (sensor_data Se
 	err = binary.Read(reader, binary.BigEndian, &buffer2)
 	if err != nil {
 		errn := errors.New("SeaMap sensor")
-		err = errors.Join(err, ErrSensorMetata, errn)
+		err = errors.Join(err, ErrSensorMetadata, errn)
 		return sensor_data, err
 	}
 
@@ -372,7 +372,7 @@ func DecodeSeaBatSpecific(reader *bytes.Reader) (sensor_data SeaBat, err error) 
 	err = binary.Read(reader, binary.BigEndian, &buffer)
 	if err != nil {
 		errn := errors.New("SeaBat sensor")
-		err = errors.Join(err, ErrSensorMetata, errn)
+		err = errors.Join(err, ErrSensorMetadata, errn)
 		return sensor_data, err
 	}
 
@@ -407,7 +407,7 @@ func DecodeEm1000Specific(reader *bytes.Reader) (sensor_data Em1000, err error) 
 	err = binary.Read(reader, binary.BigEndian, &buffer)
 	if err != nil {
 		errn := errors.New("EM1000 sensor")
-		err = errors.Join(err, ErrSensorMetata, errn)
+		err = errors.Join(err, ErrSensorMetadata, errn)
 		return sensor_data, err
 	}
 
@@ -442,7 +442,7 @@ func DecodeTypeIIISeabeamSpecific(reader *bytes.Reader) (sensor_data TypeIIISeab
 	err = binary.Read(reader, binary.BigEndian, &buffer)
 	if err != nil {
 		errn := errors.New("TypeIIISeaBeam sensor")
-		err = errors.Join(err, ErrSensorMetata, errn)
+		err = errors.Join(err, ErrSensorMetadata, errn)
 		return sensor_data, err
 	}
 
@@ -477,7 +477,7 @@ func DecodeSbAmpSpecific(reader *bytes.Reader) (sensor_data SbAmp, err error) {
 	err = binary.Read(reader, binary.BigEndian, &buffer)
 	if err != nil {
 		errn := errors.New("SBAmp sensor")
-		err = errors.Join(err, ErrSensorMetata, errn)
+		err = errors.Join(err, ErrSensorMetadata, errn)
 		return sensor_data, err
 	}
 
@@ -517,7 +517,7 @@ func DecodeSeaBatIISpecific(reader *bytes.Reader) (sensor_data SeaBatII, err err
 	err = binary.Read(reader, binary.BigEndian, &buffer)
 	if err != nil {
 		errn := errors.New("SeaBatII sensor")
-		err = errors.Join(err, ErrSensorMetata, errn)
+		err = errors.Join(err, ErrSensorMetadata, errn)
 		return sensor_data, err
 	}
 
@@ -575,7 +575,7 @@ func DecodeSeaBat8101Specific(reader *bytes.Reader) (sensor_data SeaBat8101, err
 	err = binary.Read(reader, binary.BigEndian, &buffer)
 	if err != nil {
 		errn := errors.New("SeaBat8101 sensor")
-		err = errors.Join(err, ErrSensorMetata, errn)
+		err = errors.Join(err, ErrSensorMetadata, errn)
 		return sensor_data, err
 	}
 
@@ -625,7 +625,7 @@ func DecodeSeabeam2112Specific(reader *bytes.Reader) (sensor_data Seabeam2112, e
 	err = binary.Read(reader, binary.BigEndian, &buffer)
 	if err != nil {
 		errn := errors.New("Seabeam2112 sensor")
-		err = errors.Join(err, ErrSensorMetata, errn)
+		err = errors.Join(err, ErrSensorMetadata, errn)
 		return sensor_data, err
 	}
 
@@ -663,7 +663,7 @@ func DecodeElacMkIISpecific(reader *bytes.Reader) (sensor_data ElacMkII, err err
 	err = binary.Read(reader, binary.BigEndian, &buffer)
 	if err != nil {
 		errn := errors.New("ElacMkII sensor")
-		err = errors.Join(err, ErrSensorMetata, errn)
+		err = errors.Join(err, ErrSensorMetadata, errn)
 		return sensor_data, err
 	}
 
@@ -690,7 +690,7 @@ func DecodeCmpSass(reader *bytes.Reader) (sensor_data CmpSass, err error) {
 	err = binary.Read(reader, binary.BigEndian, &buffer)
 	if err != nil {
 		errn := errors.New("CmpSASS sensor")
-		err = errors.Join(err, ErrSensorMetata, errn)
+		err = errors.Join(err, ErrSensorMetadata, errn)
 		return sensor_data, err
 	}
 
@@ -762,7 +762,7 @@ func DecodeReson8100(reader *bytes.Reader) (sensor_data Reson8100, err error) {
 	err = binary.Read(reader, binary.BigEndian, &buffer)
 	if err != nil {
 		errn := errors.New("Reson8100 sensor")
-		err = errors.Join(err, ErrSensorMetata, errn)
+		err = errors.Join(err, ErrSensorMetadata, errn)
 		return sensor_data, err
 	}
 
@@ -808,7 +808,7 @@ type Em3 struct {
 	OffsetMultiplier     []uint8   `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
 	// RunTimeID                      []uint32 // not stored
 	RunTimeModelNumber             [][]uint16    `tiledb:"dtype=uint16,ftype=attr,var" filters:"zstd(level=16)"`
-	RunTimeDgTime                  [][]time.Time `tiledb:"dtype=time,ftype=attr,var" filters:"zstd(level=16)"`
+	RunTimeDgTime                  [][]time.Time `tiledb:"dtype=datetime_ns,ftype=attr,var" filters:"zstd(level=16)"`
 	RunTimePingNumber              [][]uint16    `tiledb:"dtype=uint16,ftype=attr,var" filters:"zstd(level=16)"`
 	RunTimeSerialNumber            [][]uint16    `tiledb:"dtype=uint16,ftype=attr,var" filters:"zstd(level=16)"`
 	RunTimeSystemStatus            [][]uint32    `tiledb:"dtype=uint32,ftype=attr,var" filters:"zstd(level=16)"`
@@ -940,7 +940,7 @@ func DecodeEm3Specific(reader *bytes.Reader) (sensor_data Em3, err error) {
 	err = binary.Read(reader, binary.BigEndian, &buffer)
 	if err != nil {
 		errn := errors.New("EM3 sensor")
-		err = errors.Join(err, ErrSensorMetata, errn)
+		err = errors.Join(err, ErrSensorMetadata, errn)
 		return sensor_data, err
 	}
 
@@ -960,7 +960,7 @@ func DecodeEm3Specific(reader *bytes.Reader) (sensor_data Em3, err error) {
 		err = binary.Read(reader, binary.BigEndian, &rt1)
 		if err != nil {
 			errn := errors.New("EM3 sensor")
-			err = errors.Join(err, ErrSensorMetata, errn)
+			err = errors.Join(err, ErrSensorMetadata, errn)
 			return sensor_data, err
 		}
 		model_number = append(model_number, rt1.ModelNumber)
@@ -1013,7 +1013,7 @@ func DecodeEm3Specific(reader *bytes.Reader) (sensor_data Em3, err error) {
 			err = binary.Read(reader, binary.BigEndian, &rt2)
 			if err != nil {
 				errn := errors.New("EM3 sensor")
-				err = errors.Join(err, ErrSensorMetata, errn)
+				err = errors.Join(err, ErrSensorMetadata, errn)
 				return sensor_data, err
 			}
 			model_number = append(model_number, rt2.ModelNumber)
@@ -1247,7 +1247,7 @@ func DecodeEm4Specific(reader *bytes.Reader) (sensor_data Em4, err error) {
 	err = binary.Read(reader, binary.BigEndian, &buffer)
 	if err != nil {
 		errn := errors.New("EM4 sensor")
-		err = errors.Join(err, ErrSensorMetata, errn)
+		err = errors.Join(err, ErrSensorMetadata, errn)
 		return sensor_data, err
 	}
 	// n_bytes += 46
@@ -1258,7 +1258,7 @@ func DecodeEm4Specific(reader *bytes.Reader) (sensor_data Em4, err error) {
 		err = binary.Read(reader, binary.BigEndian, &sector_buffer_base)
 		if err != nil {
 			errn := errors.New("EM4 sensor")
-			err = errors.Join(err, ErrSensorMetata, errn)
+			err = errors.Join(err, ErrSensorMetadata, errn)
 			return sensor_data, err
 		}
 		sector_buffer.TiltAngle = append(
@@ -1303,7 +1303,7 @@ func DecodeEm4Specific(reader *bytes.Reader) (sensor_data Em4, err error) {
 	err = binary.Read(reader, binary.BigEndian, &spare_buffer)
 	if err != nil {
 		errn := errors.New("EM4 sensor")
-		err = errors.Join(err, ErrSensorMetata, errn)
+		err = errors.Join(err, ErrSensorMetadata, errn)
 		return sensor_data, err
 	}
 
@@ -1311,7 +1311,7 @@ func DecodeEm4Specific(reader *bytes.Reader) (sensor_data Em4, err error) {
 	err = binary.Read(reader, binary.BigEndian, &runtime_buffer)
 	if err != nil {
 		errn := errors.New("EM4 sensor")
-		err = errors.Join(err, ErrSensorMetata, errn)
+		err = errors.Join(err, ErrSensorMetadata, errn)
 		return sensor_data, err
 	}
 
@@ -1319,7 +1319,7 @@ func DecodeEm4Specific(reader *bytes.Reader) (sensor_data Em4, err error) {
 	err = binary.Read(reader, binary.BigEndian, &proc_buffer)
 	if err != nil {
 		errn := errors.New("EM4 sensor")
-		err = errors.Join(err, ErrSensorMetata, errn)
+		err = errors.Join(err, ErrSensorMetadata, errn)
 		return sensor_data, err
 	}
 
@@ -1452,7 +1452,7 @@ func DecodeGeoSwathPlusSpecific(reader *bytes.Reader) (sensor_data GeoSwathPlus,
 	err = binary.Read(reader, binary.BigEndian, &buffer)
 	if err != nil {
 		errn := errors.New("GeoSwathPlus sensor")
-		err = errors.Join(err, ErrSensorMetata, errn)
+		err = errors.Join(err, ErrSensorMetadata, errn)
 		return sensor_data, err
 	}
 
@@ -1528,7 +1528,7 @@ func DecodeKlein5410BssSpecific(reader *bytes.Reader) (sensor_data Klein5410Bss,
 	err = binary.Read(reader, binary.BigEndian, &buffer)
 	if err != nil {
 		errn := errors.New("Klein5410BSS sensor")
-		err = errors.Join(err, ErrSensorMetata, errn)
+		err = errors.Join(err, ErrSensorMetadata, errn)
 		return sensor_data, err
 	}
 
@@ -1652,7 +1652,7 @@ func DecodeReson7100Specific(reader *bytes.Reader) (sensor_data Reson7100, err e
 	err = binary.Read(reader, binary.BigEndian, &buffer)
 	if err != nil {
 		errn := errors.New("Reson7100 sensor")
-		err = errors.Join(err, ErrSensorMetata, errn)
+		err = errors.Join(err, ErrSensorMetadata, errn)
 		return sensor_data, err
 	}
 
@@ -1724,7 +1724,7 @@ type Em3Raw struct {
 	SectorNumber                      [][]uint8   `tiledb:"dtype=uint8,ftype=attr,var" filters:"zstd(level=16)"`
 	SignalBandwidth                   [][]float64 `tiledb:"dtype=float64,ftype=attr,var" filters:"zstd(level=16)"`
 	RunTimeModelNumber                []uint16    `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
-	RunTimeDgTime                     []time.Time `tiledb:"dtype=time,ftype=attr" filters:"zstd(level=16)"`
+	RunTimeDgTime                     []time.Time `tiledb:"dtype=datetime_ns,ftype=attr" filters:"zstd(level=16)"`
 	RunTimePingCounter                []uint16    `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
 	RunTimeSerialNumber               []uint16    `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
 	RunTimeOperatorStationStatus      []uint8     `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
@@ -1838,7 +1838,7 @@ func DecodeEm3RawSpecific(reader *bytes.Reader) (sensor_data Em3Raw, err error) 
 	err = binary.Read(reader, binary.BigEndian, &buffer)
 	if err != nil {
 		errn := errors.New("EM3Raw sensor")
-		err = errors.Join(err, ErrSensorMetata, errn)
+		err = errors.Join(err, ErrSensorMetadata, errn)
 		return sensor_data, err
 	}
 	sensor_data.ModelNumber = []uint16{buffer.ModelNumber}
@@ -1868,7 +1868,7 @@ func DecodeEm3RawSpecific(reader *bytes.Reader) (sensor_data Em3Raw, err error) 
 		err = binary.Read(reader, binary.BigEndian, &var_buff)
 		if err != nil {
 			errn := errors.New("EM3Raw sensor")
-			err = errors.Join(err, ErrSensorMetata, errn)
+			err = errors.Join(err, ErrSensorMetadata, errn)
 			return sensor_data, err
 		}
 		tilt_angle = append(tilt_angle, float32(var_buff.TiltAngle)/SCALE_2_F32)
@@ -1894,7 +1894,7 @@ func DecodeEm3RawSpecific(reader *bytes.Reader) (sensor_data Em3Raw, err error) 
 	err = binary.Read(reader, binary.BigEndian, &rt_buff)
 	if err != nil {
 		errn := errors.New("EM3Raw sensor")
-		err = errors.Join(err, ErrSensorMetata, errn)
+		err = errors.Join(err, ErrSensorMetadata, errn)
 		return sensor_data, err
 	}
 	sensor_data.RunTimeModelNumber = []uint16{rt_buff.RunTimeModelNumber}
@@ -1930,7 +1930,7 @@ func DecodeEm3RawSpecific(reader *bytes.Reader) (sensor_data Em3Raw, err error) 
 		err = binary.Read(reader, binary.BigEndian, &RunTimeDurotongSpeed)
 		if err != nil {
 			errn := errors.New("EM3Raw sensor")
-			err = errors.Join(err, ErrSensorMetata, errn)
+			err = errors.Join(err, ErrSensorMetadata, errn)
 			return sensor_data, err
 		}
 		sensor_data.RunTimeDurotongSpeed = []float32{float32(RunTimeDurotongSpeed) / SCALE_1_F32}
@@ -1946,7 +1946,7 @@ func DecodeEm3RawSpecific(reader *bytes.Reader) (sensor_data Em3Raw, err error) 
 		err = binary.Read(reader, binary.BigEndian, &RunTimeTxAlongTilt)
 		if err != nil {
 			errn := errors.New("EM3Raw sensor")
-			err = errors.Join(err, ErrSensorMetata, errn)
+			err = errors.Join(err, ErrSensorMetadata, errn)
 			return sensor_data, err
 		}
 		sensor_data.RunTimeTxAlongTilt = []float32{float32(RunTimeTxAlongTilt) / SCALE_2_F32}
@@ -1954,7 +1954,7 @@ func DecodeEm3RawSpecific(reader *bytes.Reader) (sensor_data Em3Raw, err error) 
 		err = binary.Read(reader, binary.BigEndian, &Spare)
 		if err != nil {
 			errn := errors.New("EM3Raw sensor")
-			err = errors.Join(err, ErrSensorMetata, errn)
+			err = errors.Join(err, ErrSensorMetadata, errn)
 			return sensor_data, err
 		}
 	}
@@ -1968,7 +1968,7 @@ func DecodeEm3RawSpecific(reader *bytes.Reader) (sensor_data Em3Raw, err error) 
 		err = binary.Read(reader, binary.BigEndian, &RunTimeHiLoAbsorptionRatio)
 		if err != nil {
 			errn := errors.New("EM3Raw sensor")
-			err = errors.Join(err, ErrSensorMetata, errn)
+			err = errors.Join(err, ErrSensorMetadata, errn)
 			return sensor_data, err
 		}
 		sensor_data.RunTimeHiLoAbsorptionRatio = []uint8{RunTimeHiLoAbsorptionRatio}
@@ -1978,7 +1978,7 @@ func DecodeEm3RawSpecific(reader *bytes.Reader) (sensor_data Em3Raw, err error) 
 	err = binary.Read(reader, binary.BigEndian, &pu_buff)
 	if err != nil {
 		errn := errors.New("EM3Raw sensor")
-		err = errors.Join(err, ErrSensorMetata, errn)
+		err = errors.Join(err, ErrSensorMetadata, errn)
 		return sensor_data, err
 	}
 	sensor_data.PuStatusPuCpuLoad = []uint8{pu_buff.PuStatusPuCpuLoad}
@@ -1991,34 +1991,34 @@ func DecodeEm3RawSpecific(reader *bytes.Reader) (sensor_data Em3Raw, err error) 
 }
 
 type DeltaT struct {
-	FileExtension        []string
-	Version              []uint8
-	PingByteSize         []uint16
-	InterrogationTime    []time.Time
-	SamplesPerBeam       []uint16
-	SectorSize           []uint16
-	StartAngle           []float32
-	AngleIncrement       []float32
-	AcousticRange        []uint16
-	AcousticFrequency    []uint16
-	SoundVelocity        []float32
-	RangeResolution      []uint16
-	ProfileTiltAngle     []float32
-	RepetitionRate       []uint16
-	PingNumber           []uint32
-	IntensityFlag        []uint8
-	PingLatency          []float32
-	DataLatency          []float32
-	SampleRateFlag       []uint8
-	OptionsFlag          []uint8
-	NumberPingsAveraged  []uint8
-	CenterPingTimeOffset []float32
-	UserDefinedByte      []uint8
-	Altitude             []float64
-	ExternalSensorFlags  []uint8
-	PulseLength          []float64
-	ForeAftBeamwidth     []float32
-	AthwartBeamwidth     []float32
+	FileExtension        []string    `tiledb:"dtype=string,ftype=attr" filters:"zstd(level=16)"`
+	Version              []uint8     `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
+	PingByteSize         []uint16    `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	InterrogationTime    []time.Time `tiledb:"dtype=datetime_ns,ftype=attr" filters:"zstd(level=16)"`
+	SamplesPerBeam       []uint16    `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	SectorSize           []uint16    `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	StartAngle           []float32   `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	AngleIncrement       []float32   `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	AcousticRange        []uint16    `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	AcousticFrequency    []uint16    `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	SoundVelocity        []float32   `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	RangeResolution      []uint16    `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	ProfileTiltAngle     []float32   `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	RepetitionRate       []uint16    `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	PingNumber           []uint32    `tiledb:"dtype=uint32,ftype=attr" filters:"zstd(level=16)"`
+	IntensityFlag        []uint8     `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
+	PingLatency          []float32   `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	DataLatency          []float32   `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	SampleRateFlag       []uint8     `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
+	OptionsFlag          []uint8     `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
+	NumberPingsAveraged  []uint8     `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
+	CenterPingTimeOffset []float32   `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	UserDefinedByte      []uint8     `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
+	Altitude             []float64   `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
+	ExternalSensorFlags  []uint8     `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
+	PulseLength          []float64   `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
+	ForeAftBeamwidth     []float32   `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	AthwartBeamwidth     []float32   `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
 }
 
 func DecodeDeltaTSpecific(reader *bytes.Reader) (sensor_data DeltaT, err error) {
@@ -2057,7 +2057,7 @@ func DecodeDeltaTSpecific(reader *bytes.Reader) (sensor_data DeltaT, err error) 
 	err = binary.Read(reader, binary.BigEndian, &buffer)
 	if err != nil {
 		errn := errors.New("DeltaT sensor")
-		err = errors.Join(err, ErrSensorMetata, errn)
+		err = errors.Join(err, ErrSensorMetadata, errn)
 		return sensor_data, err
 	}
 
@@ -2094,34 +2094,34 @@ func DecodeDeltaTSpecific(reader *bytes.Reader) (sensor_data DeltaT, err error) 
 }
 
 type R2Sonic struct {
-	ModelNumber      []string
-	SerialNumber     []string
-	DgTime           []time.Time
-	PingNumber       []uint32
-	PingPeriod       []float64
-	SoundSpeed       []float64
-	Frequency        []float64
-	TxPower          []float64
-	TxPulseWidth     []float64
-	TxBeamWidthVert  []float64
-	TxBeamWidthHoriz []float64
-	TxSteeringVert   []float64
-	TxSteeringHoriz  []float64
-	TxMiscInfo       []uint32
-	RxBandwidth      []float64
-	RxSampleRate     []float64
-	RxRange          []float64
-	RxGain           []float64
-	RxSpreading      []float64
-	RxAbsorption     []float64
-	RxMountTilt      []float64
-	RxMiscInfo       []uint32
-	NumberBeams      []uint16
-	A0MoreInfo       [][]float64
-	A2MoreInfo       [][]float64
-	G0DepthGateMin   []float64
-	G0DepthGateMax   []float64
-	G0DepthGateSlope []float64
+	ModelNumber      []string    `tiledb:"dtype=string,ftype=attr" filters:"zstd(level=16)"`
+	SerialNumber     []string    `tiledb:"dtype=string,ftype=attr" filters:"zstd(level=16)"`
+	DgTime           []time.Time `tiledb:"dtype=datetime_ns,ftype=attr" filters:"zstd(level=16)"`
+	PingNumber       []uint32    `tiledb:"dtype=uint32,ftype=attr" filters:"zstd(level=16)"`
+	PingPeriod       []float64   `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
+	SoundSpeed       []float64   `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
+	Frequency        []float64   `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
+	TxPower          []float64   `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
+	TxPulseWidth     []float64   `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
+	TxBeamWidthVert  []float64   `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
+	TxBeamWidthHoriz []float64   `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
+	TxSteeringVert   []float64   `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
+	TxSteeringHoriz  []float64   `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
+	TxMiscInfo       []uint32    `tiledb:"dtype=uint32,ftype=attr" filters:"zstd(level=16)"`
+	RxBandwidth      []float64   `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
+	RxSampleRate     []float64   `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
+	RxRange          []float64   `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
+	RxGain           []float64   `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
+	RxSpreading      []float64   `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
+	RxAbsorption     []float64   `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
+	RxMountTilt      []float64   `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
+	RxMiscInfo       []uint32    `tiledb:"dtype=uint32,ftype=attr" filters:"zstd(level=16)"`
+	NumberBeams      []uint16    `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	A0MoreInfo       [][]float64 `tiledb:"dtype=float64,ftype=attr,var" filters:"zstd(level=16)"`
+	A2MoreInfo       [][]float64 `tiledb:"dtype=float64,ftype=attr,var" filters:"zstd(level=16)"`
+	G0DepthGateMin   []float64   `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
+	G0DepthGateMax   []float64   `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
+	G0DepthGateSlope []float64   `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
 }
 
 func DecodeR2SonicSpecific(reader *bytes.Reader) (sensor_data R2Sonic, err error) {
@@ -2169,7 +2169,7 @@ func DecodeR2SonicSpecific(reader *bytes.Reader) (sensor_data R2Sonic, err error
 	err = binary.Read(reader, binary.BigEndian, &buffer1)
 	if err != nil {
 		errn := errors.New("R2Sonic sensor")
-		err = errors.Join(err, ErrSensorMetata, errn)
+		err = errors.Join(err, ErrSensorMetadata, errn)
 		return sensor_data, err
 	}
 	sensor_data.ModelNumber = []string{string(buffer1.ModelNumber[:])}
@@ -2200,7 +2200,7 @@ func DecodeR2SonicSpecific(reader *bytes.Reader) (sensor_data R2Sonic, err error
 	err = binary.Read(reader, binary.BigEndian, &var_buf)
 	if err != nil {
 		errn := errors.New("R2Sonic sensor")
-		err = errors.Join(err, ErrSensorMetata, errn)
+		err = errors.Join(err, ErrSensorMetadata, errn)
 		return sensor_data, err
 	}
 	A0MoreInfo := make([]float64, 0, 6)
@@ -2218,7 +2218,7 @@ func DecodeR2SonicSpecific(reader *bytes.Reader) (sensor_data R2Sonic, err error
 	err = binary.Read(reader, binary.BigEndian, &buffer2)
 	if err != nil {
 		errn := errors.New("R2Sonic sensor")
-		err = errors.Join(err, ErrSensorMetata, errn)
+		err = errors.Join(err, ErrSensorMetadata, errn)
 		return sensor_data, err
 	}
 	sensor_data.G0DepthGateMin = []float64{float64(buffer2.G0DepthGateMin) / SCALE_6_F64}
@@ -2229,61 +2229,61 @@ func DecodeR2SonicSpecific(reader *bytes.Reader) (sensor_data R2Sonic, err error
 }
 
 type ResonTSeries struct {
-	ProtocolVersion                   []uint16
-	DeviceID                          []uint32
-	NumberDevices                     []uint32
-	SystemEnumerator                  []uint16
-	MajorSerialNumber                 []uint32
-	MinorSerialNumber                 []uint32
-	PingNumber                        []uint32
-	MultiPingSequence                 []uint16
-	Frequency                         []float64
-	SampleRate                        []float64
-	ReceiverBandwidth                 []float64
-	TxPulseWidth                      []float64
-	TxPulseTypeID                     []uint32
-	TxPulseEnvlpID                    []uint32
-	TxPulseEnvlpParam                 []float64
-	TxPulseMode                       []uint16
-	MaxPingRate                       []float64
-	PingPeriod                        []float64
-	Range                             []float64
-	Power                             []float64
-	Gain                              []float64
-	ControlFlags                      []uint32
-	ProjectorID                       []uint32
-	ProjectorSteerAnglVert            []float64
-	ProjectorSteerAnglHorz            []float64
-	ProjectorBeamWidthVert            []float32
-	ProjectorBeamWidthHorz            []float32
-	ProjectorBeamFocalPt              []float64
-	ProjectorBeamWeightingWindowType  []uint32
-	ProjectorBeamWeightingWindowParam []uint32
-	TransmitFlags                     []uint32
-	HydrophoneID                      []uint32
-	ReceivingBeamWeightingWindowType  []uint32
-	ReceivingBeamWeightingWindowParam []uint32
-	ReceiveFlags                      []uint32
-	ReceiveBeamWidth                  []float64
-	RangeFiltMin                      []float64
-	RangeFiltMax                      []float64
-	DepthFiltMin                      []float64
-	DepthFiltMax                      []float64
-	Absorption                        []float64
-	SoundVelocity                     []float64
-	SvSource                          []uint8
-	Spreading                         []float64
-	BeamSpacingMode                   []uint16
-	SonarSourceMode                   []uint16
-	CoverageMode                      []uint8
-	CoverageAngle                     []float64
-	HorizontalReceiverSteeringAngle   []float64
-	UncertaintyType                   []uint32
-	TransmitterSteeringAngle          []float64
-	AppliedRoll                       []float64
-	DetectionAlgorithm                []uint16
-	DetectionFlags                    []uint32
-	DeviceDescription                 []string
+	ProtocolVersion                   []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	DeviceID                          []uint32  `tiledb:"dtype=uint32,ftype=attr" filters:"zstd(level=16)"`
+	NumberDevices                     []uint32  `tiledb:"dtype=uint32,ftype=attr" filters:"zstd(level=16)"`
+	SystemEnumerator                  []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	MajorSerialNumber                 []uint32  `tiledb:"dtype=uint32,ftype=attr" filters:"zstd(level=16)"`
+	MinorSerialNumber                 []uint32  `tiledb:"dtype=uint32,ftype=attr" filters:"zstd(level=16)"`
+	PingNumber                        []uint32  `tiledb:"dtype=uint32,ftype=attr" filters:"zstd(level=16)"`
+	MultiPingSequence                 []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	Frequency                         []float64 `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
+	SampleRate                        []float64 `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
+	ReceiverBandwidth                 []float64 `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
+	TxPulseWidth                      []float64 `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
+	TxPulseTypeID                     []uint32  `tiledb:"dtype=uint32,ftype=attr" filters:"zstd(level=16)"`
+	TxPulseEnvlpID                    []uint32  `tiledb:"dtype=uint32,ftype=attr" filters:"zstd(level=16)"`
+	TxPulseEnvlpParam                 []float64 `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
+	TxPulseMode                       []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	MaxPingRate                       []float64 `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
+	PingPeriod                        []float64 `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
+	Range                             []float64 `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
+	Power                             []float64 `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
+	Gain                              []float64 `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
+	ControlFlags                      []uint32  `tiledb:"dtype=uint32,ftype=attr" filters:"zstd(level=16)"`
+	ProjectorID                       []uint32  `tiledb:"dtype=uint32,ftype=attr" filters:"zstd(level=16)"`
+	ProjectorSteerAnglVert            []float64 `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
+	ProjectorSteerAnglHorz            []float64 `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
+	ProjectorBeamWidthVert            []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	ProjectorBeamWidthHorz            []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	ProjectorBeamFocalPt              []float64 `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
+	ProjectorBeamWeightingWindowType  []uint32  `tiledb:"dtype=uint32,ftype=attr" filters:"zstd(level=16)"`
+	ProjectorBeamWeightingWindowParam []uint32  `tiledb:"dtype=uint32,ftype=attr" filters:"zstd(level=16)"`
+	TransmitFlags                     []uint32  `tiledb:"dtype=uint32,ftype=attr" filters:"zstd(level=16)"`
+	HydrophoneID                      []uint32  `tiledb:"dtype=uint32,ftype=attr" filters:"zstd(level=16)"`
+	ReceivingBeamWeightingWindowType  []uint32  `tiledb:"dtype=uint32,ftype=attr" filters:"zstd(level=16)"`
+	ReceivingBeamWeightingWindowParam []uint32  `tiledb:"dtype=uint32,ftype=attr" filters:"zstd(level=16)"`
+	ReceiveFlags                      []uint32  `tiledb:"dtype=uint32,ftype=attr" filters:"zstd(level=16)"`
+	ReceiveBeamWidth                  []float64 `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
+	RangeFiltMin                      []float64 `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
+	RangeFiltMax                      []float64 `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
+	DepthFiltMin                      []float64 `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
+	DepthFiltMax                      []float64 `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
+	Absorption                        []float64 `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
+	SoundVelocity                     []float64 `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
+	SvSource                          []uint8   `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
+	Spreading                         []float64 `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
+	BeamSpacingMode                   []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	SonarSourceMode                   []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	CoverageMode                      []uint8   `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
+	CoverageAngle                     []float64 `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
+	HorizontalReceiverSteeringAngle   []float64 `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
+	UncertaintyType                   []uint32  `tiledb:"dtype=uint32,ftype=attr" filters:"zstd(level=16)"`
+	TransmitterSteeringAngle          []float64 `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
+	AppliedRoll                       []float64 `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
+	DetectionAlgorithm                []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	DetectionFlags                    []uint32  `tiledb:"dtype=uint32,ftype=attr" filters:"zstd(level=16)"`
+	DeviceDescription                 []string  `tiledb:"dtype=string,ftype=attr" filters:"zstd(level=16)"`
 }
 
 func DecodeResonTSeriesSonicSpecific(reader *bytes.Reader) (sensor_data ResonTSeries, err error) {
@@ -2353,7 +2353,7 @@ func DecodeResonTSeriesSonicSpecific(reader *bytes.Reader) (sensor_data ResonTSe
 	err = binary.Read(reader, binary.BigEndian, &buffer)
 	if err != nil {
 		errn := errors.New("ResonTSeries sensor")
-		err = errors.Join(err, ErrSensorMetata, errn)
+		err = errors.Join(err, ErrSensorMetadata, errn)
 		return sensor_data, err
 	}
 
@@ -2422,91 +2422,91 @@ func DecodeResonTSeriesSonicSpecific(reader *bytes.Reader) (sensor_data ResonTSe
 }
 
 type Kmall struct {
-	KmallVersion                       []uint8
-	DgmType                            []uint8
-	DgmVersion                         []uint8
-	SystemID                           []uint8
-	EchoSounderID                      []uint16
-	NumBytesCmnPart                    []uint16
-	PingCounter                        []uint16
-	RxFansPerRing                      []uint8
-	RxFansIndex                        []uint8
-	SwathsPerRing                      []uint8
-	SwathAlongPosition                 []uint8
-	TxTransducerIndex                  []uint8
-	RxTransducerIndex                  []uint8
-	NumRxTransducers                   []uint8
-	AlgorithmType                      []uint8
-	NumBytesInfoData                   []uint16
-	PingRateHz                         []float64
-	BeamSpacing                        []uint8
-	DepthMode                          []uint8
-	SubDepthMode                       []uint8
-	DistanceBetweenSwath               []uint8
-	DetectionMode                      []uint8
-	PulseForm                          []uint8
-	FrequencyModeHz                    []int32
-	FrequencyRangeLowLimHz             []float64
-	FrequencyRangeHighLimHz            []float64
-	MaxTotalTxPulseLengthSector        []float64
-	MaxEffectiveTxPulseLengthSector    []float64
-	MaxEffectiveTxBandWidthHz          []float64
-	AbsCoeffDbPerKm                    []float64
-	PortSectorEdgeDeg                  []float32
-	StarboardSectorEdgeDeg             []float32
-	PortMeanCoverageDeg                []float32
-	StarboardMeanCoverageDeg           []float32
-	PortMeanCoverageMetres             []int16
-	StarboardMeanCoverageMetres        []int16
-	ModeAndStabilisation               []uint8
-	RunTimeFilter1                     []uint8
-	RunTimeFilter2                     []uint8
-	PipeTrackingStatus                 []uint32
-	TransmitArraySizeUsedDeg           []float32
-	ReceiveArraySizeUsedDeg            []float32
-	TransmitPowerDb                    []float32
-	SlRampUpTimeRemaining              []uint16
-	YawAngleDeg                        []float64
-	NumTxSectors                       []uint16
-	NumBytesPerTxSector                []uint16
-	HeadingVesselDeg                   []float64
-	SoundSpeedAtTxDepthMetresPerSecond []float64
-	TxTransducerDepthMetres            []float64
-	ZwaterLevelReRefPointMetres        []float64
-	XKmallToAllMetres                  []float64
-	YKmallToAllMetres                  []float64
-	LatLonInfo                         []uint8
-	PositionSensorStatus               []uint8
-	AttitudeSensorStatus               []uint8
-	LatitudeDeg                        []float64
-	LongitudeDeg                       []float64
-	EllipsoidHeightReRefPointMetres    []float64
-	TxSectorNumber                     [][]uint8
-	TxArrayNumber                      [][]uint8
-	TxSubArray                         [][]uint8
-	SectorTransmitDelaySec             [][]float64
-	TiltAngleReTxDeg                   [][]float64
-	TxNominalSourceLevelDb             [][]float64
-	TxFocusRangeMetres                 [][]float64
-	CentreFrequencyHz                  [][]float64
-	SignalBandWidthHz                  [][]float64
-	TotalSignalLengthSec               [][]float64
-	PulseShading                       [][]uint8
-	SignalWaveForm                     [][]uint8
-	NumBytesRxInfo                     []uint16
-	NumSoundingsMaxMain                []uint16
-	NumSoundingsValidMain              []uint16
-	NumBytesPerSounding                []uint16
-	WcSampleRate                       []float64
-	SeabedImageSampleRate              []float64
-	BackscatterNormalDb                []float64
-	BackscatterObliqueDb               []float64
-	ExtraDetectionAlarmFlag            []uint16
-	NumExtraDetections                 []uint16
-	NumExtraDetectionClasses           []uint16
-	NumBytesPerClass                   []uint16
-	NumExtraDetectionInClass           [][]uint16
-	AlarmFlag                          [][]uint8
+	KmallVersion                       []uint8     `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
+	DgmType                            []uint8     `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
+	DgmVersion                         []uint8     `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
+	SystemID                           []uint8     `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
+	EchoSounderID                      []uint16    `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	NumBytesCmnPart                    []uint16    `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	PingCounter                        []uint16    `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	RxFansPerRing                      []uint8     `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
+	RxFansIndex                        []uint8     `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
+	SwathsPerRing                      []uint8     `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
+	SwathAlongPosition                 []uint8     `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
+	TxTransducerIndex                  []uint8     `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
+	RxTransducerIndex                  []uint8     `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
+	NumRxTransducers                   []uint8     `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
+	AlgorithmType                      []uint8     `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
+	NumBytesInfoData                   []uint16    `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	PingRateHz                         []float64   `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
+	BeamSpacing                        []uint8     `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
+	DepthMode                          []uint8     `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
+	SubDepthMode                       []uint8     `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
+	DistanceBetweenSwath               []uint8     `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
+	DetectionMode                      []uint8     `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
+	PulseForm                          []uint8     `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
+	FrequencyModeHz                    []int32     `tiledb:"dtype=int32,ftype=attr" filters:"zstd(level=16)"`
+	FrequencyRangeLowLimHz             []float64   `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
+	FrequencyRangeHighLimHz            []float64   `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
+	MaxTotalTxPulseLengthSector        []float64   `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
+	MaxEffectiveTxPulseLengthSector    []float64   `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
+	MaxEffectiveTxBandWidthHz          []float64   `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
+	AbsCoeffDbPerKm                    []float64   `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
+	PortSectorEdgeDeg                  []float32   `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	StarboardSectorEdgeDeg             []float32   `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	PortMeanCoverageDeg                []float32   `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	StarboardMeanCoverageDeg           []float32   `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	PortMeanCoverageMetres             []int16     `tiledb:"dtype=int16,ftype=attr" filters:"zstd(level=16)"`
+	StarboardMeanCoverageMetres        []int16     `tiledb:"dtype=int16,ftype=attr" filters:"zstd(level=16)"`
+	ModeAndStabilisation               []uint8     `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
+	RunTimeFilter1                     []uint8     `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
+	RunTimeFilter2                     []uint8     `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
+	PipeTrackingStatus                 []uint32    `tiledb:"dtype=uint32,ftype=attr" filters:"zstd(level=16)"`
+	TransmitArraySizeUsedDeg           []float32   `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	ReceiveArraySizeUsedDeg            []float32   `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	TransmitPowerDb                    []float32   `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+	SlRampUpTimeRemaining              []uint16    `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	YawAngleDeg                        []float64   `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
+	NumTxSectors                       []uint16    `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	NumBytesPerTxSector                []uint16    `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	HeadingVesselDeg                   []float64   `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
+	SoundSpeedAtTxDepthMetresPerSecond []float64   `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
+	TxTransducerDepthMetres            []float64   `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
+	ZwaterLevelReRefPointMetres        []float64   `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
+	XKmallToAllMetres                  []float64   `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
+	YKmallToAllMetres                  []float64   `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
+	LatLonInfo                         []uint8     `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
+	PositionSensorStatus               []uint8     `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
+	AttitudeSensorStatus               []uint8     `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
+	LatitudeDeg                        []float64   `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
+	LongitudeDeg                       []float64   `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
+	EllipsoidHeightReRefPointMetres    []float64   `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
+	TxSectorNumber                     [][]uint8   `tiledb:"dtype=uint8,ftype=attr,var" filters:"zstd(level=16)"`
+	TxArrayNumber                      [][]uint8   `tiledb:"dtype=uint8,ftype=attr,var" filters:"zstd(level=16)"`
+	TxSubArray                         [][]uint8   `tiledb:"dtype=uint8,ftype=attr,var" filters:"zstd(level=16)"`
+	SectorTransmitDelaySec             [][]float64 `tiledb:"dtype=float64,ftype=attr,var" filters:"zstd(level=16)"`
+	TiltAngleReTxDeg                   [][]float64 `tiledb:"dtype=float64,ftype=attr,var" filters:"zstd(level=16)"`
+	TxNominalSourceLevelDb             [][]float64 `tiledb:"dtype=float64,ftype=attr,var" filters:"zstd(level=16)"`
+	TxFocusRangeMetres                 [][]float64 `tiledb:"dtype=float64,ftype=attr,var" filters:"zstd(level=16)"`
+	CentreFrequencyHz                  [][]float64 `tiledb:"dtype=float64,ftype=attr,var" filters:"zstd(level=16)"`
+	SignalBandWidthHz                  [][]float64 `tiledb:"dtype=float64,ftype=attr,var" filters:"zstd(level=16)"`
+	TotalSignalLengthSec               [][]float64 `tiledb:"dtype=float64,ftype=attr,var" filters:"zstd(level=16)"`
+	PulseShading                       [][]uint8   `tiledb:"dtype=uint8,ftype=attr,var" filters:"zstd(level=16)"`
+	SignalWaveForm                     [][]uint8   `tiledb:"dtype=uint8,ftype=attr,var" filters:"zstd(level=16)"`
+	NumBytesRxInfo                     []uint16    `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	NumSoundingsMaxMain                []uint16    `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	NumSoundingsValidMain              []uint16    `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	NumBytesPerSounding                []uint16    `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	WcSampleRate                       []float64   `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
+	SeabedImageSampleRate              []float64   `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
+	BackscatterNormalDb                []float64   `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
+	BackscatterObliqueDb               []float64   `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
+	ExtraDetectionAlarmFlag            []uint16    `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	NumExtraDetections                 []uint16    `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	NumExtraDetectionClasses           []uint16    `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	NumBytesPerClass                   []uint16    `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	NumExtraDetectionInClass           [][]uint16  `tiledb:"dtype=uint16,ftype=attr,var" filters:"zstd(level=16)"`
+	AlarmFlag                          [][]uint8   `tiledb:"dtype=uint8,ftype=attr,var" filters:"zstd(level=16)"`
 }
 
 func DecodeKmallSpecific(reader *bytes.Reader) (sensor_data Kmall, err error) {
@@ -2624,8 +2624,8 @@ func DecodeKmallSpecific(reader *bytes.Reader) (sensor_data Kmall, err error) {
 	// block one
 	err = binary.Read(reader, binary.BigEndian, &buffer)
 	if err != nil {
-		errn := errors.New("Kmall sensor")
-		err = errors.Join(err, ErrSensorMetata, errn)
+		errn := errors.New("KMALL sensor")
+		err = errors.Join(err, ErrSensorMetadata, errn)
 		return sensor_data, err
 	}
 	sensor_data.KmallVersion = []uint8{buffer.KmallVersion}
@@ -2636,8 +2636,8 @@ func DecodeKmallSpecific(reader *bytes.Reader) (sensor_data Kmall, err error) {
 	// block two (Cmn part)
 	err = binary.Read(reader, binary.BigEndian, &cmn_buf)
 	if err != nil {
-		errn := errors.New("Kmall sensor")
-		err = errors.Join(err, ErrSensorMetata, errn)
+		errn := errors.New("KMALL sensor")
+		err = errors.Join(err, ErrSensorMetadata, errn)
 		return sensor_data, err
 	}
 	sensor_data.NumBytesCmnPart = []uint16{cmn_buf.NumBytesCmnPart}
@@ -2654,8 +2654,8 @@ func DecodeKmallSpecific(reader *bytes.Reader) (sensor_data Kmall, err error) {
 	// block three (ping data)
 	err = binary.Read(reader, binary.BigEndian, &cmn_buf)
 	if err != nil {
-		errn := errors.New("Kmall sensor")
-		err = errors.Join(err, ErrSensorMetata, errn)
+		errn := errors.New("KMALL sensor")
+		err = errors.Join(err, ErrSensorMetadata, errn)
 		return sensor_data, err
 	}
 	sensor_data.NumBytesInfoData = []uint16{ping_buf.NumBytesInfoData}
@@ -2721,8 +2721,8 @@ func DecodeKmallSpecific(reader *bytes.Reader) (sensor_data Kmall, err error) {
 	for i := uint16(0); i < ping_buf.NumTxSectors; i++ {
 		err = binary.Read(reader, binary.BigEndian, &sec_buf)
 		if err != nil {
-			errn := errors.New("Kmall sensor")
-			err = errors.Join(err, ErrSensorMetata, errn)
+			errn := errors.New("KMALL sensor")
+			err = errors.Join(err, ErrSensorMetadata, errn)
 			return sensor_data, err
 		}
 		TxSectorNumber = append(TxSectorNumber, sec_buf.TxSectorNumber)
@@ -2755,8 +2755,8 @@ func DecodeKmallSpecific(reader *bytes.Reader) (sensor_data Kmall, err error) {
 	// block five (rx info)
 	err = binary.Read(reader, binary.BigEndian, &rx_buf)
 	if err != nil {
-		errn := errors.New("Kmall sensor")
-		err = errors.Join(err, ErrSensorMetata, errn)
+		errn := errors.New("KMALL sensor")
+		err = errors.Join(err, ErrSensorMetadata, errn)
 		return sensor_data, err
 	}
 	sensor_data.NumBytesRxInfo = []uint16{rx_buf.NumBytesRxInfo}
@@ -2780,8 +2780,8 @@ func DecodeKmallSpecific(reader *bytes.Reader) (sensor_data Kmall, err error) {
 	for i := 0; i < nclasses; i++ {
 		err = binary.Read(reader, binary.BigEndian, &cls_buf)
 		if err != nil {
-			errn := errors.New("Kmall sensor")
-			err = errors.Join(err, ErrSensorMetata, errn)
+			errn := errors.New("KMALL sensor")
+			err = errors.Join(err, ErrSensorMetadata, errn)
 			return sensor_data, err
 		}
 		NumExtraDetectionInClass = append(NumExtraDetectionInClass, cls_buf.NumExtraDetectionInClass)
@@ -2793,8 +2793,8 @@ func DecodeKmallSpecific(reader *bytes.Reader) (sensor_data Kmall, err error) {
 
 	err = binary.Read(reader, binary.BigEndian, &final_spare)
 	if err != nil {
-		errn := errors.New("Kmall sensor")
-		err = errors.Join(err, ErrSensorMetata, errn)
+		errn := errors.New("KMALL sensor")
+		err = errors.Join(err, ErrSensorMetadata, errn)
 		return sensor_data, err
 	}
 
@@ -2804,10 +2804,10 @@ func DecodeKmallSpecific(reader *bytes.Reader) (sensor_data Kmall, err error) {
 // Single beam types
 
 type SbEchotrac struct {
-	NavigationError []uint16
-	MppSource       []uint8
-	TideSource      []uint8
-	DynamicDraft    []float32
+	NavigationError []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	MppSource       []uint8   `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
+	TideSource      []uint8   `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
+	DynamicDraft    []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
 }
 
 func DecodeSbEchotracSpecific(reader *bytes.Reader) (sensor_data SbEchotrac, err error) {
@@ -2821,7 +2821,7 @@ func DecodeSbEchotracSpecific(reader *bytes.Reader) (sensor_data SbEchotrac, err
 	err = binary.Read(reader, binary.BigEndian, &buffer)
 	if err != nil {
 		errn := errors.New("SBEchotrac or Swath_Bathy2000 or Swath_PDD sensors")
-		err = errors.Join(err, ErrSensorMetata, errn)
+		err = errors.Join(err, ErrSensorMetadata, errn)
 		return sensor_data, err
 	}
 
@@ -2834,12 +2834,12 @@ func DecodeSbEchotracSpecific(reader *bytes.Reader) (sensor_data SbEchotrac, err
 }
 
 type SbMgd77 struct {
-	TimeZoneCorrection []uint16
-	PositionTypeCode   []uint16
-	CorrectionCode     []uint16
-	BathyTypeCode      []uint16
-	QualityCode        []uint16
-	TravelTime         []float64
+	TimeZoneCorrection []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	PositionTypeCode   []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	CorrectionCode     []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	BathyTypeCode      []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	QualityCode        []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	TravelTime         []float64 `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
 }
 
 func DecodeSBMGD77Specific(reader *bytes.Reader) (sensor_data SbMgd77, err error) {
@@ -2855,7 +2855,7 @@ func DecodeSBMGD77Specific(reader *bytes.Reader) (sensor_data SbMgd77, err error
 	err = binary.Read(reader, binary.BigEndian, &buffer)
 	if err != nil {
 		errn := errors.New("SBMGD77 sensor")
-		err = errors.Join(err, ErrSensorMetata, errn)
+		err = errors.Join(err, ErrSensorMetadata, errn)
 		return sensor_data, err
 	}
 
@@ -2870,12 +2870,12 @@ func DecodeSBMGD77Specific(reader *bytes.Reader) (sensor_data SbMgd77, err error
 }
 
 type SbBdb struct {
-	TravelTime           []uint32
-	EvaluationFlag       []uint8
-	ClassificationFlag   []uint8
-	TrackAdjustmentFlag  []uint8
-	SourceFlag           []uint8
-	PointOrTrackLineFlag []uint8
+	TravelTime           []uint32 `tiledb:"dtype=uint32,ftype=attr" filters:"zstd(level=16)"`
+	EvaluationFlag       []uint8  `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
+	ClassificationFlag   []uint8  `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
+	TrackAdjustmentFlag  []uint8  `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
+	SourceFlag           []uint8  `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
+	PointOrTrackLineFlag []uint8  `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
 	DatumFlag            []uint8
 }
 
@@ -2893,7 +2893,7 @@ func DecodeSbBdbSpecific(reader *bytes.Reader) (sensor_data SbBdb, err error) {
 	err = binary.Read(reader, binary.BigEndian, &buffer)
 	if err != nil {
 		errn := errors.New("SBBDB sensor")
-		err = errors.Join(err, ErrSensorMetata, errn)
+		err = errors.Join(err, ErrSensorMetadata, errn)
 		return sensor_data, err
 	}
 
@@ -2909,8 +2909,8 @@ func DecodeSbBdbSpecific(reader *bytes.Reader) (sensor_data SbBdb, err error) {
 }
 
 type SbNoShDb struct {
-	TypeCode         []uint16
-	CartographicCode []uint16
+	TypeCode         []uint16 `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	CartographicCode []uint16 `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
 }
 
 func DecodeSbNoShDbSpecific(reader *bytes.Reader) (sensor_data SbNoShDb, err error) {
@@ -2922,7 +2922,7 @@ func DecodeSbNoShDbSpecific(reader *bytes.Reader) (sensor_data SbNoShDb, err err
 	err = binary.Read(reader, binary.BigEndian, &buffer)
 	if err != nil {
 		errn := errors.New("SBNOSHDB sensor")
-		err = errors.Join(err, ErrSensorMetata, errn)
+		err = errors.Join(err, ErrSensorMetadata, errn)
 		return sensor_data, err
 	}
 
@@ -2933,7 +2933,7 @@ func DecodeSbNoShDbSpecific(reader *bytes.Reader) (sensor_data SbNoShDb, err err
 }
 
 type SbNavisound struct {
-	PulseLength []float32
+	PulseLength []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
 }
 
 func DecodeSbNavisoundSpecific(reader *bytes.Reader) (sensor_data SbNavisound, err error) {
@@ -2944,7 +2944,7 @@ func DecodeSbNavisoundSpecific(reader *bytes.Reader) (sensor_data SbNavisound, e
 	err = binary.Read(reader, binary.BigEndian, &buffer)
 	if err != nil {
 		errn := errors.New("SBNavisound sensor")
-		err = errors.Join(err, ErrSensorMetata, errn)
+		err = errors.Join(err, ErrSensorMetadata, errn)
 		return sensor_data, err
 	}
 
