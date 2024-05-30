@@ -222,6 +222,8 @@ func CreateAttr(
 		tdb_dtype = tiledb.TILEDB_FLOAT64
 	case "datetime_ns": // can add other datetime types when required
 		tdb_dtype = tiledb.TILEDB_DATETIME_NS
+	case "string":
+		tdb_dtype = tiledb.TILEDB_STRING_UTF8
 	}
 
 	attr_filts, err := tiledb.NewFilterList(ctx)
