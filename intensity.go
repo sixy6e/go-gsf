@@ -46,7 +46,7 @@ func newBrbIntensity(number_beams int) (brb_int BrbIntensity) {
 // DecodeBrbIntensity decodes the timeseries intensity sub-record. Each beam will have
 // a variable length of intensity samples, the index for the bottom detect sample, and the
 // sample itself.
-func DecodeBrbIntensity(reader *bytes.Reader, nbeams uint16, sensor_id SubRecordID) (intensity BrbIntensity, img_md SensorImageryMetadata) {
+func DecodeBrbIntensity(reader *bytes.Reader, nbeams uint16, sensor_id SubRecordID) (intensity BrbIntensity, img_md SensorImageryMetadata, err error) {
 
 	var (
 		base struct {
@@ -89,49 +89,73 @@ func DecodeBrbIntensity(reader *bytes.Reader, nbeams uint16, sensor_id SubRecord
 
 	case EM120, EM120_RAW, EM300, EM300_RAW, EM1002, EM1002_RAW, EM2000, EM2000_RAW, EM3000, EM3000_RAW, EM3002, EM3002_RAW, EM3000D, EM3000D_RAW, EM3002D, EM3002D_RAW, EM121A_SIS, EM121A_SIS_RAW:
 		// DecodeEM3Imagery
-		em3img, scl__off := DecodeEm3Imagery(reader)
+		em3img, scl__off, err := DecodeEm3Imagery(reader)
+		if err != nil {
+			return intensity, img_md, err
+		}
 		img_md.Em3_imagery = em3img
 		scl_off.Scale = scl__off.Scale
 		scl_off.Offset = scl__off.Offset
 	case RESON_7125:
 		// DecodeReson7100Imagery
-		reson7100, scl__off := DecodeReson7100Imagery(reader)
+		reson7100, scl__off, err := DecodeReson7100Imagery(reader)
+		if err != nil {
+			return intensity, img_md, err
+		}
 		img_md.Reson7100_imagery = reson7100
 		scl_off.Scale = scl__off.Scale
 		scl_off.Offset = scl__off.Offset
 	case RESON_TSERIES:
 		// DecodeResonTSeriesImagery
-		tseries, scl__off := DecodeResonTSeriesImagery(reader)
+		tseries, scl__off, err := DecodeResonTSeriesImagery(reader)
+		if err != nil {
+			return intensity, img_md, err
+		}
 		img_md.ResonTSeries_imagery = tseries
 		scl_off.Scale = scl__off.Scale
 		scl_off.Offset = scl__off.Offset
 	case RESON_8101, RESON_8111, RESON_8124, RESON_8125, RESON_8150, RESON_8160:
 		// DecodeReson8100Imagery
-		reson8100, scl__off := DecodeReson8100Imagery(reader)
+		reson8100, scl__off, err := DecodeReson8100Imagery(reader)
+		if err != nil {
+			return intensity, img_md, err
+		}
 		img_md.Reson8100_imagery = reson8100
 		scl_off.Scale = scl__off.Scale
 		scl_off.Offset = scl__off.Offset
 	case EM122, EM302, EM710, EM2040:
 		// DecodeEM4Imagery
-		em4img, scl__off := DecodeEm4Imagery(reader)
+		em4img, scl__off, err := DecodeEm4Imagery(reader)
+		if err != nil {
+			return intensity, img_md, err
+		}
 		img_md.Em4_imagery = em4img
 		scl_off.Scale = scl__off.Scale
 		scl_off.Offset = scl__off.Offset
 	case KLEIN_5410_BSS:
 		// DecodeKlein5410BssImagery
-		klein, scl__off := DecodeKlein5410BssImagery(reader)
+		klein, scl__off, err := DecodeKlein5410BssImagery(reader)
+		if err != nil {
+			return intensity, img_md, err
+		}
 		img_md.Klein5410Bss_imagery = klein
 		scl_off.Scale = scl__off.Scale
 		scl_off.Offset = scl__off.Offset
 	case KMALL:
 		// DecodeKMALLImagery
-		kmall, scl__off := DecodeKmallImagery(reader)
+		kmall, scl__off, err := DecodeKmallImagery(reader)
+		if err != nil {
+			return intensity, img_md, err
+		}
 		img_md.Kmall_imagery = kmall
 		scl_off.Scale = scl__off.Scale
 		scl_off.Offset = scl__off.Offset
 	case R2SONIC_2020, R2SONIC_2022, R2SONIC_2024:
 		// DecodeR2SonicImagery
-		r2sonic, scl__off := DecodeR2SonicImagery(reader)
+		r2sonic, scl__off, err := DecodeR2SonicImagery(reader)
+		if err != nil {
+			return intensity, img_md, err
+		}
 		img_md.R2Sonic_imagery = r2sonic
 		scl_off.Scale = scl__off.Scale
 		scl_off.Offset = scl__off.Offset
@@ -251,5 +275,5 @@ func DecodeBrbIntensity(reader *bytes.Reader, nbeams uint16, sensor_id SubRecord
 	intensity.BottomDetectIndex = detect
 	intensity.sample_count = count
 
-	return intensity, img_md
+	return intensity, img_md, err
 }

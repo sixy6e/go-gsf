@@ -787,7 +787,10 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 			beam_array.HorizontalError = f64_to_f32(beam_data)
 			ba_read = append(ba_read, pascalCase(SubRecordNames[HORIZONTAL_ERROR]))
 		case INTENSITY_SERIES:
-			intensity, img_md = DecodeBrbIntensity(reader, pinfo.Number_Beams, sensor_id)
+			intensity, img_md, err = DecodeBrbIntensity(reader, pinfo.Number_Beams, sensor_id)
+			if err != nil {
+				return ping_data, err
+			}
 			ba_read = append(ba_read, pascalCase(SubRecordNames[INTENSITY_SERIES]))
 		case SECTOR_NUMBER:
 			beam_data = sub_rec.DecodeSubRecArray(
@@ -1001,7 +1004,6 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 			if err != nil {
 				return ping_data, err
 			}
-			// ping_data.Sensor_metadata.EM_4 = DecodeEM4Specific(sr_reader)  // COMMENTED for now, TODO; check it isn't needed
 		case GEOSWATH_PLUS:
 			// DecodeGeoSwathPlus
 			sen_md.GeoSwathPlus, err = DecodeGeoSwathPlusSpecific(reader)
