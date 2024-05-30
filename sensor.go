@@ -83,7 +83,7 @@ func (sm *SensorMetadata) writeSensorMetadata(ctx *tiledb.Context, array *tiledb
 	switch sensor_id {
 	case EM710, EM302, EM122, EM2040:
 		// EM4
-		err := setStructFieldBuffers(query, &sm.Em_4)
+		err := setStructFieldBuffers(query, &sm.Em4)
 		if err != nil {
 			errn := errors.New("Error writing SensorMetadata")
 			return errors.Join(err, errn)
@@ -151,7 +151,7 @@ func (sm *SensorMetadata) attachAttrs(schema *tiledb.ArraySchema, ctx *tiledb.Co
 		// DecodeEM3
 	case EM710, EM302, EM122, EM2040:
 		// DecodeEM4
-		err = schemaAttrs(&sm.Em_4, schema, ctx)
+		err = schemaAttrs(&sm.Em4, schema, ctx)
 		if err != nil {
 			err_md := errors.New("Error creating SensorMetadata.EM_4 attributes")
 			return errors.Join(err, err_md)
@@ -197,8 +197,8 @@ func (sm *SensorMetadata) appendSensorMetadata(sp *SensorMetadata, sensor_id Sub
 	switch sensor_id {
 	case EM710, EM302, EM122, EM2040:
 		// EM4
-		rf_pd := reflect.ValueOf(&sm.Em_4).Elem()
-		rf_sp := reflect.ValueOf(&sp.Em_4).Elem()
+		rf_pd := reflect.ValueOf(&sm.Em4).Elem()
+		rf_sp := reflect.ValueOf(&sp.Em4).Elem()
 		types := rf_pd.Type()
 
 		for i := 0; i < rf_pd.NumField(); i++ {
@@ -226,7 +226,7 @@ func newSensorMetadata(number_pings int, sensor_id SubRecordID) (sen_md SensorMe
 	case EM710, EM302, EM122, EM2040:
 		em4 := Em4{}
 		chunkedStructSlices(&em4, number_pings)
-		sen_md.Em_4 = em4
+		sen_md.Em4 = em4
 	default:
 		// TODO; update return sig to allow return of an err rather than simply panic
 		panic(errors.Join(ErrSensor, errors.New(strconv.Itoa(int(sensor_id)))))
