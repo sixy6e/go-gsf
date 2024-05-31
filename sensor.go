@@ -81,9 +81,202 @@ func (sm *SensorMetadata) writeSensorMetadata(ctx *tiledb.Context, array *tiledb
 	}
 
 	switch sensor_id {
+	case SEABEAM:
+		err := setStructFieldBuffers(query, &sm.Seabeam)
+		if err != nil {
+			errn := errors.New("Error writing SensorMetadata")
+			return errors.Join(err, errn)
+		}
+	case EM12:
+		err := setStructFieldBuffers(query, &sm.Em12)
+		if err != nil {
+			errn := errors.New("Error writing SensorMetadata")
+			return errors.Join(err, errn)
+		}
+	case EM100:
+		err := setStructFieldBuffers(query, &sm.Em100)
+		if err != nil {
+			errn := errors.New("Error writing SensorMetadata")
+			return errors.Join(err, errn)
+		}
+	case EM950:
+		err := setStructFieldBuffers(query, &sm.Em950)
+		if err != nil {
+			errn := errors.New("Error writing SensorMetadata")
+			return errors.Join(err, errn)
+		}
+	case EM121A:
+		err := setStructFieldBuffers(query, &sm.Em121A)
+		if err != nil {
+			errn := errors.New("Error writing SensorMetadata")
+			return errors.Join(err, errn)
+		}
+	case EM121:
+		err := setStructFieldBuffers(query, &sm.Em121)
+		if err != nil {
+			errn := errors.New("Error writing SensorMetadata")
+			return errors.Join(err, errn)
+		}
+	case SASS: // obsolete
+		err := setStructFieldBuffers(query, &sm.Sass)
+		if err != nil {
+			errn := errors.New("Error writing SensorMetadata")
+			return errors.Join(err, errn)
+		}
+	case SEAMAP:
+		err := setStructFieldBuffers(query, &sm.SeaMap)
+		if err != nil {
+			errn := errors.New("Error writing SensorMetadata")
+			return errors.Join(err, errn)
+		}
+	case SEABAT:
+		err := setStructFieldBuffers(query, &sm.SeaBat)
+		if err != nil {
+			errn := errors.New("Error writing SensorMetadata")
+			return errors.Join(err, errn)
+		}
+	case EM1000:
+		err := setStructFieldBuffers(query, &sm.Em1000)
+		if err != nil {
+			errn := errors.New("Error writing SensorMetadata")
+			return errors.Join(err, errn)
+		}
+	case TYPEIII_SEABEAM: // obsolete
+		err := setStructFieldBuffers(query, &sm.TypeIIISeabeam)
+		if err != nil {
+			errn := errors.New("Error writing SensorMetadata")
+			return errors.Join(err, errn)
+		}
+	case SB_AMP:
+		err := setStructFieldBuffers(query, &sm.SbAmp)
+		if err != nil {
+			errn := errors.New("Error writing SensorMetadata")
+			return errors.Join(err, errn)
+		}
+	case SEABAT_II:
+		err := setStructFieldBuffers(query, &sm.SeaBatII)
+		if err != nil {
+			errn := errors.New("Error writing SensorMetadata")
+			return errors.Join(err, errn)
+		}
+	case SEABAT_8101:
+		err := setStructFieldBuffers(query, &sm.SeaBat8101)
+		if err != nil {
+			errn := errors.New("Error writing SensorMetadata")
+			return errors.Join(err, errn)
+		}
+	case SEABEAM_2112:
+		err := setStructFieldBuffers(query, &sm.Seabeam2112)
+		if err != nil {
+			errn := errors.New("Error writing SensorMetadata")
+			return errors.Join(err, errn)
+		}
+	case ELAC_MKII:
+		err := setStructFieldBuffers(query, &sm.ElacMkII)
+		if err != nil {
+			errn := errors.New("Error writing SensorMetadata")
+			return errors.Join(err, errn)
+		}
+	case CMP_SAAS: // CMP (compressed), should be used in place of SASS
+		err := setStructFieldBuffers(query, &sm.CmpSass)
+		if err != nil {
+			errn := errors.New("Error writing SensorMetadata")
+			return errors.Join(err, errn)
+		}
+	case RESON_8101, RESON_8111, RESON_8124, RESON_8125, RESON_8150, RESON_8160:
+		err := setStructFieldBuffers(query, &sm.Reson8100)
+		if err != nil {
+			errn := errors.New("Error writing SensorMetadata")
+			return errors.Join(err, errn)
+		}
+	case EM120, EM300, EM1002, EM2000, EM3000, EM3002, EM3000D, EM3002D, EM121A_SIS:
+		err := setStructFieldBuffers(query, &sm.Em3)
+		if err != nil {
+			errn := errors.New("Error writing SensorMetadata")
+			return errors.Join(err, errn)
+		}
 	case EM710, EM302, EM122, EM2040:
 		// EM4
 		err := setStructFieldBuffers(query, &sm.Em4)
+		if err != nil {
+			errn := errors.New("Error writing SensorMetadata")
+			return errors.Join(err, errn)
+		}
+	case GEOSWATH_PLUS:
+		err := setStructFieldBuffers(query, &sm.GeoSwathPlus)
+		if err != nil {
+			errn := errors.New("Error writing SensorMetadata")
+			return errors.Join(err, errn)
+		}
+	case KLEIN_5410_BSS:
+		err := setStructFieldBuffers(query, &sm.Klein5410Bss)
+		if err != nil {
+			errn := errors.New("Error writing SensorMetadata")
+			return errors.Join(err, errn)
+		}
+	case RESON_7125:
+		err := setStructFieldBuffers(query, &sm.Reson7100)
+		if err != nil {
+			errn := errors.New("Error writing SensorMetadata")
+			return errors.Join(err, errn)
+		}
+	case EM300_RAW, EM1002_RAW, EM2000_RAW, EM3000_RAW, EM120_RAW, EM3002_RAW, EM3000D_RAW, EM3002D_RAW, EM121A_SIS_RAW:
+		err := setStructFieldBuffers(query, &sm.Em3Raw)
+		if err != nil {
+			errn := errors.New("Error writing SensorMetadata")
+			return errors.Join(err, errn)
+		}
+	case DELTA_T:
+		err := setStructFieldBuffers(query, &sm.DeltaT)
+		if err != nil {
+			errn := errors.New("Error writing SensorMetadata")
+			return errors.Join(err, errn)
+		}
+	case R2SONIC_2022, R2SONIC_2024, R2SONIC_2020:
+		err := setStructFieldBuffers(query, &sm.R2Sonic)
+		if err != nil {
+			errn := errors.New("Error writing SensorMetadata")
+			return errors.Join(err, errn)
+		}
+	case RESON_TSERIES:
+		err := setStructFieldBuffers(query, &sm.ResonTSeries)
+		if err != nil {
+			errn := errors.New("Error writing SensorMetadata")
+			return errors.Join(err, errn)
+		}
+	case KMALL:
+		err := setStructFieldBuffers(query, &sm.Kmall)
+		if err != nil {
+			errn := errors.New("Error writing SensorMetadata")
+			return errors.Join(err, errn)
+		}
+	case SWATH_ECHOTRAC, SWATH_BATHY2000, SWATH_PDD:
+		// they use the same struct, so pushing all to the one sensor
+		err := setStructFieldBuffers(query, &sm.SbEchotrac)
+		if err != nil {
+			errn := errors.New("Error writing SensorMetadata")
+			return errors.Join(err, errn)
+		}
+	case SWATH_MGD77:
+		err := setStructFieldBuffers(query, &sm.SbMgd77)
+		if err != nil {
+			errn := errors.New("Error writing SensorMetadata")
+			return errors.Join(err, errn)
+		}
+	case SWATH_BDB:
+		err := setStructFieldBuffers(query, &sm.SbBdb)
+		if err != nil {
+			errn := errors.New("Error writing SensorMetadata")
+			return errors.Join(err, errn)
+		}
+	case SWATH_NOSHDB:
+		err := setStructFieldBuffers(query, &sm.SbNoShDb)
+		if err != nil {
+			errn := errors.New("Error writing SensorMetadata")
+			return errors.Join(err, errn)
+		}
+	case SWATH_NAVISOUND:
+		err := setStructFieldBuffers(query, &sm.SbNavisound)
 		if err != nil {
 			errn := errors.New("Error writing SensorMetadata")
 			return errors.Join(err, errn)
