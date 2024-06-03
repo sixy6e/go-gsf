@@ -76,7 +76,7 @@ func (sm *SensorMetadata) writeSensorMetadata(ctx *tiledb.Context, array *tiledb
 	subarr.AddRangeByName("PING_ID", rng)
 	err = query.SetSubarray(subarr)
 	if err != nil {
-		errn := errors.New("Error setting subarray query for wrting SensorMetadata")
+		errn := errors.New("Error setting subarray query for writing SensorMetadata")
 		return errors.Join(err, errn)
 	}
 
@@ -84,201 +84,200 @@ func (sm *SensorMetadata) writeSensorMetadata(ctx *tiledb.Context, array *tiledb
 	case SEABEAM:
 		err := setStructFieldBuffers(query, &sm.Seabeam)
 		if err != nil {
-			errn := errors.New("Error writing SensorMetadata")
+			errn := errors.New("Error writing SensorMetadata.Seabeam metadata")
 			return errors.Join(err, errn)
 		}
 	case EM12:
 		err := setStructFieldBuffers(query, &sm.Em12)
 		if err != nil {
-			errn := errors.New("Error writing SensorMetadata")
+			errn := errors.New("Error writing SensorMetadata.Em12 metadata")
 			return errors.Join(err, errn)
 		}
 	case EM100:
 		err := setStructFieldBuffers(query, &sm.Em100)
 		if err != nil {
-			errn := errors.New("Error writing SensorMetadata")
+			errn := errors.New("Error writing SensorMetadata.Em100 metadata")
 			return errors.Join(err, errn)
 		}
 	case EM950:
 		err := setStructFieldBuffers(query, &sm.Em950)
 		if err != nil {
-			errn := errors.New("Error writing SensorMetadata")
+			errn := errors.New("Error writing SensorMetadata.Em950 metadata")
 			return errors.Join(err, errn)
 		}
 	case EM121A:
 		err := setStructFieldBuffers(query, &sm.Em121A)
 		if err != nil {
-			errn := errors.New("Error writing SensorMetadata")
+			errn := errors.New("Error writing SensorMetadata.Em121A metadata")
 			return errors.Join(err, errn)
 		}
 	case EM121:
 		err := setStructFieldBuffers(query, &sm.Em121)
 		if err != nil {
-			errn := errors.New("Error writing SensorMetadata")
+			errn := errors.New("Error writing SensorMetadata.Em121 metadata")
 			return errors.Join(err, errn)
 		}
 	case SASS: // obsolete
 		err := setStructFieldBuffers(query, &sm.Sass)
 		if err != nil {
-			errn := errors.New("Error writing SensorMetadata")
+			errn := errors.New("Error writing SensorMetadata.Sass metadata")
 			return errors.Join(err, errn)
 		}
 	case SEAMAP:
 		err := setStructFieldBuffers(query, &sm.SeaMap)
 		if err != nil {
-			errn := errors.New("Error writing SensorMetadata")
+			errn := errors.New("Error writing SensorMetadata.SeaMap metadata")
 			return errors.Join(err, errn)
 		}
 	case SEABAT:
 		err := setStructFieldBuffers(query, &sm.SeaBat)
 		if err != nil {
-			errn := errors.New("Error writing SensorMetadata")
+			errn := errors.New("Error writing SensorMetadata.SeaBat metadata")
 			return errors.Join(err, errn)
 		}
 	case EM1000:
 		err := setStructFieldBuffers(query, &sm.Em1000)
 		if err != nil {
-			errn := errors.New("Error writing SensorMetadata")
+			errn := errors.New("Error writing SensorMetadata.Em1000 metadata")
 			return errors.Join(err, errn)
 		}
 	case TYPEIII_SEABEAM: // obsolete
 		err := setStructFieldBuffers(query, &sm.TypeIIISeabeam)
 		if err != nil {
-			errn := errors.New("Error writing SensorMetadata")
+			errn := errors.New("Error writing SensorMetadata.TypeIIISeabeam metadata")
 			return errors.Join(err, errn)
 		}
 	case SB_AMP:
 		err := setStructFieldBuffers(query, &sm.SbAmp)
 		if err != nil {
-			errn := errors.New("Error writing SensorMetadata")
+			errn := errors.New("Error writing SensorMetadata.SbAmp metadata")
 			return errors.Join(err, errn)
 		}
 	case SEABAT_II:
 		err := setStructFieldBuffers(query, &sm.SeaBatII)
 		if err != nil {
-			errn := errors.New("Error writing SensorMetadata")
+			errn := errors.New("Error writing SensorMetadata.SeaBatII metadata")
 			return errors.Join(err, errn)
 		}
 	case SEABAT_8101:
 		err := setStructFieldBuffers(query, &sm.SeaBat8101)
 		if err != nil {
-			errn := errors.New("Error writing SensorMetadata")
+			errn := errors.New("Error writing SensorMetadata.SeaBat8101 metadata")
 			return errors.Join(err, errn)
 		}
 	case SEABEAM_2112:
 		err := setStructFieldBuffers(query, &sm.Seabeam2112)
 		if err != nil {
-			errn := errors.New("Error writing SensorMetadata")
+			errn := errors.New("Error writing SensorMetadata.Seabeam2112 metadata")
 			return errors.Join(err, errn)
 		}
 	case ELAC_MKII:
 		err := setStructFieldBuffers(query, &sm.ElacMkII)
 		if err != nil {
-			errn := errors.New("Error writing SensorMetadata")
+			errn := errors.New("Error writing SensorMetadata.ElacMkII metadata")
 			return errors.Join(err, errn)
 		}
 	case CMP_SAAS: // CMP (compressed), should be used in place of SASS
 		err := setStructFieldBuffers(query, &sm.CmpSass)
 		if err != nil {
-			errn := errors.New("Error writing SensorMetadata")
+			errn := errors.New("Error writing SensorMetadata.CmpSass metadata")
 			return errors.Join(err, errn)
 		}
 	case RESON_8101, RESON_8111, RESON_8124, RESON_8125, RESON_8150, RESON_8160:
 		err := setStructFieldBuffers(query, &sm.Reson8100)
 		if err != nil {
-			errn := errors.New("Error writing SensorMetadata")
+			errn := errors.New("Error writing SensorMetadata.Reson8100 metadata")
 			return errors.Join(err, errn)
 		}
 	case EM120, EM300, EM1002, EM2000, EM3000, EM3002, EM3000D, EM3002D, EM121A_SIS:
 		err := setStructFieldBuffers(query, &sm.Em3)
 		if err != nil {
-			errn := errors.New("Error writing SensorMetadata")
+			errn := errors.New("Error writing SensorMetadata.Em3 metadata")
 			return errors.Join(err, errn)
 		}
 	case EM710, EM302, EM122, EM2040:
-		// EM4
 		err := setStructFieldBuffers(query, &sm.Em4)
 		if err != nil {
-			errn := errors.New("Error writing SensorMetadata")
+			errn := errors.New("Error writing SensorMetadata.Em4 metadata")
 			return errors.Join(err, errn)
 		}
 	case GEOSWATH_PLUS:
 		err := setStructFieldBuffers(query, &sm.GeoSwathPlus)
 		if err != nil {
-			errn := errors.New("Error writing SensorMetadata")
+			errn := errors.New("Error writing SensorMetadata.GeoSwathPlus metadata")
 			return errors.Join(err, errn)
 		}
 	case KLEIN_5410_BSS:
 		err := setStructFieldBuffers(query, &sm.Klein5410Bss)
 		if err != nil {
-			errn := errors.New("Error writing SensorMetadata")
+			errn := errors.New("Error writing SensorMetadata.Klein5410Bss metadata")
 			return errors.Join(err, errn)
 		}
 	case RESON_7125:
 		err := setStructFieldBuffers(query, &sm.Reson7100)
 		if err != nil {
-			errn := errors.New("Error writing SensorMetadata")
+			errn := errors.New("Error writing SensorMetadata.Reson7100 metadata")
 			return errors.Join(err, errn)
 		}
 	case EM300_RAW, EM1002_RAW, EM2000_RAW, EM3000_RAW, EM120_RAW, EM3002_RAW, EM3000D_RAW, EM3002D_RAW, EM121A_SIS_RAW:
 		err := setStructFieldBuffers(query, &sm.Em3Raw)
 		if err != nil {
-			errn := errors.New("Error writing SensorMetadata")
+			errn := errors.New("Error writing SensorMetadata.Em3Raw metadata")
 			return errors.Join(err, errn)
 		}
 	case DELTA_T:
 		err := setStructFieldBuffers(query, &sm.DeltaT)
 		if err != nil {
-			errn := errors.New("Error writing SensorMetadata")
+			errn := errors.New("Error writing SensorMetadata.DeltaT metadata")
 			return errors.Join(err, errn)
 		}
 	case R2SONIC_2022, R2SONIC_2024, R2SONIC_2020:
 		err := setStructFieldBuffers(query, &sm.R2Sonic)
 		if err != nil {
-			errn := errors.New("Error writing SensorMetadata")
+			errn := errors.New("Error writing SensorMetadata.R2Sonic metadata")
 			return errors.Join(err, errn)
 		}
 	case RESON_TSERIES:
 		err := setStructFieldBuffers(query, &sm.ResonTSeries)
 		if err != nil {
-			errn := errors.New("Error writing SensorMetadata")
+			errn := errors.New("Error writing SensorMetadata.ResonTSeries metadata")
 			return errors.Join(err, errn)
 		}
 	case KMALL:
 		err := setStructFieldBuffers(query, &sm.Kmall)
 		if err != nil {
-			errn := errors.New("Error writing SensorMetadata")
+			errn := errors.New("Error writing SensorMetadata.Kmall metadata")
 			return errors.Join(err, errn)
 		}
 	case SWATH_ECHOTRAC, SWATH_BATHY2000, SWATH_PDD:
 		// they use the same struct, so pushing all to the one sensor
 		err := setStructFieldBuffers(query, &sm.SbEchotrac)
 		if err != nil {
-			errn := errors.New("Error writing SensorMetadata")
+			errn := errors.New("Error writing SensorMetadata.SbEchotrac metadata")
 			return errors.Join(err, errn)
 		}
 	case SWATH_MGD77:
 		err := setStructFieldBuffers(query, &sm.SbMgd77)
 		if err != nil {
-			errn := errors.New("Error writing SensorMetadata")
+			errn := errors.New("Error writing SensorMetadata.SbMgd77 metadata")
 			return errors.Join(err, errn)
 		}
 	case SWATH_BDB:
 		err := setStructFieldBuffers(query, &sm.SbBdb)
 		if err != nil {
-			errn := errors.New("Error writing SensorMetadata")
+			errn := errors.New("Error writing SensorMetadata.SbBdb metadata")
 			return errors.Join(err, errn)
 		}
 	case SWATH_NOSHDB:
 		err := setStructFieldBuffers(query, &sm.SbNoShDb)
 		if err != nil {
-			errn := errors.New("Error writing SensorMetadata")
+			errn := errors.New("Error writing SensorMetadata.SbNoShDb metadata")
 			return errors.Join(err, errn)
 		}
 	case SWATH_NAVISOUND:
 		err := setStructFieldBuffers(query, &sm.SbNavisound)
 		if err != nil {
-			errn := errors.New("Error writing SensorMetadata")
+			errn := errors.New("Error writing SensorMetadata.SbNavisound metadata")
 			return errors.Join(err, errn)
 		}
 	default:
@@ -305,80 +304,207 @@ func (sm *SensorMetadata) attachAttrs(schema *tiledb.ArraySchema, ctx *tiledb.Co
 	switch sensor_id {
 
 	case SEABEAM:
-		// DecodeSeabeam
+		err = schemaAttrs(&sm.Seabeam, schema, ctx)
+		if err != nil {
+			err_md := errors.New("Error creating SensorMetadata.Seabeam attributes")
+			return errors.Join(err, err_md)
+		}
 	case EM12:
-		// DecodeEM12
+		err = schemaAttrs(&sm.Em12, schema, ctx)
+		if err != nil {
+			err_md := errors.New("Error creating SensorMetadata.Em12 attributes")
+			return errors.Join(err, err_md)
+		}
 	case EM100:
-		// DecodeEM100
+		err = schemaAttrs(&sm.Em100, schema, ctx)
+		if err != nil {
+			err_md := errors.New("Error creating SensorMetadata.Em100 attributes")
+			return errors.Join(err, err_md)
+		}
 	case EM950:
-		// DecodeEM950
+		err = schemaAttrs(&sm.Em950, schema, ctx)
+		if err != nil {
+			err_md := errors.New("Error creating SensorMetadata.Em950 attributes")
+			return errors.Join(err, err_md)
+		}
 	case EM121A:
-		// DecodeEM121A
+		err = schemaAttrs(&sm.Em121A, schema, ctx)
+		if err != nil {
+			err_md := errors.New("Error creating SensorMetadata.Em121A attributes")
+			return errors.Join(err, err_md)
+		}
 	case EM121:
-		// DecodeEM121
+		err = schemaAttrs(&sm.Em121, schema, ctx)
+		if err != nil {
+			err_md := errors.New("Error creating SensorMetadata.Em121 attributes")
+			return errors.Join(err, err_md)
+		}
 	case SASS: // obsolete
-		// DecodeSASS
+		err = schemaAttrs(&sm.Sass, schema, ctx)
+		if err != nil {
+			err_md := errors.New("Error creating SensorMetadata.Sass attributes")
+			return errors.Join(err, err_md)
+		}
 	case SEAMAP:
-		// DecodeSeaMap
+		err = schemaAttrs(&sm.SeaMap, schema, ctx)
+		if err != nil {
+			err_md := errors.New("Error creating SensorMetadata.SeaMap attributes")
+			return errors.Join(err, err_md)
+		}
 	case SEABAT:
-		// DecodeSeaBat
+		err = schemaAttrs(&sm.SeaBat, schema, ctx)
+		if err != nil {
+			err_md := errors.New("Error creating SensorMetadata.SeaBat attributes")
+			return errors.Join(err, err_md)
+		}
 	case EM1000:
-		// DecodeEM1000
+		err = schemaAttrs(&sm.Em1000, schema, ctx)
+		if err != nil {
+			err_md := errors.New("Error creating SensorMetadata.Em1000 attributes")
+			return errors.Join(err, err_md)
+		}
 	case TYPEIII_SEABEAM: // obsolete
-		// DecodeTypeIII
+		err = schemaAttrs(&sm.TypeIIISeabeam, schema, ctx)
+		if err != nil {
+			err_md := errors.New("Error creating SensorMetadata.TypeIIISeabeam attributes")
+			return errors.Join(err, err_md)
+		}
 	case SB_AMP:
-		// DecodeSBAmp
+		err = schemaAttrs(&sm.SbAmp, schema, ctx)
+		if err != nil {
+			err_md := errors.New("Error creating SensorMetadata.SbAmp attributes")
+			return errors.Join(err, err_md)
+		}
 	case SEABAT_II:
-		// DecodeSeaBatII
+		err = schemaAttrs(&sm.SeaBatII, schema, ctx)
+		if err != nil {
+			err_md := errors.New("Error creating SensorMetadata.SeaBatII attributes")
+			return errors.Join(err, err_md)
+		}
 	case SEABAT_8101:
-		// DecodeSeaBat8101
+		err = schemaAttrs(&sm.SeaBat8101, schema, ctx)
+		if err != nil {
+			err_md := errors.New("Error creating SensorMetadata.SeaBat8101 attributes")
+			return errors.Join(err, err_md)
+		}
 	case SEABEAM_2112:
-		// DecodeSeaBeam2112
+		err = schemaAttrs(&sm.Seabeam2112, schema, ctx)
+		if err != nil {
+			err_md := errors.New("Error creating SensorMetadata.Seabeam2112 attributes")
+			return errors.Join(err, err_md)
+		}
 	case ELAC_MKII:
-		// DecodeElacMkII
+		err = schemaAttrs(&sm.ElacMkII, schema, ctx)
+		if err != nil {
+			err_md := errors.New("Error creating SensorMetadata.ElacMkII attributes")
+			return errors.Join(err, err_md)
+		}
 	case CMP_SAAS: // CMP (compressed), should be used in place of SASS
-		// DecodeCmpSass
+		err = schemaAttrs(&sm.CmpSass, schema, ctx)
+		if err != nil {
+			err_md := errors.New("Error creating SensorMetadata.CmpSass attributes")
+			return errors.Join(err, err_md)
+		}
 	case RESON_8101, RESON_8111, RESON_8124, RESON_8125, RESON_8150, RESON_8160:
-		// DecodeReson8100
+		err = schemaAttrs(&sm.Reson8100, schema, ctx)
+		if err != nil {
+			err_md := errors.New("Error creating SensorMetadata.Reson8100 attributes")
+			return errors.Join(err, err_md)
+		}
 	case EM120, EM300, EM1002, EM2000, EM3000, EM3002, EM3000D, EM3002D, EM121A_SIS:
-		// DecodeEM3
+		err = schemaAttrs(&sm.Em3, schema, ctx)
+		if err != nil {
+			err_md := errors.New("Error creating SensorMetadata.Em3 attributes")
+			return errors.Join(err, err_md)
+		}
 	case EM710, EM302, EM122, EM2040:
-		// DecodeEM4
 		err = schemaAttrs(&sm.Em4, schema, ctx)
 		if err != nil {
-			err_md := errors.New("Error creating SensorMetadata.EM_4 attributes")
+			err_md := errors.New("Error creating SensorMetadata.Em4 attributes")
 			return errors.Join(err, err_md)
 		}
 	case GEOSWATH_PLUS:
-		// DecodeGeoSwathPlus
+		err = schemaAttrs(&sm.GeoSwathPlus, schema, ctx)
+		if err != nil {
+			err_md := errors.New("Error creating SensorMetadata.GeoSwathPlus attributes")
+			return errors.Join(err, err_md)
+		}
 	case KLEIN_5410_BSS:
-		// DecodeKlein5410Bss
+		err = schemaAttrs(&sm.Klein5410Bss, schema, ctx)
+		if err != nil {
+			err_md := errors.New("Error creating SensorMetadata.Klein5410Bss attributes")
+			return errors.Join(err, err_md)
+		}
 	case RESON_7125:
-		// DecodeReson7100
+		err = schemaAttrs(&sm.Reson7100, schema, ctx)
+		if err != nil {
+			err_md := errors.New("Error creating SensorMetadata.Reson7100 attributes")
+			return errors.Join(err, err_md)
+		}
 	case EM300_RAW, EM1002_RAW, EM2000_RAW, EM3000_RAW, EM120_RAW, EM3002_RAW, EM3000D_RAW, EM3002D_RAW, EM121A_SIS_RAW:
-		// DecodeEM3Raw
+		err = schemaAttrs(&sm.Em3Raw, schema, ctx)
+		if err != nil {
+			err_md := errors.New("Error creating SensorMetadata.Em3Raw attributes")
+			return errors.Join(err, err_md)
+		}
 	case DELTA_T:
-		// DecodeDeltaT
+		err = schemaAttrs(&sm.DeltaT, schema, ctx)
+		if err != nil {
+			err_md := errors.New("Error creating SensorMetadata.DeltaT attributes")
+			return errors.Join(err, err_md)
+		}
 	case R2SONIC_2022, R2SONIC_2024, R2SONIC_2020:
-		// DecodeR2Sonic
+		err = schemaAttrs(&sm.R2Sonic, schema, ctx)
+		if err != nil {
+			err_md := errors.New("Error creating SensorMetadata.R2Sonic attributes")
+			return errors.Join(err, err_md)
+		}
 	case SR_NOT_DEFINED: // the spec makes no mention of ID 154
 		panic("Subrecord ID 154 is not defined.")
 	case RESON_TSERIES:
-		// DecodeResonTSeries
+		err = schemaAttrs(&sm.ResonTSeries, schema, ctx)
+		if err != nil {
+			err_md := errors.New("Error creating SensorMetadata.ResonTSeries attributes")
+			return errors.Join(err, err_md)
+		}
 	case KMALL:
-		// DecodeKMALL
+		err = schemaAttrs(&sm.Kmall, schema, ctx)
+		if err != nil {
+			err_md := errors.New("Error creating SensorMetadata.Kmall attributes")
+			return errors.Join(err, err_md)
+		}
 
 		// single beam swath sensor specific subrecords
 	case SWATH_ECHOTRAC, SWATH_BATHY2000, SWATH_PDD:
-		// DecodeSBEchotrac
+		err = schemaAttrs(&sm.SbEchotrac, schema, ctx)
+		if err != nil {
+			err_md := errors.New("Error creating SensorMetadata.SbEchotrac attributes")
+			return errors.Join(err, err_md)
+		}
 	case SWATH_MGD77:
-		// DecodeSBMGD77
+		err = schemaAttrs(&sm.SbMgd77, schema, ctx)
+		if err != nil {
+			err_md := errors.New("Error creating SensorMetadata.SbMgd77 attributes")
+			return errors.Join(err, err_md)
+		}
 	case SWATH_BDB:
-		// DecodeSBBDB
+		err = schemaAttrs(&sm.SbBdb, schema, ctx)
+		if err != nil {
+			err_md := errors.New("Error creating SensorMetadata.SbBdb attributes")
+			return errors.Join(err, err_md)
+		}
 	case SWATH_NOSHDB:
-		// DecodeSBNOSHDB
+		err = schemaAttrs(&sm.SbNoShDb, schema, ctx)
+		if err != nil {
+			err_md := errors.New("Error creating SensorMetadata.SbNoShDb attributes")
+			return errors.Join(err, err_md)
+		}
 	case SWATH_NAVISOUND:
-		// DecodeSBNavisound
+		err = schemaAttrs(&sm.SbNavisound, schema, ctx)
+		if err != nil {
+			err_md := errors.New("Error creating SensorMetadata.SbNavisound attributes")
+			return errors.Join(err, err_md)
+		}
 	}
 
 	return nil
@@ -416,10 +542,138 @@ func newSensorMetadata(number_pings int, sensor_id SubRecordID) (sen_md SensorMe
 	sen_md = SensorMetadata{}
 
 	switch sensor_id {
+	case SEABEAM:
+		md := Seabeam{}
+		chunkedStructSlices(&md, number_pings)
+		sen_md.Seabeam = md
+	case EM12:
+		md := Em12{}
+		chunkedStructSlices(&md, number_pings)
+		sen_md.Em12 = md
+	case EM100:
+		md := Em100{}
+		chunkedStructSlices(&md, number_pings)
+		sen_md.Em100 = md
+	case EM950:
+		md := Em950{}
+		chunkedStructSlices(&md, number_pings)
+		sen_md.Em950 = md
+	case EM121A:
+		md := Em121A{}
+		chunkedStructSlices(&md, number_pings)
+		sen_md.Em121A = md
+	case EM121:
+		md := Em121{}
+		chunkedStructSlices(&md, number_pings)
+		sen_md.Em121 = md
+	case SASS: // obsolete
+		md := Sass{}
+		chunkedStructSlices(&md, number_pings)
+		sen_md.Sass = md
+	case SEAMAP:
+		md := SeaMap{}
+		chunkedStructSlices(&md, number_pings)
+		sen_md.SeaMap = md
+	case SEABAT:
+		md := SeaBat{}
+		chunkedStructSlices(&md, number_pings)
+		sen_md.SeaBat = md
+	case EM1000:
+		md := Em1000{}
+		chunkedStructSlices(&md, number_pings)
+		sen_md.Em1000 = md
+	case TYPEIII_SEABEAM: // obsolete
+		md := TypeIIISeabeam{}
+		chunkedStructSlices(&md, number_pings)
+		sen_md.TypeIIISeabeam = md
+	case SB_AMP:
+		md := SbAmp{}
+		chunkedStructSlices(&md, number_pings)
+		sen_md.SbAmp = md
+	case SEABAT_II:
+		md := SeaBatII{}
+		chunkedStructSlices(&md, number_pings)
+		sen_md.SeaBatII = md
+	case SEABAT_8101:
+		md := SeaBat8101{}
+		chunkedStructSlices(&md, number_pings)
+		sen_md.SeaBat8101 = md
+	case SEABEAM_2112:
+		md := Seabeam2112{}
+		chunkedStructSlices(&md, number_pings)
+		sen_md.Seabeam2112 = md
+	case ELAC_MKII:
+		md := ElacMkII{}
+		chunkedStructSlices(&md, number_pings)
+		sen_md.ElacMkII = md
+	case CMP_SAAS: // CMP (compressed), should be used in place of SASS
+		md := CmpSass{}
+		chunkedStructSlices(&md, number_pings)
+		sen_md.CmpSass = md
+	case RESON_8101, RESON_8111, RESON_8124, RESON_8125, RESON_8150, RESON_8160:
+		md := Reson8100{}
+		chunkedStructSlices(&md, number_pings)
+		sen_md.Reson8100 = md
+	case EM120, EM300, EM1002, EM2000, EM3000, EM3002, EM3000D, EM3002D, EM121A_SIS:
+		md := Em3{}
+		chunkedStructSlices(&md, number_pings)
+		sen_md.Em3 = md
 	case EM710, EM302, EM122, EM2040:
-		em4 := Em4{}
-		chunkedStructSlices(&em4, number_pings)
-		sen_md.Em4 = em4
+		md := Em4{}
+		chunkedStructSlices(&md, number_pings)
+		sen_md.Em4 = md
+	case GEOSWATH_PLUS:
+		md := GeoSwathPlus{}
+		chunkedStructSlices(&md, number_pings)
+		sen_md.GeoSwathPlus = md
+	case KLEIN_5410_BSS:
+		md := Klein5410Bss{}
+		chunkedStructSlices(&md, number_pings)
+		sen_md.Klein5410Bss = md
+	case RESON_7125:
+		md := Reson7100{}
+		chunkedStructSlices(&md, number_pings)
+		sen_md.Reson7100 = md
+	case EM300_RAW, EM1002_RAW, EM2000_RAW, EM3000_RAW, EM120_RAW, EM3002_RAW, EM3000D_RAW, EM3002D_RAW, EM121A_SIS_RAW:
+		md := Em3Raw{}
+		chunkedStructSlices(&md, number_pings)
+		sen_md.Em3Raw = md
+	case DELTA_T:
+		md := DeltaT{}
+		chunkedStructSlices(&md, number_pings)
+		sen_md.DeltaT = md
+	case R2SONIC_2022, R2SONIC_2024, R2SONIC_2020:
+		md := R2Sonic{}
+		chunkedStructSlices(&md, number_pings)
+		sen_md.R2Sonic = md
+	case RESON_TSERIES:
+		md := ResonTSeries{}
+		chunkedStructSlices(&md, number_pings)
+		sen_md.ResonTSeries = md
+	case KMALL:
+		md := Kmall{}
+		chunkedStructSlices(&md, number_pings)
+		sen_md.Kmall = md
+	case SWATH_ECHOTRAC, SWATH_BATHY2000, SWATH_PDD:
+		md := SbEchotrac{}
+		chunkedStructSlices(&md, number_pings)
+		sen_md.SbEchotrac = md
+	case SWATH_MGD77:
+		md := SbMgd77{}
+		chunkedStructSlices(&md, number_pings)
+		sen_md.SbMgd77 = md
+	case SWATH_BDB:
+		md := SbBdb{}
+		chunkedStructSlices(&md, number_pings)
+		sen_md.SbBdb = md
+	case SWATH_NOSHDB:
+		md := SbNoShDb{}
+		chunkedStructSlices(&md, number_pings)
+		sen_md.SbNoShDb = md
+	case SWATH_NAVISOUND:
+		md := SbNavisound{}
+		chunkedStructSlices(&md, number_pings)
+		sen_md.SbNavisound = md
 	default:
 		// TODO; update return sig to allow return of an err rather than simply panic
 		panic(errors.Join(ErrSensor, errors.New(strconv.Itoa(int(sensor_id)))))
@@ -476,13 +730,49 @@ func (sim *SensorImageryMetadata) writeSensorImageryMetadata(ctx *tiledb.Context
 	case EM710, EM302, EM122, EM2040:
 		err := setStructFieldBuffers(query, &sim.Em4_imagery)
 		if err != nil {
-			errn := errors.New("Error writing SensorImageryMetadata")
+			errn := errors.New("Error writing SensorImageryMetadata.Em4_imagery metadata")
 			return errors.Join(err, errn)
 		}
 	case EM120, EM120_RAW, EM300, EM300_RAW, EM1002, EM1002_RAW, EM2000, EM2000_RAW, EM3000, EM3000_RAW, EM3002, EM3002_RAW, EM3000D, EM3000D_RAW, EM3002D, EM3002D_RAW, EM121A_SIS, EM121A_SIS_RAW:
 		err := setStructFieldBuffers(query, &sim.Em3_imagery)
 		if err != nil {
-			errn := errors.New("Error writing SensorImageryMetadata")
+			errn := errors.New("Error writing SensorImageryMetadata.Em3_imagery metadata")
+			return errors.Join(err, errn)
+		}
+	case RESON_7125:
+		err := setStructFieldBuffers(query, &sim.Reson7100_imagery)
+		if err != nil {
+			errn := errors.New("Error writing SensorImageryMetadata.Reson7100_imagery metadata")
+			return errors.Join(err, errn)
+		}
+	case RESON_TSERIES:
+		err := setStructFieldBuffers(query, &sim.ResonTSeries_imagery)
+		if err != nil {
+			errn := errors.New("Error writing SensorImageryMetadata.ResonTSeries_imagery metadata")
+			return errors.Join(err, errn)
+		}
+	case RESON_8101, RESON_8111, RESON_8124, RESON_8125, RESON_8150, RESON_8160:
+		err := setStructFieldBuffers(query, &sim.Reson8100_imagery)
+		if err != nil {
+			errn := errors.New("Error writing SensorImageryMetadata.Reson8100_imagery metadata")
+			return errors.Join(err, errn)
+		}
+	case KLEIN_5410_BSS:
+		err := setStructFieldBuffers(query, &sim.Klein5410Bss_imagery)
+		if err != nil {
+			errn := errors.New("Error writing SensorImageryMetadata.Klein5410Bss_imagery metadata")
+			return errors.Join(err, errn)
+		}
+	case KMALL:
+		err := setStructFieldBuffers(query, &sim.Kmall_imagery)
+		if err != nil {
+			errn := errors.New("Error writing SensorImageryMetadata.Kmall_imagery metadata")
+			return errors.Join(err, errn)
+		}
+	case R2SONIC_2020, R2SONIC_2022, R2SONIC_2024:
+		err := setStructFieldBuffers(query, &sim.R2Sonic_imagery)
+		if err != nil {
+			errn := errors.New("Error writing SensorImageryMetadata.R2Sonic_imagery metadata")
 			return errors.Join(err, errn)
 		}
 	default:
@@ -509,25 +799,53 @@ func (sim *SensorImageryMetadata) attachAttrs(schema *tiledb.ArraySchema, ctx *t
 	switch sensor_id {
 
 	case EM120, EM120_RAW, EM300, EM300_RAW, EM1002, EM1002_RAW, EM2000, EM2000_RAW, EM3000, EM3000_RAW, EM3002, EM3002_RAW, EM3000D, EM3000D_RAW, EM3002D, EM3002D_RAW, EM121A_SIS, EM121A_SIS_RAW:
-		// DecodeEM3Imagery
+		err = schemaAttrs(&Em3Imagery{}, schema, ctx)
+		if err != nil {
+			err_md := errors.New("Error creating SensorImageryMetadata.Em3_imagery attributes")
+			return errors.Join(err, err_md)
+		}
 	case RESON_7125:
-		// DecodeReson7100Imagery
+		err = schemaAttrs(&Reson7100Imagery{}, schema, ctx)
+		if err != nil {
+			err_md := errors.New("Error creating SensorImageryMetadata.Reson7100_imagery attributes")
+			return errors.Join(err, err_md)
+		}
 	case RESON_TSERIES:
-		// DecodeResonTSeriesImagery
+		err = schemaAttrs(&ResonTSeriesImagery{}, schema, ctx)
+		if err != nil {
+			err_md := errors.New("Error creating SensorImageryMetadata.ResonTSeries_imagery attributes")
+			return errors.Join(err, err_md)
+		}
 	case RESON_8101, RESON_8111, RESON_8124, RESON_8125, RESON_8150, RESON_8160:
-		// DecodeReson8100Imagery
+		err = schemaAttrs(&Reson8100Imagery{}, schema, ctx)
+		if err != nil {
+			err_md := errors.New("Error creating SensorImageryMetadata.Reson8100_imagery attributes")
+			return errors.Join(err, err_md)
+		}
 	case EM122, EM302, EM710, EM2040:
 		err = schemaAttrs(&Em4Imagery{}, schema, ctx)
 		if err != nil {
-			err_md := errors.New("Error creating SensorImageryMetadata.EM4_imagery attributes")
+			err_md := errors.New("Error creating SensorImageryMetadata.Em4_imagery attributes")
 			return errors.Join(err, err_md)
 		}
 	case KLEIN_5410_BSS:
-		// DecodeKlein5410BssImagery
+		err = schemaAttrs(&Klein5410BssImagery{}, schema, ctx)
+		if err != nil {
+			err_md := errors.New("Error creating SensorImageryMetadata.Klein5410Bss_imagery attributes")
+			return errors.Join(err, err_md)
+		}
 	case KMALL:
-		// DecodeKMALLImagery
+		err = schemaAttrs(&KmallImagery{}, schema, ctx)
+		if err != nil {
+			err_md := errors.New("Error creating SensorImageryMetadata.Kmall_imagery attributes")
+			return errors.Join(err, err_md)
+		}
 	case R2SONIC_2020, R2SONIC_2022, R2SONIC_2024:
-		// DecodeR2SonicImagery
+		err = schemaAttrs(&R2SonicImagery{}, schema, ctx)
+		if err != nil {
+			err_md := errors.New("Error creating SensorImageryMetadata.R2Sonic_imagery attributes")
+			return errors.Join(err, err_md)
+		}
 	}
 
 	return nil
@@ -538,7 +856,6 @@ func (sim *SensorImageryMetadata) appendSensorImageryMetadata(sp *SensorImageryM
 	// whereas sim should be pointing back to the chunks of pings
 	switch sensor_id {
 	case EM710, EM302, EM122, EM2040:
-		// EM4
 		rf_pd := reflect.ValueOf(&sim.Em4_imagery).Elem()
 		rf_sp := reflect.ValueOf(&sp.Em4_imagery).Elem()
 		types := rf_pd.Type()
@@ -550,9 +867,74 @@ func (sim *SensorImageryMetadata) appendSensorImageryMetadata(sp *SensorImageryM
 			field_pd.Set(reflect.AppendSlice(field_pd, field_sp))
 		}
 	case EM120, EM120_RAW, EM300, EM300_RAW, EM1002, EM1002_RAW, EM2000, EM2000_RAW, EM3000, EM3000_RAW, EM3002, EM3002_RAW, EM3000D, EM3000D_RAW, EM3002D, EM3002D_RAW, EM121A_SIS, EM121A_SIS_RAW:
-		// EM3
 		rf_pd := reflect.ValueOf(&sim.Em3_imagery).Elem()
 		rf_sp := reflect.ValueOf(&sp.Em3_imagery).Elem()
+		types := rf_pd.Type()
+
+		for i := 0; i < rf_pd.NumField(); i++ {
+			name := types.Field(i).Name
+			field_pd := rf_pd.FieldByName(name)
+			field_sp := rf_sp.FieldByName(name)
+			field_pd.Set(reflect.AppendSlice(field_pd, field_sp))
+		}
+	case RESON_7125:
+		rf_pd := reflect.ValueOf(&sim.Reson7100_imagery).Elem()
+		rf_sp := reflect.ValueOf(&sp.Reson7100_imagery).Elem()
+		types := rf_pd.Type()
+
+		for i := 0; i < rf_pd.NumField(); i++ {
+			name := types.Field(i).Name
+			field_pd := rf_pd.FieldByName(name)
+			field_sp := rf_sp.FieldByName(name)
+			field_pd.Set(reflect.AppendSlice(field_pd, field_sp))
+		}
+	case RESON_TSERIES:
+		rf_pd := reflect.ValueOf(&sim.ResonTSeries_imagery).Elem()
+		rf_sp := reflect.ValueOf(&sp.ResonTSeries_imagery).Elem()
+		types := rf_pd.Type()
+
+		for i := 0; i < rf_pd.NumField(); i++ {
+			name := types.Field(i).Name
+			field_pd := rf_pd.FieldByName(name)
+			field_sp := rf_sp.FieldByName(name)
+			field_pd.Set(reflect.AppendSlice(field_pd, field_sp))
+		}
+	case RESON_8101, RESON_8111, RESON_8124, RESON_8125, RESON_8150, RESON_8160:
+		rf_pd := reflect.ValueOf(&sim.Reson8100_imagery).Elem()
+		rf_sp := reflect.ValueOf(&sp.Reson8100_imagery).Elem()
+		types := rf_pd.Type()
+
+		for i := 0; i < rf_pd.NumField(); i++ {
+			name := types.Field(i).Name
+			field_pd := rf_pd.FieldByName(name)
+			field_sp := rf_sp.FieldByName(name)
+			field_pd.Set(reflect.AppendSlice(field_pd, field_sp))
+		}
+	case KLEIN_5410_BSS:
+		rf_pd := reflect.ValueOf(&sim.Klein5410Bss_imagery).Elem()
+		rf_sp := reflect.ValueOf(&sp.Klein5410Bss_imagery).Elem()
+		types := rf_pd.Type()
+
+		for i := 0; i < rf_pd.NumField(); i++ {
+			name := types.Field(i).Name
+			field_pd := rf_pd.FieldByName(name)
+			field_sp := rf_sp.FieldByName(name)
+			field_pd.Set(reflect.AppendSlice(field_pd, field_sp))
+		}
+	case KMALL:
+		rf_pd := reflect.ValueOf(&sim.Kmall_imagery).Elem()
+		rf_sp := reflect.ValueOf(&sp.Kmall_imagery).Elem()
+		types := rf_pd.Type()
+
+		for i := 0; i < rf_pd.NumField(); i++ {
+			name := types.Field(i).Name
+			field_pd := rf_pd.FieldByName(name)
+			field_sp := rf_sp.FieldByName(name)
+			field_pd.Set(reflect.AppendSlice(field_pd, field_sp))
+		}
+	case R2SONIC_2020, R2SONIC_2022, R2SONIC_2024:
+		rf_pd := reflect.ValueOf(&sim.R2Sonic_imagery).Elem()
+		rf_sp := reflect.ValueOf(&sp.R2Sonic_imagery).Elem()
 		types := rf_pd.Type()
 
 		for i := 0; i < rf_pd.NumField(); i++ {
@@ -578,15 +960,37 @@ func newSensorImageryMetadata(number_pings int, sensor_id SubRecordID) (sen_img_
 
 	switch sensor_id {
 	case EM710, EM302, EM122, EM2040:
-		// EM4
 		em4i := Em4Imagery{}
 		chunkedStructSlices(&em4i, number_pings)
 		sen_img_md.Em4_imagery = em4i
 	case EM120, EM120_RAW, EM300, EM300_RAW, EM1002, EM1002_RAW, EM2000, EM2000_RAW, EM3000, EM3000_RAW, EM3002, EM3002_RAW, EM3000D, EM3000D_RAW, EM3002D, EM3002D_RAW, EM121A_SIS, EM121A_SIS_RAW:
-		// EM3
 		em3i := Em3Imagery{}
 		chunkedStructSlices(&em3i, number_pings)
 		sen_img_md.Em3_imagery = em3i
+	case RESON_7125:
+		r7100 := Reson7100Imagery{}
+		chunkedStructSlices(&r7100, number_pings)
+		sen_img_md.Reson7100_imagery = r7100
+	case RESON_TSERIES:
+		rtseries := ResonTSeriesImagery{}
+		chunkedStructSlices(&rtseries, number_pings)
+		sen_img_md.ResonTSeries_imagery = rtseries
+	case RESON_8101, RESON_8111, RESON_8124, RESON_8125, RESON_8150, RESON_8160:
+		r8100 := Reson8100Imagery{}
+		chunkedStructSlices(&r8100, number_pings)
+		sen_img_md.Reson8100_imagery = r8100
+	case KLEIN_5410_BSS:
+		k5410bss := Klein5410BssImagery{}
+		chunkedStructSlices(&k5410bss, number_pings)
+		sen_img_md.Klein5410Bss_imagery = k5410bss
+	case KMALL:
+		kmall := KmallImagery{}
+		chunkedStructSlices(&kmall, number_pings)
+		sen_img_md.Kmall_imagery = kmall
+	case R2SONIC_2020, R2SONIC_2022, R2SONIC_2024:
+		r2sonic := R2SonicImagery{}
+		chunkedStructSlices(&r2sonic, number_pings)
+		sen_img_md.R2Sonic_imagery = r2sonic
 	default:
 		// TODO; update return sig to allow return of an err rather than simply panic
 		panic(errors.Join(ErrSensor, errors.New(strconv.Itoa(int(sensor_id)))))
