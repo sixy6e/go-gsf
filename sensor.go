@@ -12,39 +12,39 @@ var ErrSensor = errors.New("Sensor not supported")
 var ErrWriteSensorMd = errors.New("Error writing sensor metadata")
 
 type SensorMetadata struct {
-	Seabeam        Seabeam
-	Em12           Em12
-	Em100          Em100
-	Em950          Em950
-	Em121A         Em121A
-	Em121          Em121
-	Sass           Sass
-	SeaMap         SeaMap
-	SeaBat         SeaBat
-	Em1000         Em1000
-	TypeIIISeabeam TypeIIISeabeam
-	SbAmp          SbAmp
-	SeaBatII       SeaBatII
-	SeaBat8101     SeaBat8101
-	Seabeam2112    Seabeam2112
-	ElacMkII       ElacMkII
-	CmpSass        CmpSass
-	Reson8100      Reson8100
-	Em3            Em3
-	Em4            Em4
-	GeoSwathPlus   GeoSwathPlus
-	Klein5410Bss   Klein5410Bss
-	Reson7100      Reson7100
-	Em3Raw         Em3Raw
-	DeltaT         DeltaT
-	R2Sonic        R2Sonic
-	ResonTSeries   ResonTSeries
-	Kmall          Kmall
-	SbEchotrac     SbEchotrac
-	SbMgd77        SbMgd77
-	SbBdb          SbBdb
-	SbNoShDb       SbNoShDb
-	SbNavisound    SbNavisound
+	Seabeam          Seabeam
+	Em12             Em12
+	Em100            Em100
+	Em950            Em950
+	Em121A           Em121A
+	Em121            Em121
+	Sass             Sass
+	SeaMap           SeaMap
+	SeaBat           SeaBat
+	Em1000           Em1000
+	TypeIIISeabeam   TypeIIISeabeam
+	SbAmp            SbAmp
+	SeaBatII         SeaBatII
+	SeaBat8101       SeaBat8101
+	Seabeam2112      Seabeam2112
+	ElacMkII         ElacMkII
+	CmpSass          CmpSass
+	Reson8100        Reson8100
+	Em3              Em3
+	Em4              Em4
+	GeoSwathPlus     GeoSwathPlus
+	Klein5410Bss     Klein5410Bss
+	Reson7100        Reson7100
+	Em3Raw           Em3Raw
+	DeltaT           DeltaT
+	R2Sonic          R2Sonic
+	ResonTSeries     ResonTSeries
+	Kmall            Kmall
+	SwathSbEchotrac  SwathSbEchotrac
+	SwathSbMgd77     SwathSbMgd77
+	SwathSbBdb       SwathSbBdb
+	SwathSbNoShDb    SwathSbNoShDb
+	SwathSbNavisound SwathSbNavisound
 }
 
 // writeSensorMetadata handles the serialisation of specific sensor related
@@ -249,35 +249,35 @@ func (sm *SensorMetadata) writeSensorMetadata(ctx *tiledb.Context, array *tiledb
 			errn := errors.New("Error writing SensorMetadata.Kmall metadata")
 			return errors.Join(err, errn)
 		}
-	case SWATH_ECHOTRAC, SWATH_BATHY2000, SWATH_PDD:
+	case SWATH_SB_ECHOTRAC, SWATH_SB_BATHY2000, SWATH_SB_PDD:
 		// they use the same struct, so pushing all to the one sensor
-		err := setStructFieldBuffers(query, &sm.SbEchotrac)
+		err := setStructFieldBuffers(query, &sm.SwathSbEchotrac)
 		if err != nil {
-			errn := errors.New("Error writing SensorMetadata.SbEchotrac metadata")
+			errn := errors.New("Error writing SensorMetadata.SwathSbEchotrac metadata")
 			return errors.Join(err, errn)
 		}
-	case SWATH_MGD77:
-		err := setStructFieldBuffers(query, &sm.SbMgd77)
+	case SWATH_SB_MGD77:
+		err := setStructFieldBuffers(query, &sm.SwathSbMgd77)
 		if err != nil {
-			errn := errors.New("Error writing SensorMetadata.SbMgd77 metadata")
+			errn := errors.New("Error writing SensorMetadata.SwathSbMgd77 metadata")
 			return errors.Join(err, errn)
 		}
-	case SWATH_BDB:
-		err := setStructFieldBuffers(query, &sm.SbBdb)
+	case SWATH_SB_BDB:
+		err := setStructFieldBuffers(query, &sm.SwathSbBdb)
 		if err != nil {
-			errn := errors.New("Error writing SensorMetadata.SbBdb metadata")
+			errn := errors.New("Error writing SensorMetadata.SwathSbBdb metadata")
 			return errors.Join(err, errn)
 		}
-	case SWATH_NOSHDB:
-		err := setStructFieldBuffers(query, &sm.SbNoShDb)
+	case SWATH_SB_NOSHDB:
+		err := setStructFieldBuffers(query, &sm.SwathSbNoShDb)
 		if err != nil {
-			errn := errors.New("Error writing SensorMetadata.SbNoShDb metadata")
+			errn := errors.New("Error writing SensorMetadata.SwathSbNoShDb metadata")
 			return errors.Join(err, errn)
 		}
-	case SWATH_NAVISOUND:
-		err := setStructFieldBuffers(query, &sm.SbNavisound)
+	case SWATH_SB_NAVISOUND:
+		err := setStructFieldBuffers(query, &sm.SwathSbNavisound)
 		if err != nil {
-			errn := errors.New("Error writing SensorMetadata.SbNavisound metadata")
+			errn := errors.New("Error writing SensorMetadata.SwathSbNavisound metadata")
 			return errors.Join(err, errn)
 		}
 	default:
@@ -475,34 +475,34 @@ func (sm *SensorMetadata) attachAttrs(schema *tiledb.ArraySchema, ctx *tiledb.Co
 		}
 
 		// single beam swath sensor specific subrecords
-	case SWATH_ECHOTRAC, SWATH_BATHY2000, SWATH_PDD:
-		err = schemaAttrs(&sm.SbEchotrac, schema, ctx)
+	case SWATH_SB_ECHOTRAC, SWATH_SB_BATHY2000, SWATH_SB_PDD:
+		err = schemaAttrs(&sm.SwathSbEchotrac, schema, ctx)
 		if err != nil {
-			err_md := errors.New("Error creating SensorMetadata.SbEchotrac attributes")
+			err_md := errors.New("Error creating SensorMetadata.SwathSbEchotrac attributes")
 			return errors.Join(err, err_md)
 		}
-	case SWATH_MGD77:
-		err = schemaAttrs(&sm.SbMgd77, schema, ctx)
+	case SWATH_SB_MGD77:
+		err = schemaAttrs(&sm.SwathSbMgd77, schema, ctx)
 		if err != nil {
-			err_md := errors.New("Error creating SensorMetadata.SbMgd77 attributes")
+			err_md := errors.New("Error creating SensorMetadata.SwathSbMgd77 attributes")
 			return errors.Join(err, err_md)
 		}
-	case SWATH_BDB:
-		err = schemaAttrs(&sm.SbBdb, schema, ctx)
+	case SWATH_SB_BDB:
+		err = schemaAttrs(&sm.SwathSbBdb, schema, ctx)
 		if err != nil {
-			err_md := errors.New("Error creating SensorMetadata.SbBdb attributes")
+			err_md := errors.New("Error creating SensorMetadata.SwathSbBdb attributes")
 			return errors.Join(err, err_md)
 		}
-	case SWATH_NOSHDB:
-		err = schemaAttrs(&sm.SbNoShDb, schema, ctx)
+	case SWATH_SB_NOSHDB:
+		err = schemaAttrs(&sm.SwathSbNoShDb, schema, ctx)
 		if err != nil {
-			err_md := errors.New("Error creating SensorMetadata.SbNoShDb attributes")
+			err_md := errors.New("Error creating SensorMetadata.SwathSbNoShDb attributes")
 			return errors.Join(err, err_md)
 		}
-	case SWATH_NAVISOUND:
-		err = schemaAttrs(&sm.SbNavisound, schema, ctx)
+	case SWATH_SB_NAVISOUND:
+		err = schemaAttrs(&sm.SwathSbNavisound, schema, ctx)
 		if err != nil {
-			err_md := errors.New("Error creating SensorMetadata.SbNavisound attributes")
+			err_md := errors.New("Error creating SensorMetadata.SwathSbNavisound attributes")
 			return errors.Join(err, err_md)
 		}
 	}
@@ -514,10 +514,361 @@ func (sm *SensorMetadata) appendSensorMetadata(sp *SensorMetadata, sensor_id Sub
 	// sp refers to a single pings worth of SensorMetadata
 	// whereas sm should be pointing back to the chunks of pings
 	switch sensor_id {
+	case SEABEAM:
+		rf_pd := reflect.ValueOf(&sm.Seabeam).Elem()
+		rf_sp := reflect.ValueOf(&sp.Seabeam).Elem()
+		types := rf_pd.Type()
+
+		for i := 0; i < rf_pd.NumField(); i++ {
+			name := types.Field(i).Name
+			field_pd := rf_pd.FieldByName(name)
+			field_sp := rf_sp.FieldByName(name)
+			field_pd.Set(reflect.AppendSlice(field_pd, field_sp))
+		}
+	case EM12:
+		rf_pd := reflect.ValueOf(&sm.Em12).Elem()
+		rf_sp := reflect.ValueOf(&sp.Em12).Elem()
+		types := rf_pd.Type()
+
+		for i := 0; i < rf_pd.NumField(); i++ {
+			name := types.Field(i).Name
+			field_pd := rf_pd.FieldByName(name)
+			field_sp := rf_sp.FieldByName(name)
+			field_pd.Set(reflect.AppendSlice(field_pd, field_sp))
+		}
+	case EM100:
+		rf_pd := reflect.ValueOf(&sm.Em100).Elem()
+		rf_sp := reflect.ValueOf(&sp.Em100).Elem()
+		types := rf_pd.Type()
+
+		for i := 0; i < rf_pd.NumField(); i++ {
+			name := types.Field(i).Name
+			field_pd := rf_pd.FieldByName(name)
+			field_sp := rf_sp.FieldByName(name)
+			field_pd.Set(reflect.AppendSlice(field_pd, field_sp))
+		}
+	case EM950:
+		rf_pd := reflect.ValueOf(&sm.Em950).Elem()
+		rf_sp := reflect.ValueOf(&sp.Em950).Elem()
+		types := rf_pd.Type()
+
+		for i := 0; i < rf_pd.NumField(); i++ {
+			name := types.Field(i).Name
+			field_pd := rf_pd.FieldByName(name)
+			field_sp := rf_sp.FieldByName(name)
+			field_pd.Set(reflect.AppendSlice(field_pd, field_sp))
+		}
+	case EM121A:
+		rf_pd := reflect.ValueOf(&sm.Em121A).Elem()
+		rf_sp := reflect.ValueOf(&sp.Em121A).Elem()
+		types := rf_pd.Type()
+
+		for i := 0; i < rf_pd.NumField(); i++ {
+			name := types.Field(i).Name
+			field_pd := rf_pd.FieldByName(name)
+			field_sp := rf_sp.FieldByName(name)
+			field_pd.Set(reflect.AppendSlice(field_pd, field_sp))
+		}
+	case EM121:
+		rf_pd := reflect.ValueOf(&sm.Em121).Elem()
+		rf_sp := reflect.ValueOf(&sp.Em121).Elem()
+		types := rf_pd.Type()
+
+		for i := 0; i < rf_pd.NumField(); i++ {
+			name := types.Field(i).Name
+			field_pd := rf_pd.FieldByName(name)
+			field_sp := rf_sp.FieldByName(name)
+			field_pd.Set(reflect.AppendSlice(field_pd, field_sp))
+		}
+	case SASS: // obsolete
+		rf_pd := reflect.ValueOf(&sm.Sass).Elem()
+		rf_sp := reflect.ValueOf(&sp.Sass).Elem()
+		types := rf_pd.Type()
+
+		for i := 0; i < rf_pd.NumField(); i++ {
+			name := types.Field(i).Name
+			field_pd := rf_pd.FieldByName(name)
+			field_sp := rf_sp.FieldByName(name)
+			field_pd.Set(reflect.AppendSlice(field_pd, field_sp))
+		}
+	case SEAMAP:
+		rf_pd := reflect.ValueOf(&sm.SeaMap).Elem()
+		rf_sp := reflect.ValueOf(&sp.SeaMap).Elem()
+		types := rf_pd.Type()
+
+		for i := 0; i < rf_pd.NumField(); i++ {
+			name := types.Field(i).Name
+			field_pd := rf_pd.FieldByName(name)
+			field_sp := rf_sp.FieldByName(name)
+			field_pd.Set(reflect.AppendSlice(field_pd, field_sp))
+		}
+	case SEABAT:
+		rf_pd := reflect.ValueOf(&sm.SeaBat).Elem()
+		rf_sp := reflect.ValueOf(&sp.SeaBat).Elem()
+		types := rf_pd.Type()
+
+		for i := 0; i < rf_pd.NumField(); i++ {
+			name := types.Field(i).Name
+			field_pd := rf_pd.FieldByName(name)
+			field_sp := rf_sp.FieldByName(name)
+			field_pd.Set(reflect.AppendSlice(field_pd, field_sp))
+		}
+	case EM1000:
+		rf_pd := reflect.ValueOf(&sm.Em1000).Elem()
+		rf_sp := reflect.ValueOf(&sp.Em1000).Elem()
+		types := rf_pd.Type()
+
+		for i := 0; i < rf_pd.NumField(); i++ {
+			name := types.Field(i).Name
+			field_pd := rf_pd.FieldByName(name)
+			field_sp := rf_sp.FieldByName(name)
+			field_pd.Set(reflect.AppendSlice(field_pd, field_sp))
+		}
+	case TYPEIII_SEABEAM: // obsolete
+		rf_pd := reflect.ValueOf(&sm.TypeIIISeabeam).Elem()
+		rf_sp := reflect.ValueOf(&sp.TypeIIISeabeam).Elem()
+		types := rf_pd.Type()
+
+		for i := 0; i < rf_pd.NumField(); i++ {
+			name := types.Field(i).Name
+			field_pd := rf_pd.FieldByName(name)
+			field_sp := rf_sp.FieldByName(name)
+			field_pd.Set(reflect.AppendSlice(field_pd, field_sp))
+		}
+	case SB_AMP:
+		rf_pd := reflect.ValueOf(&sm.SbAmp).Elem()
+		rf_sp := reflect.ValueOf(&sp.SbAmp).Elem()
+		types := rf_pd.Type()
+
+		for i := 0; i < rf_pd.NumField(); i++ {
+			name := types.Field(i).Name
+			field_pd := rf_pd.FieldByName(name)
+			field_sp := rf_sp.FieldByName(name)
+			field_pd.Set(reflect.AppendSlice(field_pd, field_sp))
+		}
+	case SEABAT_II:
+		rf_pd := reflect.ValueOf(&sm.SeaBatII).Elem()
+		rf_sp := reflect.ValueOf(&sp.SeaBatII).Elem()
+		types := rf_pd.Type()
+
+		for i := 0; i < rf_pd.NumField(); i++ {
+			name := types.Field(i).Name
+			field_pd := rf_pd.FieldByName(name)
+			field_sp := rf_sp.FieldByName(name)
+			field_pd.Set(reflect.AppendSlice(field_pd, field_sp))
+		}
+	case SEABAT_8101:
+		rf_pd := reflect.ValueOf(&sm.SeaBat8101).Elem()
+		rf_sp := reflect.ValueOf(&sp.SeaBat8101).Elem()
+		types := rf_pd.Type()
+
+		for i := 0; i < rf_pd.NumField(); i++ {
+			name := types.Field(i).Name
+			field_pd := rf_pd.FieldByName(name)
+			field_sp := rf_sp.FieldByName(name)
+			field_pd.Set(reflect.AppendSlice(field_pd, field_sp))
+		}
+	case SEABEAM_2112:
+		rf_pd := reflect.ValueOf(&sm.Seabeam2112).Elem()
+		rf_sp := reflect.ValueOf(&sp.Seabeam2112).Elem()
+		types := rf_pd.Type()
+
+		for i := 0; i < rf_pd.NumField(); i++ {
+			name := types.Field(i).Name
+			field_pd := rf_pd.FieldByName(name)
+			field_sp := rf_sp.FieldByName(name)
+			field_pd.Set(reflect.AppendSlice(field_pd, field_sp))
+		}
+	case ELAC_MKII:
+		rf_pd := reflect.ValueOf(&sm.ElacMkII).Elem()
+		rf_sp := reflect.ValueOf(&sp.ElacMkII).Elem()
+		types := rf_pd.Type()
+
+		for i := 0; i < rf_pd.NumField(); i++ {
+			name := types.Field(i).Name
+			field_pd := rf_pd.FieldByName(name)
+			field_sp := rf_sp.FieldByName(name)
+			field_pd.Set(reflect.AppendSlice(field_pd, field_sp))
+		}
+	case CMP_SAAS: // CMP (compressed), should be used in place of SASS
+		rf_pd := reflect.ValueOf(&sm.CmpSass).Elem()
+		rf_sp := reflect.ValueOf(&sp.CmpSass).Elem()
+		types := rf_pd.Type()
+
+		for i := 0; i < rf_pd.NumField(); i++ {
+			name := types.Field(i).Name
+			field_pd := rf_pd.FieldByName(name)
+			field_sp := rf_sp.FieldByName(name)
+			field_pd.Set(reflect.AppendSlice(field_pd, field_sp))
+		}
+	case RESON_8101, RESON_8111, RESON_8124, RESON_8125, RESON_8150, RESON_8160:
+		rf_pd := reflect.ValueOf(&sm.Reson8100).Elem()
+		rf_sp := reflect.ValueOf(&sp.Reson8100).Elem()
+		types := rf_pd.Type()
+
+		for i := 0; i < rf_pd.NumField(); i++ {
+			name := types.Field(i).Name
+			field_pd := rf_pd.FieldByName(name)
+			field_sp := rf_sp.FieldByName(name)
+			field_pd.Set(reflect.AppendSlice(field_pd, field_sp))
+		}
+	case EM120, EM300, EM1002, EM2000, EM3000, EM3002, EM3000D, EM3002D, EM121A_SIS:
+		rf_pd := reflect.ValueOf(&sm.Em3).Elem()
+		rf_sp := reflect.ValueOf(&sp.Em3).Elem()
+		types := rf_pd.Type()
+
+		for i := 0; i < rf_pd.NumField(); i++ {
+			name := types.Field(i).Name
+			field_pd := rf_pd.FieldByName(name)
+			field_sp := rf_sp.FieldByName(name)
+			field_pd.Set(reflect.AppendSlice(field_pd, field_sp))
+		}
 	case EM710, EM302, EM122, EM2040:
-		// EM4
 		rf_pd := reflect.ValueOf(&sm.Em4).Elem()
 		rf_sp := reflect.ValueOf(&sp.Em4).Elem()
+		types := rf_pd.Type()
+
+		for i := 0; i < rf_pd.NumField(); i++ {
+			name := types.Field(i).Name
+			field_pd := rf_pd.FieldByName(name)
+			field_sp := rf_sp.FieldByName(name)
+			field_pd.Set(reflect.AppendSlice(field_pd, field_sp))
+		}
+	case GEOSWATH_PLUS:
+		rf_pd := reflect.ValueOf(&sm.GeoSwathPlus).Elem()
+		rf_sp := reflect.ValueOf(&sp.GeoSwathPlus).Elem()
+		types := rf_pd.Type()
+
+		for i := 0; i < rf_pd.NumField(); i++ {
+			name := types.Field(i).Name
+			field_pd := rf_pd.FieldByName(name)
+			field_sp := rf_sp.FieldByName(name)
+			field_pd.Set(reflect.AppendSlice(field_pd, field_sp))
+		}
+	case KLEIN_5410_BSS:
+		rf_pd := reflect.ValueOf(&sm.Klein5410Bss).Elem()
+		rf_sp := reflect.ValueOf(&sp.Klein5410Bss).Elem()
+		types := rf_pd.Type()
+
+		for i := 0; i < rf_pd.NumField(); i++ {
+			name := types.Field(i).Name
+			field_pd := rf_pd.FieldByName(name)
+			field_sp := rf_sp.FieldByName(name)
+			field_pd.Set(reflect.AppendSlice(field_pd, field_sp))
+		}
+	case RESON_7125:
+		rf_pd := reflect.ValueOf(&sm.Reson7100).Elem()
+		rf_sp := reflect.ValueOf(&sp.Reson7100).Elem()
+		types := rf_pd.Type()
+
+		for i := 0; i < rf_pd.NumField(); i++ {
+			name := types.Field(i).Name
+			field_pd := rf_pd.FieldByName(name)
+			field_sp := rf_sp.FieldByName(name)
+			field_pd.Set(reflect.AppendSlice(field_pd, field_sp))
+		}
+	case EM300_RAW, EM1002_RAW, EM2000_RAW, EM3000_RAW, EM120_RAW, EM3002_RAW, EM3000D_RAW, EM3002D_RAW, EM121A_SIS_RAW:
+		rf_pd := reflect.ValueOf(&sm.Em3Raw).Elem()
+		rf_sp := reflect.ValueOf(&sp.Em3Raw).Elem()
+		types := rf_pd.Type()
+
+		for i := 0; i < rf_pd.NumField(); i++ {
+			name := types.Field(i).Name
+			field_pd := rf_pd.FieldByName(name)
+			field_sp := rf_sp.FieldByName(name)
+			field_pd.Set(reflect.AppendSlice(field_pd, field_sp))
+		}
+	case DELTA_T:
+		rf_pd := reflect.ValueOf(&sm.DeltaT).Elem()
+		rf_sp := reflect.ValueOf(&sp.DeltaT).Elem()
+		types := rf_pd.Type()
+
+		for i := 0; i < rf_pd.NumField(); i++ {
+			name := types.Field(i).Name
+			field_pd := rf_pd.FieldByName(name)
+			field_sp := rf_sp.FieldByName(name)
+			field_pd.Set(reflect.AppendSlice(field_pd, field_sp))
+		}
+	case R2SONIC_2022, R2SONIC_2024, R2SONIC_2020:
+		rf_pd := reflect.ValueOf(&sm.R2Sonic).Elem()
+		rf_sp := reflect.ValueOf(&sp.R2Sonic).Elem()
+		types := rf_pd.Type()
+
+		for i := 0; i < rf_pd.NumField(); i++ {
+			name := types.Field(i).Name
+			field_pd := rf_pd.FieldByName(name)
+			field_sp := rf_sp.FieldByName(name)
+			field_pd.Set(reflect.AppendSlice(field_pd, field_sp))
+		}
+	case RESON_TSERIES:
+		rf_pd := reflect.ValueOf(&sm.ResonTSeries).Elem()
+		rf_sp := reflect.ValueOf(&sp.ResonTSeries).Elem()
+		types := rf_pd.Type()
+
+		for i := 0; i < rf_pd.NumField(); i++ {
+			name := types.Field(i).Name
+			field_pd := rf_pd.FieldByName(name)
+			field_sp := rf_sp.FieldByName(name)
+			field_pd.Set(reflect.AppendSlice(field_pd, field_sp))
+		}
+	case KMALL:
+		rf_pd := reflect.ValueOf(&sm.Kmall).Elem()
+		rf_sp := reflect.ValueOf(&sp.Kmall).Elem()
+		types := rf_pd.Type()
+
+		for i := 0; i < rf_pd.NumField(); i++ {
+			name := types.Field(i).Name
+			field_pd := rf_pd.FieldByName(name)
+			field_sp := rf_sp.FieldByName(name)
+			field_pd.Set(reflect.AppendSlice(field_pd, field_sp))
+		}
+	case SWATH_SB_ECHOTRAC, SWATH_SB_BATHY2000, SWATH_SB_PDD:
+		rf_pd := reflect.ValueOf(&sm.SwathSbEchotrac).Elem()
+		rf_sp := reflect.ValueOf(&sp.SwathSbEchotrac).Elem()
+		types := rf_pd.Type()
+
+		for i := 0; i < rf_pd.NumField(); i++ {
+			name := types.Field(i).Name
+			field_pd := rf_pd.FieldByName(name)
+			field_sp := rf_sp.FieldByName(name)
+			field_pd.Set(reflect.AppendSlice(field_pd, field_sp))
+		}
+	case SWATH_SB_MGD77:
+		rf_pd := reflect.ValueOf(&sm.SwathSbMgd77).Elem()
+		rf_sp := reflect.ValueOf(&sp.SwathSbMgd77).Elem()
+		types := rf_pd.Type()
+
+		for i := 0; i < rf_pd.NumField(); i++ {
+			name := types.Field(i).Name
+			field_pd := rf_pd.FieldByName(name)
+			field_sp := rf_sp.FieldByName(name)
+			field_pd.Set(reflect.AppendSlice(field_pd, field_sp))
+		}
+	case SWATH_SB_BDB:
+		rf_pd := reflect.ValueOf(&sm.SwathSbBdb).Elem()
+		rf_sp := reflect.ValueOf(&sp.SwathSbBdb).Elem()
+		types := rf_pd.Type()
+
+		for i := 0; i < rf_pd.NumField(); i++ {
+			name := types.Field(i).Name
+			field_pd := rf_pd.FieldByName(name)
+			field_sp := rf_sp.FieldByName(name)
+			field_pd.Set(reflect.AppendSlice(field_pd, field_sp))
+		}
+	case SWATH_SB_NOSHDB:
+		rf_pd := reflect.ValueOf(&sm.SwathSbNoShDb).Elem()
+		rf_sp := reflect.ValueOf(&sp.SwathSbNoShDb).Elem()
+		types := rf_pd.Type()
+
+		for i := 0; i < rf_pd.NumField(); i++ {
+			name := types.Field(i).Name
+			field_pd := rf_pd.FieldByName(name)
+			field_sp := rf_sp.FieldByName(name)
+			field_pd.Set(reflect.AppendSlice(field_pd, field_sp))
+		}
+	case SWATH_SB_NAVISOUND:
+		rf_pd := reflect.ValueOf(&sm.SwathSbNavisound).Elem()
+		rf_sp := reflect.ValueOf(&sp.SwathSbNavisound).Elem()
 		types := rf_pd.Type()
 
 		for i := 0; i < rf_pd.NumField(); i++ {
@@ -654,26 +1005,26 @@ func newSensorMetadata(number_pings int, sensor_id SubRecordID) (sen_md SensorMe
 		md := Kmall{}
 		chunkedStructSlices(&md, number_pings)
 		sen_md.Kmall = md
-	case SWATH_ECHOTRAC, SWATH_BATHY2000, SWATH_PDD:
-		md := SbEchotrac{}
+	case SWATH_SB_ECHOTRAC, SWATH_SB_BATHY2000, SWATH_SB_PDD:
+		md := SwathSbEchotrac{}
 		chunkedStructSlices(&md, number_pings)
-		sen_md.SbEchotrac = md
-	case SWATH_MGD77:
-		md := SbMgd77{}
+		sen_md.SwathSbEchotrac = md
+	case SWATH_SB_MGD77:
+		md := SwathSbMgd77{}
 		chunkedStructSlices(&md, number_pings)
-		sen_md.SbMgd77 = md
-	case SWATH_BDB:
-		md := SbBdb{}
+		sen_md.SwathSbMgd77 = md
+	case SWATH_SB_BDB:
+		md := SwathSbBdb{}
 		chunkedStructSlices(&md, number_pings)
-		sen_md.SbBdb = md
-	case SWATH_NOSHDB:
-		md := SbNoShDb{}
+		sen_md.SwathSbBdb = md
+	case SWATH_SB_NOSHDB:
+		md := SwathSbNoShDb{}
 		chunkedStructSlices(&md, number_pings)
-		sen_md.SbNoShDb = md
-	case SWATH_NAVISOUND:
-		md := SbNavisound{}
+		sen_md.SwathSbNoShDb = md
+	case SWATH_SB_NAVISOUND:
+		md := SwathSbNavisound{}
 		chunkedStructSlices(&md, number_pings)
-		sen_md.SbNavisound = md
+		sen_md.SwathSbNavisound = md
 	default:
 		// TODO; update return sig to allow return of an err rather than simply panic
 		panic(errors.Join(ErrSensor, errors.New(strconv.Itoa(int(sensor_id)))))

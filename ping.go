@@ -1064,33 +1064,33 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 			}
 
 			// single beam swath sensor specific subrecords
-		case SWATH_ECHOTRAC, SWATH_BATHY2000, SWATH_PDD:
+		case SWATH_SB_ECHOTRAC, SWATH_SB_BATHY2000, SWATH_SB_PDD:
 			// DecodeSBEchotrac
-			sen_md.SbEchotrac, err = DecodeSbEchotracSpecific(reader)
+			sen_md.SwathSbEchotrac, err = DecodeSwathSbEchotracSpecific(reader)
 			if err != nil {
 				return ping_data, err
 			}
-		case SWATH_MGD77:
+		case SWATH_SB_MGD77:
 			// DecodeSBMGD77
-			sen_md.SbMgd77, err = DecodeSBMGD77Specific(reader)
+			sen_md.SwathSbMgd77, err = DecodeSwathSbMGD77Specific(reader)
 			if err != nil {
 				return ping_data, err
 			}
-		case SWATH_BDB:
+		case SWATH_SB_BDB:
 			// DecodeSBBDB
-			sen_md.SbBdb, err = DecodeSbBdbSpecific(reader)
+			sen_md.SwathSbBdb, err = DecodeSwathSbBdbSpecific(reader)
 			if err != nil {
 				return ping_data, err
 			}
-		case SWATH_NOSHDB:
+		case SWATH_SB_NOSHDB:
 			// DecodeSBNOSHDB
-			sen_md.SbNoShDb, err = DecodeSbNoShDbSpecific(reader)
+			sen_md.SwathSbNoShDb, err = DecodeSwathSbNoShDbSpecific(reader)
 			if err != nil {
 				return ping_data, err
 			}
-		case SWATH_NAVISOUND:
+		case SWATH_SB_NAVISOUND:
 			// DecodeSBNavisound
-			sen_md.SbNavisound, err = DecodeSbNavisoundSpecific(reader)
+			sen_md.SwathSbNavisound, err = DecodeSwathSbNavisoundSpecific(reader)
 			if err != nil {
 				return ping_data, err
 			}
