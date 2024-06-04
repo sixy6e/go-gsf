@@ -2801,7 +2801,7 @@ func DecodeKmallSpecific(reader *bytes.Reader) (sensor_data Kmall, err error) {
 	return sensor_data, err
 }
 
-// Single beam types
+// Single beam types (specified as swath as they're specific to reading from the SWATH_BATHYMETRY_PING record
 
 type SwathSbEchotrac struct {
 	NavigationError []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
@@ -2820,7 +2820,7 @@ func DecodeSwathSbEchotracSpecific(reader *bytes.Reader) (sensor_data SwathSbEch
 	}
 	err = binary.Read(reader, binary.BigEndian, &buffer)
 	if err != nil {
-		errn := errors.New("Swath_SbEchotrac or Swath_Bathy2000 or Swath_PDD sensors")
+		errn := errors.New("Swath SbEchotrac or Swath Bathy2000 or Swath PDD sensors")
 		err = errors.Join(err, ErrSensorMetadata, errn)
 		return sensor_data, err
 	}
@@ -2854,7 +2854,7 @@ func DecodeSwathSbMGD77Specific(reader *bytes.Reader) (sensor_data SwathSbMgd77,
 	}
 	err = binary.Read(reader, binary.BigEndian, &buffer)
 	if err != nil {
-		errn := errors.New("SBMGD77 sensor")
+		errn := errors.New("Swath SBMGD77 sensor")
 		err = errors.Join(err, ErrSensorMetadata, errn)
 		return sensor_data, err
 	}
@@ -2876,7 +2876,7 @@ type SwathSbBdb struct {
 	TrackAdjustmentFlag  []uint8  `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
 	SourceFlag           []uint8  `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
 	PointOrTrackLineFlag []uint8  `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
-	DatumFlag            []uint8
+	DatumFlag            []uint8  `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
 }
 
 func DecodeSwathSbBdbSpecific(reader *bytes.Reader) (sensor_data SwathSbBdb, err error) {
@@ -2892,7 +2892,7 @@ func DecodeSwathSbBdbSpecific(reader *bytes.Reader) (sensor_data SwathSbBdb, err
 	}
 	err = binary.Read(reader, binary.BigEndian, &buffer)
 	if err != nil {
-		errn := errors.New("SBBDB sensor")
+		errn := errors.New("Swath SBBDB sensor")
 		err = errors.Join(err, ErrSensorMetadata, errn)
 		return sensor_data, err
 	}
@@ -2921,7 +2921,7 @@ func DecodeSwathSbNoShDbSpecific(reader *bytes.Reader) (sensor_data SwathSbNoShD
 	}
 	err = binary.Read(reader, binary.BigEndian, &buffer)
 	if err != nil {
-		errn := errors.New("SBNOSHDB sensor")
+		errn := errors.New("Swath SBNOSHDB sensor")
 		err = errors.Join(err, ErrSensorMetadata, errn)
 		return sensor_data, err
 	}
@@ -2943,12 +2943,139 @@ func DecodeSwathSbNavisoundSpecific(reader *bytes.Reader) (sensor_data SwathSbNa
 	}
 	err = binary.Read(reader, binary.BigEndian, &buffer)
 	if err != nil {
-		errn := errors.New("SBNavisound sensor")
+		errn := errors.New("Swath SBNavisound sensor")
 		err = errors.Join(err, ErrSensorMetadata, errn)
 		return sensor_data, err
 	}
 
 	sensor_data.PulseLength = []float32{float32(buffer.PulseLength) / SCALE_2_F32}
+
+	return sensor_data, err
+}
+
+// single beam types, that are intended for decoding via the SINGLE_BEAM_PING record
+// Some of the types are, for some reason, not explicitly the same as the swath equivalent.
+// Others are a duplicate. But for the time being, and consistency, separate types will be
+// defined. At a future date, duplicates types and associated decoders may be considered for removal.
+
+type SbEchotrac struct {
+	NavigationError []uint16 `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	MppSource       []uint8  `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
+	TideSource      []uint8  `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
+}
+
+func DecodeSbEchotracSpecific(reader *bytes.Reader) (sensor_data SbEchotrac, err error) {
+	var buffer struct {
+		NavigationError uint16
+		MppSource       uint8
+		TideSource      uint8
+	}
+	err = binary.Read(reader, binary.BigEndian, &buffer)
+	if err != nil {
+		errn := errors.New("SbEchotrac or Bathy2000 sensors")
+		err = errors.Join(err, ErrSensorMetadata, errn)
+		return sensor_data, err
+	}
+
+	sensor_data.NavigationError = []uint16{buffer.NavigationError}
+	sensor_data.MppSource = []uint8{buffer.MppSource}
+	sensor_data.TideSource = []uint8{buffer.TideSource}
+
+	return sensor_data, err
+}
+
+type SbMgd77 struct {
+	TimeZoneCorrection []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	PositionTypeCode   []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	CorrectionCode     []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	BathyTypeCode      []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	QualityCode        []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	TravelTime         []float64 `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
+}
+
+func DecodeSbMGD77Specific(reader *bytes.Reader) (sensor_data SbMgd77, err error) {
+	var buffer struct {
+		TimeZoneCorrection uint16
+		PositionTypeCode   uint16
+		CorrectionCode     uint16
+		BathyTypeCode      uint16
+		QualityCode        uint16
+		TravelTime         uint32
+	}
+	err = binary.Read(reader, binary.BigEndian, &buffer)
+	if err != nil {
+		errn := errors.New("SBMGD77 sensor")
+		err = errors.Join(err, ErrSensorMetadata, errn)
+		return sensor_data, err
+	}
+
+	sensor_data.TimeZoneCorrection = []uint16{buffer.TimeZoneCorrection}
+	sensor_data.PositionTypeCode = []uint16{buffer.PositionTypeCode}
+	sensor_data.CorrectionCode = []uint16{buffer.CorrectionCode}
+	sensor_data.BathyTypeCode = []uint16{buffer.BathyTypeCode}
+	sensor_data.QualityCode = []uint16{buffer.QualityCode}
+	sensor_data.TravelTime = []float64{float64(buffer.TravelTime) / SCALE_4_F64}
+
+	return sensor_data, err
+}
+
+type SbBdb struct {
+	TravelTime           []uint32 `tiledb:"dtype=uint32,ftype=attr" filters:"zstd(level=16)"`
+	EvaluationFlag       []uint8  `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
+	ClassificationFlag   []uint8  `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
+	TrackAdjustmentFlag  []uint8  `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
+	SourceFlag           []uint8  `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
+	PointOrTrackLineFlag []uint8  `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
+	DatumFlag            []uint8  `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
+}
+
+func DecodeSbBdbSpecific(reader *bytes.Reader) (sensor_data SbBdb, err error) {
+	var buffer struct {
+		TravelTime           uint32
+		EvaluationFlag       uint8
+		ClassificationFlag   uint8
+		TrackAdjustmentFlag  uint8
+		SourceFlag           uint8
+		PointOrTrackLineFlag uint8
+		DatumFlag            uint8
+	}
+	err = binary.Read(reader, binary.BigEndian, &buffer)
+	if err != nil {
+		errn := errors.New("SBBDB sensor")
+		err = errors.Join(err, ErrSensorMetadata, errn)
+		return sensor_data, err
+	}
+
+	sensor_data.TravelTime = []uint32{buffer.TravelTime}
+	sensor_data.EvaluationFlag = []uint8{buffer.EvaluationFlag}
+	sensor_data.ClassificationFlag = []uint8{buffer.ClassificationFlag}
+	sensor_data.TrackAdjustmentFlag = []uint8{buffer.TrackAdjustmentFlag}
+	sensor_data.SourceFlag = []uint8{buffer.SourceFlag}
+	sensor_data.PointOrTrackLineFlag = []uint8{buffer.PointOrTrackLineFlag}
+	sensor_data.DatumFlag = []uint8{buffer.DatumFlag}
+
+	return sensor_data, err
+}
+
+type SbNoShDb struct {
+	TypeCode         []uint16 `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	CartographicCode []uint16 `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+}
+
+func DecodeSbNoShDbSpecific(reader *bytes.Reader) (sensor_data SbNoShDb, err error) {
+	var buffer struct {
+		TypeCode         uint16
+		CartographicCode uint16
+	}
+	err = binary.Read(reader, binary.BigEndian, &buffer)
+	if err != nil {
+		errn := errors.New("SBNOSHDB sensor")
+		err = errors.Join(err, ErrSensorMetadata, errn)
+		return sensor_data, err
+	}
+
+	sensor_data.TypeCode = []uint16{buffer.TypeCode}
+	sensor_data.CartographicCode = []uint16{buffer.CartographicCode}
 
 	return sensor_data, err
 }
