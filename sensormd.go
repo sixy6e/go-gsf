@@ -1069,6 +1069,7 @@ func DecodeEm3Specific(reader *bytes.Reader) (sensor_data Em3, err error) {
 	sensor_data.RunTimeDgTime = [][]time.Time{dg_time}
 	sensor_data.RunTimePingNumber = [][]uint16{ping_number}
 	sensor_data.RunTimeSerialNumber = [][]uint16{serial_number}
+	sensor_data.RunTimeSystemStatus = [][]uint32{system_status}
 	sensor_data.RunTimeMode = [][]uint8{mode}
 	sensor_data.RunTimeFilterID = [][]uint8{filter_id}
 	sensor_data.RunTimeMinDepth = [][]float32{min_depth}
