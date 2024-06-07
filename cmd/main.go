@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"runtime"
 
 	"github.com/alitto/pond"
@@ -13,11 +14,19 @@ import (
 	"github.com/sixy6e/go-gsf"
 )
 
-func convert_gsf(gsf_uri string, config_uri string, in_memory, metadata_only bool) error {
+func convert_gsf(gsf_uri, config_uri, outdir_uri string, in_memory, metadata_only bool) error {
 	var (
 		out_uri string
 		err     error
+		dir     string
+		file    string
 	)
+
+	dir, file = filepath.Split(gsf_uri)
+	if outdir_uri == "" {
+		outdir_uri = dir
+	}
+
 	log.Println("Processing GSF:", gsf_uri)
 	src := gsf.OpenGSF(gsf_uri, config_uri, in_memory)
 	defer src.Close()
@@ -27,21 +36,21 @@ func convert_gsf(gsf_uri string, config_uri string, in_memory, metadata_only boo
 	proc_info := src.ProcInfo(&file_info)
 
 	log.Println("Writing metadata")
-	out_uri = gsf_uri + "-metadata.json"
+	out_uri = filepath.Join(outdir_uri, file+"-metadata.json")
 	_, err = gsf.WriteJson(out_uri, config_uri, file_info.Metadata)
 	if err != nil {
 		return err
 	}
 
 	log.Println("Writing proc-info")
-	out_uri = gsf_uri + "-proc-info.json"
+	out_uri = filepath.Join(outdir_uri, file+"-proc-info.json")
 	_, err = gsf.WriteJson(out_uri, config_uri, proc_info)
 	if err != nil {
 		return err
 	}
 
 	log.Println("Writing index")
-	out_uri = gsf_uri + "-index.json"
+	out_uri = filepath.Join(outdir_uri, file+"-index.json")
 	_, err = gsf.WriteJson(out_uri, config_uri, file_info.Index)
 	if err != nil {
 		return err
@@ -49,7 +58,7 @@ func convert_gsf(gsf_uri string, config_uri string, in_memory, metadata_only boo
 
 	if !metadata_only {
 		log.Println("Processing Attitude")
-		out_uri = gsf_uri + "-attitude.tiledb"
+		out_uri = filepath.Join(outdir_uri, file+"-attitude.tiledb")
 		att := src.AttitudeRecords(&file_info)
 		err = att.ToTileDB(out_uri, config_uri)
 		if err != nil {
@@ -57,7 +66,7 @@ func convert_gsf(gsf_uri string, config_uri string, in_memory, metadata_only boo
 		}
 
 		log.Println("Processing SVP")
-		out_uri = gsf_uri + "-svp.tiledb"
+		out_uri = filepath.Join(outdir_uri, file+"-svp.tiledb")
 		svp := src.SoundVelocityProfileRecords(&file_info)
 		err = svp.ToTileDB(out_uri, config_uri)
 		if err != nil {
@@ -65,7 +74,7 @@ func convert_gsf(gsf_uri string, config_uri string, in_memory, metadata_only boo
 		}
 
 		log.Println("Reading and writing swath bathymetry ping data")
-		err = src.SbpToTileDB(&file_info, config_uri)
+		err = src.SbpToTileDB(&file_info, config_uri, outdir_uri)
 		if err != nil {
 			return err
 		}
@@ -76,16 +85,10 @@ func convert_gsf(gsf_uri string, config_uri string, in_memory, metadata_only boo
 	return nil
 }
 
-func convert_gsf_list(uri string, config_uri string, in_memory, metadata_only bool) error {
+func convert_gsf_list(uri, config_uri, outdir_uri string, in_memory, metadata_only bool) error {
 	log.Println("Searching uri:", uri)
 	items := gsf.FindGsf(uri, config_uri)
-	// out_uris := make([]string, len(items))
 	log.Println("Number of GSFs to process:", len(items))
-
-	// TODO; if we write the file to a different structure, we need a different extension
-	// for i, name := range(items) {
-	//     out_uris[i] = name + "-index.json"
-	// }
 
 	// Create a context that will be cancelled when the user presses Ctrl+C (process receives termination signal).
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
@@ -99,7 +102,7 @@ func convert_gsf_list(uri string, config_uri string, in_memory, metadata_only bo
 	for _, name := range items {
 		item_uri := name
 		pool.Submit(func() {
-			_ = convert_gsf(item_uri, config_uri, in_memory, metadata_only)
+			_ = convert_gsf(item_uri, config_uri, outdir_uri, in_memory, metadata_only)
 			// if err != nil {
 			//     return err
 			// }
@@ -123,6 +126,10 @@ func main() {
 						Name:  "config-uri",
 						Usage: "URI or pathname to a TileDB config file.",
 					},
+					&cli.StringFlag{
+						Name:  "outdir-uri",
+						Usage: "URI or pathname to an output directory.",
+					},
 					&cli.BoolFlag{
 						Name:  "in-memory",
 						Usage: "Read the entire contents of a GSF file into memory before processing.",
@@ -131,14 +138,9 @@ func main() {
 						Name:  "metadata-only",
 						Usage: "Only decode and export metadata relating to the GSF file.",
 					},
-					// &cli.StringFlag{
-					//     Name: "out-uri",
-					//     Usage: "URI or pathname to write the output file to.",
-					// },
 				},
 				Action: func(cCtx *cli.Context) error {
-					// err := create_index(cCtx.String("gsf-uri"), cCtx.String("config-uri"), cCtx.String("out-uri"))
-					err := convert_gsf(cCtx.String("gsf-uri"), cCtx.String("config-uri"), cCtx.Bool("in-memory"), cCtx.Bool("metadata-only"))
+					err := convert_gsf(cCtx.String("gsf-uri"), cCtx.String("config-uri"), cCtx.String("outdir-uri"), cCtx.Bool("in-memory"), cCtx.Bool("metadata-only"))
 					return err
 				},
 			},
@@ -153,6 +155,10 @@ func main() {
 						Name:  "config-uri",
 						Usage: "URI or pathname to a TileDB config file.",
 					},
+					&cli.StringFlag{
+						Name:  "outdir-uri",
+						Usage: "URI or pathname to an output directory.",
+					},
 					&cli.BoolFlag{
 						Name:  "in-memory",
 						Usage: "Read the entire contents of a GSF file into memory before processing.",
@@ -161,14 +167,9 @@ func main() {
 						Name:  "metadata-only",
 						Usage: "Only decode and export metadata relating to the GSF files.",
 					},
-					// &cli.StringFlag{
-					//     Name: "out-uri",
-					//     Usage: "URI or pathname to write the output file to.",
-					// },
 				},
 				Action: func(cCtx *cli.Context) error {
-					// err := create_index(cCtx.String("gsf-uri"), cCtx.String("config-uri"), cCtx.String("out-uri"))
-					err := convert_gsf_list(cCtx.String("uri"), cCtx.String("config-uri"), cCtx.Bool("in-memory"), cCtx.Bool("metadata-only"))
+					err := convert_gsf_list(cCtx.String("uri"), cCtx.String("config-uri"), cCtx.String("outdir-uri"), cCtx.Bool("in-memory"), cCtx.Bool("metadata-only"))
 					return err
 				},
 			},

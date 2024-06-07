@@ -5,6 +5,7 @@ import (
 	"encoding/binary"
 	"errors"
 	"log"
+	"path/filepath"
 	"reflect"
 	"strconv"
 	"time"
@@ -1539,7 +1540,7 @@ func (pd *PingData) toTileDB(ph_array, s_md_array, si_md_array, bd_array *tiledb
 // as the dimensional axes. The rationale is for input into algorithms that require
 // input based on the sensor configuration; such as a beam adjacency filter that
 // operates on a ping by ping basis.
-func (g *GsfFile) SbpToTileDB(fi *FileInfo, config_uri string) error {
+func (g *GsfFile) SbpToTileDB(fi *FileInfo, config_uri, outdir_uri string) error {
 	var (
 		ping_data       PingData
 		ping_data_chunk PingData
@@ -1617,10 +1618,11 @@ func (g *GsfFile) SbpToTileDB(fi *FileInfo, config_uri string) error {
 	defer bd_ctx.Free()
 
 	// output locations
-	ph_uri := g.Uri + "-ping-header.tiledb"
-	s_md_uri := g.Uri + "-sensor-metadata.tiledb"
-	si_md_uri := g.Uri + "-sensor-imagery-metadata.tiledb"
-	bd_uri := g.Uri + "-beam-data.tiledb"
+	_, fname := filepath.Split(g.Uri)
+	ph_uri := filepath.Join(outdir_uri, fname+"-ping-header.tiledb")
+	s_md_uri := filepath.Join(outdir_uri, fname+"-sensor-metadata.tiledb")
+	si_md_uri := filepath.Join(outdir_uri, fname+"-sensor-imagery-metadata.tiledb")
+	bd_uri := filepath.Join(outdir_uri, fname+"-beam-data.tiledb")
 
 	err = fi.pingTdbArrays(ph_ctx, s_md_ctx, si_md_ctx, bd_ctx, ph_uri, s_md_uri, si_md_uri, bd_uri)
 	if err != nil {
