@@ -509,11 +509,24 @@ func senImgTdbArray(ctx *tiledb.Context, array_uri string, npings uint64, sensor
 	return nil
 }
 
-func beamTdbArray(ctx *tiledb.Context, array_uri string, beam_subrecords []string, contains_intensity bool) error {
-	schema, err := baseLonLatSchema(ctx)
-	if err != nil {
-		errn := errors.New("Error creating base schema for beam array")
-		return errors.Join(err, errn)
+func beamTdbArray(ctx *tiledb.Context, array_uri string, beam_subrecords []string, contains_intensity, dense_bd bool, npings uint64, max_beams uint16) error {
+	var (
+		schema *tiledb.ArraySchema
+		err    error
+	)
+
+	if dense_bd {
+		schema, err = basePingBeamSchema(ctx, npings, max_beams)
+		if err != nil {
+			errn := errors.New("Error creating base dense schema for beam array")
+			return errors.Join(err, errn)
+		}
+	} else {
+		schema, err = baseLonLatSchema(ctx)
+		if err != nil {
+			errn := errors.New("Error creating base sparse schema for beam array")
+			return errors.Join(err, errn)
+		}
 	}
 	defer schema.Free()
 
@@ -553,12 +566,13 @@ func beamTdbArray(ctx *tiledb.Context, array_uri string, beam_subrecords []strin
 	return nil
 }
 
-func (fi *FileInfo) pingTdbArrays(ph_ctx, s_md_ctx, si_md_ctx, bd_ctx *tiledb.Context, ph_uri, s_md_uri, si_md_uri, bd_uri string) (err error) {
+func (fi *FileInfo) pingTdbArrays(ph_ctx, s_md_ctx, si_md_ctx, bd_ctx *tiledb.Context, ph_uri, s_md_uri, si_md_uri, bd_uri string, dense_bd bool) (err error) {
 	beam_subrecords := fi.SubRecord_Schema
 	contains_intensity := lo.Contains(beam_subrecords, SubRecordNames[INTENSITY_SERIES])
 	rec_name := RecordNames[SWATH_BATHYMETRY_PING]
 	npings := fi.Record_Counts[rec_name]
 	sensor_id := SubRecordID(fi.Metadata.Sensor_Info.Sensor_ID)
+	max_beams := fi.Metadata.Quality_Info.Min_Max_Beams[1]
 
 	err = phTdbArray(ph_ctx, ph_uri, npings)
 	if err != nil {
@@ -580,11 +594,102 @@ func (fi *FileInfo) pingTdbArrays(ph_ctx, s_md_ctx, si_md_ctx, bd_ctx *tiledb.Co
 		}
 	}
 
-	err = beamTdbArray(bd_ctx, bd_uri, beam_subrecords, contains_intensity)
+	err = beamTdbArray(bd_ctx, bd_uri, beam_subrecords, contains_intensity, dense_bd, npings, max_beams)
 	if err != nil {
 		err_ba := errors.New("Error creating TileDB beam array")
 		return errors.Join(err, err_ba)
 	}
 
 	return nil
+}
+
+func basePingBeamSchema(ctx *tiledb.Context, npings uint64, max_beams uint16) (schema *tiledb.ArraySchema, err error) {
+	// array domain
+	domain, err := tiledb.NewDomain(ctx)
+	if err != nil {
+		return nil, errors.Join(ErrCreateAttributeTdb, err)
+	}
+	defer domain.Free()
+
+	// want to create blocks of pings. no sense in tiling on the beam axis.
+	// better to keep beams as discrete pieces for each ping
+	ping_tile_sz := uint64(math.Min(float64(1000), float64(npings)))
+	beam_tile_sz := max_beams
+
+	// setup dimension options
+	// using a combination of delta filter (ascending rows) and zstandard
+	pdim, err := tiledb.NewDimension(ctx, "PING_ID", tiledb.TILEDB_UINT64, []uint64{0, npings - uint64(1)}, ping_tile_sz)
+	if err != nil {
+		return nil, errors.Join(ErrCreateAttributeTdb, err)
+	}
+	defer pdim.Free()
+
+	bdim, err := tiledb.NewDimension(ctx, "BEAM_ID", tiledb.TILEDB_UINT16, []uint16{0, max_beams - uint16(1)}, beam_tile_sz)
+	if err != nil {
+		return nil, errors.Join(ErrCreateAttributeTdb, err)
+	}
+	defer bdim.Free()
+
+	dim_filters, err := tiledb.NewFilterList(ctx)
+	if err != nil {
+		return nil, errors.Join(ErrCreateAttributeTdb, err)
+	}
+	defer dim_filters.Free()
+
+	// TODO; might be worth setting a window size
+	dim_f1, err := tiledb.NewFilter(ctx, tiledb.TILEDB_FILTER_POSITIVE_DELTA)
+	if err != nil {
+		return nil, errors.Join(ErrCreateAttributeTdb, err)
+	}
+	defer dim_f1.Free()
+
+	level := int32(16)
+	dim_f2, err := ZstdFilter(ctx, level)
+	if err != nil {
+		return nil, errors.Join(ErrCreateAttributeTdb, err)
+	}
+	defer dim_f2.Free()
+
+	// attach filters to the pipeline
+	err = AddFilters(dim_filters, dim_f1, dim_f2)
+	if err != nil {
+		return nil, errors.Join(ErrCreateAttributeTdb, err)
+	}
+	err = pdim.SetFilterList(dim_filters)
+	if err != nil {
+		return nil, errors.Join(ErrCreateAttributeTdb, err)
+	}
+
+	err = bdim.SetFilterList(dim_filters)
+	if err != nil {
+		return nil, errors.Join(ErrCreateAttributeTdb, err)
+	}
+
+	err = domain.AddDimensions(pdim, bdim)
+	if err != nil {
+		return nil, errors.Join(ErrCreateAttributeTdb, err)
+	}
+
+	schema, err = tiledb.NewArraySchema(ctx, tiledb.TILEDB_DENSE)
+	if err != nil {
+		return nil, errors.Join(ErrCreateAttributeTdb, err)
+	}
+
+	err = schema.SetDomain(domain)
+	if err != nil {
+		return nil, errors.Join(ErrCreateAttitudeTdb, err)
+	}
+
+	// cell and tile ordering was an arbitrary choice
+	err = schema.SetCellOrder(tiledb.TILEDB_ROW_MAJOR)
+	if err != nil {
+		return nil, errors.Join(ErrCreateAttributeTdb, err)
+	}
+
+	err = schema.SetTileOrder(tiledb.TILEDB_ROW_MAJOR)
+	if err != nil {
+		return nil, errors.Join(ErrCreateAttributeTdb, err)
+	}
+
+	return schema, nil
 }

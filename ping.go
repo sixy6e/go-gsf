@@ -1540,7 +1540,7 @@ func (pd *PingData) toTileDB(ph_array, s_md_array, si_md_array, bd_array *tiledb
 // as the dimensional axes. The rationale is for input into algorithms that require
 // input based on the sensor configuration; such as a beam adjacency filter that
 // operates on a ping by ping basis.
-func (g *GsfFile) SbpToTileDB(fi *FileInfo, config_uri, outdir_uri string) error {
+func (g *GsfFile) SbpToTileDB(fi *FileInfo, config_uri, outdir_uri string, dense_bd bool) error {
 	var (
 		ping_data       PingData
 		ping_data_chunk PingData
@@ -1624,7 +1624,7 @@ func (g *GsfFile) SbpToTileDB(fi *FileInfo, config_uri, outdir_uri string) error
 	si_md_uri := filepath.Join(outdir_uri, fname+"-sensor-imagery-metadata.tiledb")
 	bd_uri := filepath.Join(outdir_uri, fname+"-beam-data.tiledb")
 
-	err = fi.pingTdbArrays(ph_ctx, s_md_ctx, si_md_ctx, bd_ctx, ph_uri, s_md_uri, si_md_uri, bd_uri)
+	err = fi.pingTdbArrays(ph_ctx, s_md_ctx, si_md_ctx, bd_ctx, ph_uri, s_md_uri, si_md_uri, bd_uri, dense_bd)
 	if err != nil {
 		return errors.Join(err, errors.New("Error creating PingData TileDB arrays"))
 	}
@@ -1678,15 +1678,24 @@ func (g *GsfFile) SbpToTileDB(fi *FileInfo, config_uri, outdir_uri string) error
 	for _, chunk := range chunks {
 
 		n_pings := len(chunk)
-		number_beams = 0
-		for _, idx := range chunk {
-			number_beams += uint64(fi.Ping_Info[idx].Number_Beams)
-		}
 
 		// initialise beam arrays, backscatter, lonlat
 		// arrays for ping and beam numbers
-		ping_data_chunk = newPingData(n_pings, number_beams, sensor_id, sr_schema_c, contains_intensity)
-		ping_beam_ids = newPingBeamNumbers(int(number_beams))
+		if dense_bd {
+			number_beams = uint64(n_pings) * uint64(fi.Metadata.Quality_Info.Min_Max_Beams[1])
+			ping_data_chunk = newPingData(n_pings, number_beams, sensor_id, sr_schema_c, contains_intensity)
+			ping_beam_ids = newPingBeamNumbers(int(number_beams))
+		} else {
+			number_beams = 0
+			for _, idx := range chunk {
+				number_beams += uint64(fi.Ping_Info[idx].Number_Beams)
+			}
+			ping_data_chunk = newPingData(n_pings, number_beams, sensor_id, sr_schema_c, contains_intensity)
+			ping_beam_ids = newPingBeamNumbers(int(number_beams))
+		}
+
+		// for dense_ba, need to account for failed ping read and fill with nulls
+		// also need to account for adding null data for additional beams if ping.nbeams < max_beams
 
 		// loop over each ping for this chunk of pings
 		for _, idx := range chunk {
