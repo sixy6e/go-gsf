@@ -74,6 +74,7 @@ USAGE:
 OPTIONS:
    --gsf-uri value     URI or pathname to a GSF file.
    --config-uri value  URI or pathname to a TileDB config file.
+   --outdir-uri value  URI or pathname to an output directory.
    --in-memory         Read the entire contents of a GSF file into memory before processing. (default: false)
    --metadata-only     Only decode and export metadata relating to the GSF file. (default: false)
    --help, -h          show help
@@ -92,6 +93,7 @@ USAGE:
 OPTIONS:
    --uri value         URI or pathname to a directory containing gsf files.
    --config-uri value  URI or pathname to a TileDB config file.
+   --outdir-uri value  URI or pathname to an output directory.
    --in-memory         Read the entire contents of a GSF file into memory before processing. (default: false)
    --metadata-only     Only decode and export metadata relating to the GSF files. (default: false)
    --help, -h          show help
