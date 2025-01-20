@@ -1136,6 +1136,18 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 // writeBeamData serialises the beam data to a sparse TileDB array
 // using longitude and latitude as the dimensional axes.
 func (pd *PingData) writeBeamData(ctx *tiledb.Context, array *tiledb.Array, ping_beam_ids *PingBeamNumbers) error {
+	schema, err := array.Schema()
+	if err != nil {
+		errn := errors.New("Error retrieving array schema")
+		return errors.Join(err, errn)
+	}
+	defer schema.Free()
+
+	dense, err := schema.Type()
+	if err != nil {
+		return err
+	}
+
 	// query construction
 	query, err := tiledb.NewQuery(ctx, array)
 	if err != nil {
@@ -1144,10 +1156,29 @@ func (pd *PingData) writeBeamData(ctx *tiledb.Context, array *tiledb.Array, ping
 	}
 	defer query.Free()
 
-	err = query.SetLayout(tiledb.TILEDB_UNORDERED)
-	if err != nil {
-		errn := errors.New("Error setting TileDB layout")
-		return errors.Join(err, errn)
+	if dense == tiledb.TILEDB_DENSE {
+		err = query.SetLayout(tiledb.TILEDB_ROW_MAJOR)
+		if err != nil {
+			errn := errors.New("Error setting TileDB layout")
+			return errors.Join(err, errn)
+		}
+
+		ping_start := ping_beam_ids.PingNumber[0]
+		end_idx := len(ping_beam_ids.PingNumber) - 1
+		ping_end := ping_beam_ids.PingNumber[end_idx]
+
+		// this may require rethinking so that we ensure to get max beams as end beam
+		// want to ensure that max beams is written, not the number of beams for given ping
+		beam_end := ping_beam_ids.BeamNumber[end_idx]
+
+		rng_ping := tiledb.MakeRange(ping_start, ping_end)
+		rng_beam := tiledb.MakeRange(uint16(0), beam_end)
+	} else {
+		err = query.SetLayout(tiledb.TILEDB_UNORDERED)
+		if err != nil {
+			errn := errors.New("Error setting TileDB layout")
+			return errors.Join(err, errn)
+		}
 	}
 
 	// should make for simpler code, if reflect is used to get the type's
@@ -1156,16 +1187,30 @@ func (pd *PingData) writeBeamData(ctx *tiledb.Context, array *tiledb.Array, ping
 	// fine, albeit more code
 	// TODO; look at replacing most of the following with reflect
 
-	// dimensional axes buffers
+	// dimensional axes buffers (or attributes depending on sparse/dense array)
+	// X & Y for sparse array
 	_, err = query.SetDataBuffer("X", pd.Lon_lat.Longitude)
 	if err != nil {
-		errn := errors.New("Error setting TileDB data buffer for dimension: X")
+		errn := errors.New("Error setting TileDB data buffer for dimension/attribute: X")
 		return errors.Join(err, errn)
 	}
 
 	_, err = query.SetDataBuffer("Y", pd.Lon_lat.Latitude)
 	if err != nil {
-		errn := errors.New("Error setting TileDB data buffer for dimension: Y")
+		errn := errors.New("Error setting TileDB data buffer for dimension/attribute: Y")
+		return errors.Join(err, errn)
+	}
+
+	// ping and beam ids for dense array
+	_, err = query.SetDataBuffer("PingNumber", ping_beam_ids.PingNumber)
+	if err != nil {
+		errn := errors.New("Error setting TileDB data buffer for dimension/attribute: PingNumber")
+		return errors.Join(err, errn)
+	}
+
+	_, err = query.SetDataBuffer("BeamNumber", ping_beam_ids.BeamNumber)
+	if err != nil {
+		errn := errors.New("Error setting TileDB data buffer for dimension/attribute: BeamNumber")
 		return errors.Join(err, errn)
 	}
 
@@ -1397,19 +1442,6 @@ func (pd *PingData) writeBeamData(ctx *tiledb.Context, array *tiledb.Array, ping
 				return errors.Join(err, errn)
 			}
 		}
-	}
-
-	// ping and beam ids
-	_, err = query.SetDataBuffer("PingNumber", ping_beam_ids.PingNumber)
-	if err != nil {
-		errn := errors.New("Error setting TileDB data buffer for attribute: PingNumber")
-		return errors.Join(err, errn)
-	}
-
-	_, err = query.SetDataBuffer("BeamNumber", ping_beam_ids.BeamNumber)
-	if err != nil {
-		errn := errors.New("Error setting TileDB data buffer for attribute: BeamNumber")
-		return errors.Join(err, errn)
 	}
 
 	// write the data and flush
