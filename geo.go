@@ -41,6 +41,13 @@ type LonLat struct {
 	Latitude  []float64 `tiledb:"dtype=float64,ftype=dim" filters:"zstd(level=16)"`
 }
 
+// XY is purely for shortcutting the attribute creation of XY attributes when creating
+// dense arrays.
+type XY struct {
+	X []float64 `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
+	Y []float64 `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
+}
+
 // BeamsLonLat calculates arrays of longitude and latitude of len(along_track).
 // Most likely the func will change; potentially a method for ping data, header or GeoCoefficients.
 // For formulae details: https://gis.stackexchange.com/questions/75528/understanding-terms-in-length-of-degree-formula
