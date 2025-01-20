@@ -316,6 +316,26 @@ func beamAttachAttrs(schema *tiledb.ArraySchema, ctx *tiledb.Context, beam_subre
 		status         bool
 	)
 
+	// handle X & Y and PingNumber and BeamNumber as attributes depending on whether
+	// we're dealing with a dense or sparse array
+	dense, err := schema.Type()
+	if err != nil {
+		return err
+	}
+	if dense == tiledb.TILEDB_DENSE {
+		err = schemaAttrs(&XY{}, schema, ctx)
+		if err != nil {
+			err_pbn := errors.New("Error attaching X & Y attributes")
+			return errors.Join(err, ErrCreateAttributeTdb, err_pbn)
+		}
+	} else {
+		err = schemaAttrs(&PingBeamNumbers{}, schema, ctx)
+		if err != nil {
+			err_pbn := errors.New("Error attaching PingNumber & BeamNumber attributes")
+			return errors.Join(err, ErrCreateAttributeTdb, err_pbn)
+		}
+	}
+
 	ba := BeamArray{}
 	beam_names := make([]string, len(beam_subrecords))
 
@@ -369,11 +389,11 @@ func beamAttachAttrs(schema *tiledb.ArraySchema, ctx *tiledb.Context, beam_subre
 	}
 
 	// processing the basic ping info (ping id, beam id)
-	err = schemaAttrs(&PingBeamNumbers{}, schema, ctx)
-	if err != nil {
-		err_pbn := errors.New("Error attaching PingBeamNumbers attributes")
-		return errors.Join(err, ErrCreateAttributeTdb, err_pbn)
-	}
+	// err = schemaAttrs(&PingBeamNumbers{}, schema, ctx)
+	// if err != nil {
+	// 	err_pbn := errors.New("Error attaching PingBeamNumbers attributes")
+	// 	return errors.Join(err, ErrCreateAttributeTdb, err_pbn)
+	// }
 
 	return nil
 }
@@ -513,6 +533,7 @@ func beamTdbArray(ctx *tiledb.Context, array_uri string, beam_subrecords []strin
 	var (
 		schema *tiledb.ArraySchema
 		err    error
+		md     map[string]string
 	)
 
 	if dense_bd {
@@ -521,12 +542,14 @@ func beamTdbArray(ctx *tiledb.Context, array_uri string, beam_subrecords []strin
 			errn := errors.New("Error creating base dense schema for beam array")
 			return errors.Join(err, errn)
 		}
+		md = map[string]string{"PingNumber": "uint64", "BeamNumber": "uint64"}
 	} else {
 		schema, err = baseLonLatSchema(ctx)
 		if err != nil {
 			errn := errors.New("Error creating base sparse schema for beam array")
 			return errors.Join(err, errn)
 		}
+		md = map[string]string{"X": "float64", "Y": "float64"}
 	}
 	defer schema.Free()
 
@@ -556,7 +579,7 @@ func beamTdbArray(ctx *tiledb.Context, array_uri string, beam_subrecords []strin
 	}
 
 	// attach some metadata to preserve python pandas functionality
-	md := map[string]string{"X": "float64", "Y": "float64"}
+	// md := map[string]string{"X": "float64", "Y": "float64"}
 	key := "__pandas_index_dims"
 	err = WriteArrayMetadata(ctx, array_uri, key, md)
 	if err != nil {
@@ -618,13 +641,13 @@ func basePingBeamSchema(ctx *tiledb.Context, npings uint64, max_beams uint16) (s
 
 	// setup dimension options
 	// using a combination of delta filter (ascending rows) and zstandard
-	pdim, err := tiledb.NewDimension(ctx, "PING_ID", tiledb.TILEDB_UINT64, []uint64{0, npings - uint64(1)}, ping_tile_sz)
+	pdim, err := tiledb.NewDimension(ctx, "PingNumber", tiledb.TILEDB_UINT64, []uint64{0, npings - uint64(1)}, ping_tile_sz)
 	if err != nil {
 		return nil, errors.Join(ErrCreateAttributeTdb, err)
 	}
 	defer pdim.Free()
 
-	bdim, err := tiledb.NewDimension(ctx, "BEAM_ID", tiledb.TILEDB_UINT16, []uint16{0, max_beams - uint16(1)}, beam_tile_sz)
+	bdim, err := tiledb.NewDimension(ctx, "BeamNumber", tiledb.TILEDB_UINT16, []uint16{0, max_beams - uint16(1)}, beam_tile_sz)
 	if err != nil {
 		return nil, errors.Join(ErrCreateAttributeTdb, err)
 	}
