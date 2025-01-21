@@ -156,6 +156,16 @@ func (pb *PingBeamNumbers) appendPingBeam(ping_id uint64, number_beams uint16) e
 	return nil
 }
 
+func (pb *PingBeamNumbers) padPingBeam(ping_id uint64, number_beams uint16, size uint16) error {
+	n := number_beams + size
+	for i := number_beams; i < n; i++ {
+		pb.PingNumber = append(pb.PingNumber, ping_id)
+		pb.BeamNumber = append(pb.BeamNumber, i)
+	}
+
+	return nil
+}
+
 func newPingBeamNumbers(number_beams int) (ping_beam_ids PingBeamNumbers) {
 	ping_id := make([]uint64, 0, number_beams)
 	beam_id := make([]uint16, 0, number_beams)
@@ -1169,10 +1179,27 @@ func (pd *PingData) writeBeamData(ctx *tiledb.Context, array *tiledb.Array, ping
 
 		// this may require rethinking so that we ensure to get max beams as end beam
 		// want to ensure that max beams is written, not the number of beams for given ping
-		beam_end := ping_beam_ids.BeamNumber[end_idx]
+		beam_end_idx := len(ping_beam_ids.BeamNumber) - 1
+		beam_end := ping_beam_ids.BeamNumber[beam_end_idx]
 
 		rng_ping := tiledb.MakeRange(ping_start, ping_end)
 		rng_beam := tiledb.MakeRange(uint16(0), beam_end)
+
+		subarr, err := array.NewSubarray()
+		if err != nil {
+			errn := errors.New("Error creating TileDB NewSubarray")
+			return errors.Join(err, errn)
+		}
+		defer subarr.Free()
+
+		subarr.AddRangeByName("PingNumber", rng_ping)
+		subarr.AddRangeByName("BeamNumber", rng_beam)
+
+		err = query.SetSubarray(subarr)
+		if err != nil {
+			errn := errors.New("Error setting TileDB Subarray")
+			return errors.Join(err, errn)
+		}
 	} else {
 		err = query.SetLayout(tiledb.TILEDB_UNORDERED)
 		if err != nil {
@@ -1754,6 +1781,14 @@ func (g *GsfFile) SbpToTileDB(fi *FileInfo, config_uri, outdir_uri string, dense
 			_ = ping_beam_ids.appendPingBeam(idx, pinfo.Number_Beams)
 			_ = ping_data_chunk.appendPingData(&ping_data, contains_intensity, sensor_id, sr_schema_c)
 			_ = ping_data_chunk.fillNulls(&ping_data)
+
+			if dense_bd {
+				pad_size := fi.Metadata.Quality_Info.Min_Max_Beams[1] - pinfo.Number_Beams
+				if pad_size > uint16(0) {
+					_ = ping_data_chunk.padDense(pad_size)
+					_ = ping_beam_ids.padPingBeam(idx, pinfo.Number_Beams, pad_size)
+				}
+			}
 		}
 
 		// serialise chunk to the TileDB array
