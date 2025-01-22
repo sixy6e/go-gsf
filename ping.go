@@ -130,7 +130,7 @@ func newBeamArray(number_beams int, beam_names []string) (beam_array BeamArray) 
 
 type PingBeamNumbers struct {
 	PingNumber []uint64 `tiledb:"dtype=uint64,ftype=attr" filters:"zstd(level=16)"`
-	BeamNumber []uint16 `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	BeamNumber []uint64 `tiledb:"dtype=uint64,ftype=attr" filters:"zstd(level=16)"`
 }
 
 // appendPingBeam appends the ping and beam numbers to for a given ping
@@ -150,7 +150,23 @@ type PingBeamNumbers struct {
 func (pb *PingBeamNumbers) appendPingBeam(ping_id uint64, number_beams uint16) error {
 	for i := uint16(0); i < number_beams; i++ {
 		pb.PingNumber = append(pb.PingNumber, ping_id)
-		pb.BeamNumber = append(pb.BeamNumber, i)
+		pb.BeamNumber = append(pb.BeamNumber, uint64(i))
+	}
+
+	return nil
+}
+
+// padPingBeam pads the ping and beam number slices by a given size.
+// This padding is only applied when the beam data array is to be output as
+// a dense TileDB array.
+// Why is padding required? Because the number of beams for each ping
+// can differ from one another. Padding makes the BeamNumber dimensional axis
+// consistent across all pings.
+func (pb *PingBeamNumbers) padPingBeam(ping_id uint64, number_beams uint16, size uint16) error {
+	n := number_beams + size
+	for i := number_beams; i < n; i++ {
+		pb.PingNumber = append(pb.PingNumber, ping_id)
+		pb.BeamNumber = append(pb.BeamNumber, uint64(i))
 	}
 
 	return nil
@@ -158,7 +174,7 @@ func (pb *PingBeamNumbers) appendPingBeam(ping_id uint64, number_beams uint16) e
 
 func newPingBeamNumbers(number_beams int) (ping_beam_ids PingBeamNumbers) {
 	ping_id := make([]uint64, 0, number_beams)
-	beam_id := make([]uint16, 0, number_beams)
+	beam_id := make([]uint64, 0, number_beams)
 	ping_beam_ids = PingBeamNumbers{ping_id, beam_id}
 
 	return ping_beam_ids
@@ -1136,6 +1152,18 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 // writeBeamData serialises the beam data to a sparse TileDB array
 // using longitude and latitude as the dimensional axes.
 func (pd *PingData) writeBeamData(ctx *tiledb.Context, array *tiledb.Array, ping_beam_ids *PingBeamNumbers) error {
+	schema, err := array.Schema()
+	if err != nil {
+		errn := errors.New("Error retrieving array schema")
+		return errors.Join(err, errn)
+	}
+	defer schema.Free()
+
+	arr_type, err := schema.Type()
+	if err != nil {
+		return err
+	}
+
 	// query construction
 	query, err := tiledb.NewQuery(ctx, array)
 	if err != nil {
@@ -1144,10 +1172,46 @@ func (pd *PingData) writeBeamData(ctx *tiledb.Context, array *tiledb.Array, ping
 	}
 	defer query.Free()
 
-	err = query.SetLayout(tiledb.TILEDB_UNORDERED)
-	if err != nil {
-		errn := errors.New("Error setting TileDB layout")
-		return errors.Join(err, errn)
+	if arr_type == tiledb.TILEDB_DENSE {
+		err = query.SetLayout(tiledb.TILEDB_ROW_MAJOR)
+		if err != nil {
+			errn := errors.New("Error setting TileDB layout")
+			return errors.Join(err, errn)
+		}
+
+		ping_start := ping_beam_ids.PingNumber[0]
+		end_idx := len(ping_beam_ids.PingNumber) - 1
+		ping_end := ping_beam_ids.PingNumber[end_idx]
+
+		// this may require rethinking so that we ensure to get max beams as end beam
+		// want to ensure that max beams is written, not the number of beams for given ping
+		beam_end_idx := len(ping_beam_ids.BeamNumber) - 1
+		beam_end := ping_beam_ids.BeamNumber[beam_end_idx]
+
+		rng_ping := tiledb.MakeRange(ping_start, ping_end)
+		rng_beam := tiledb.MakeRange(uint64(0), beam_end)
+
+		subarr, err := array.NewSubarray()
+		if err != nil {
+			errn := errors.New("Error creating TileDB NewSubarray")
+			return errors.Join(err, errn)
+		}
+		defer subarr.Free()
+
+		subarr.AddRangeByName("PingNumber", rng_ping)
+		subarr.AddRangeByName("BeamNumber", rng_beam)
+
+		err = query.SetSubarray(subarr)
+		if err != nil {
+			errn := errors.New("Error setting TileDB Subarray")
+			return errors.Join(err, errn)
+		}
+	} else {
+		err = query.SetLayout(tiledb.TILEDB_UNORDERED)
+		if err != nil {
+			errn := errors.New("Error setting TileDB layout")
+			return errors.Join(err, errn)
+		}
 	}
 
 	// should make for simpler code, if reflect is used to get the type's
@@ -1156,17 +1220,33 @@ func (pd *PingData) writeBeamData(ctx *tiledb.Context, array *tiledb.Array, ping
 	// fine, albeit more code
 	// TODO; look at replacing most of the following with reflect
 
-	// dimensional axes buffers
+	// dimensional axes buffers (or attributes depending on sparse/dense array)
+	// X & Y for sparse array
 	_, err = query.SetDataBuffer("X", pd.Lon_lat.Longitude)
 	if err != nil {
-		errn := errors.New("Error setting TileDB data buffer for dimension: X")
+		errn := errors.New("Error setting TileDB data buffer for dimension/attribute: X")
 		return errors.Join(err, errn)
 	}
 
 	_, err = query.SetDataBuffer("Y", pd.Lon_lat.Latitude)
 	if err != nil {
-		errn := errors.New("Error setting TileDB data buffer for dimension: Y")
+		errn := errors.New("Error setting TileDB data buffer for dimension/attribute: Y")
 		return errors.Join(err, errn)
+	}
+
+	if arr_type != tiledb.TILEDB_DENSE {
+		// ping and beam ids buffers are only set for sparse arrays
+		_, err = query.SetDataBuffer("PingNumber", ping_beam_ids.PingNumber)
+		if err != nil {
+			errn := errors.New("Error setting TileDB data buffer for dimension/attribute: PingNumber")
+			return errors.Join(err, errn)
+		}
+
+		_, err = query.SetDataBuffer("BeamNumber", ping_beam_ids.BeamNumber)
+		if err != nil {
+			errn := errors.New("Error setting TileDB data buffer for dimension/attribute: BeamNumber")
+			return errors.Join(err, errn)
+		}
 	}
 
 	// beam array buffers
@@ -1299,7 +1379,7 @@ func (pd *PingData) writeBeamData(ctx *tiledb.Context, array *tiledb.Array, ping
 			n_obs := uint64(len(pd.Lon_lat.Longitude))
 			arr_offset := make([]uint64, n_obs)
 			offset := uint64(0)
-			bytes_val := uint64(4) // may look confusing with uint64, so 4*bytes for float32
+			bytes_val := uint64(8) // may look confusing with uint64, so 8*bytes for float64
 
 			for i := uint64(0); i < n_obs; i++ {
 				arr_offset[i] = offset
@@ -1397,19 +1477,6 @@ func (pd *PingData) writeBeamData(ctx *tiledb.Context, array *tiledb.Array, ping
 				return errors.Join(err, errn)
 			}
 		}
-	}
-
-	// ping and beam ids
-	_, err = query.SetDataBuffer("PingNumber", ping_beam_ids.PingNumber)
-	if err != nil {
-		errn := errors.New("Error setting TileDB data buffer for attribute: PingNumber")
-		return errors.Join(err, errn)
-	}
-
-	_, err = query.SetDataBuffer("BeamNumber", ping_beam_ids.BeamNumber)
-	if err != nil {
-		errn := errors.New("Error setting TileDB data buffer for attribute: BeamNumber")
-		return errors.Join(err, errn)
 	}
 
 	// write the data and flush
@@ -1540,7 +1607,7 @@ func (pd *PingData) toTileDB(ph_array, s_md_array, si_md_array, bd_array *tiledb
 // as the dimensional axes. The rationale is for input into algorithms that require
 // input based on the sensor configuration; such as a beam adjacency filter that
 // operates on a ping by ping basis.
-func (g *GsfFile) SbpToTileDB(fi *FileInfo, config_uri, outdir_uri string) error {
+func (g *GsfFile) SbpToTileDB(fi *FileInfo, config_uri, outdir_uri string, dense_bd bool) error {
 	var (
 		ping_data       PingData
 		ping_data_chunk PingData
@@ -1624,7 +1691,7 @@ func (g *GsfFile) SbpToTileDB(fi *FileInfo, config_uri, outdir_uri string) error
 	si_md_uri := filepath.Join(outdir_uri, fname+"-sensor-imagery-metadata.tiledb")
 	bd_uri := filepath.Join(outdir_uri, fname+"-beam-data.tiledb")
 
-	err = fi.pingTdbArrays(ph_ctx, s_md_ctx, si_md_ctx, bd_ctx, ph_uri, s_md_uri, si_md_uri, bd_uri)
+	err = fi.pingTdbArrays(ph_ctx, s_md_ctx, si_md_ctx, bd_ctx, ph_uri, s_md_uri, si_md_uri, bd_uri, dense_bd)
 	if err != nil {
 		return errors.Join(err, errors.New("Error creating PingData TileDB arrays"))
 	}
@@ -1678,15 +1745,24 @@ func (g *GsfFile) SbpToTileDB(fi *FileInfo, config_uri, outdir_uri string) error
 	for _, chunk := range chunks {
 
 		n_pings := len(chunk)
-		number_beams = 0
-		for _, idx := range chunk {
-			number_beams += uint64(fi.Ping_Info[idx].Number_Beams)
-		}
 
 		// initialise beam arrays, backscatter, lonlat
 		// arrays for ping and beam numbers
-		ping_data_chunk = newPingData(n_pings, number_beams, sensor_id, sr_schema_c, contains_intensity)
-		ping_beam_ids = newPingBeamNumbers(int(number_beams))
+		if dense_bd {
+			number_beams = uint64(n_pings) * uint64(fi.Metadata.Quality_Info.Min_Max_Beams[1])
+			ping_data_chunk = newPingData(n_pings, number_beams, sensor_id, sr_schema_c, contains_intensity)
+			ping_beam_ids = newPingBeamNumbers(int(number_beams))
+		} else {
+			number_beams = 0
+			for _, idx := range chunk {
+				number_beams += uint64(fi.Ping_Info[idx].Number_Beams)
+			}
+			ping_data_chunk = newPingData(n_pings, number_beams, sensor_id, sr_schema_c, contains_intensity)
+			ping_beam_ids = newPingBeamNumbers(int(number_beams))
+		}
+
+		// for dense_ba, need to account for failed ping read and fill with nulls
+		// also need to account for adding null data for additional beams if ping.nbeams < max_beams
 
 		// loop over each ping for this chunk of pings
 		for _, idx := range chunk {
@@ -1713,6 +1789,14 @@ func (g *GsfFile) SbpToTileDB(fi *FileInfo, config_uri, outdir_uri string) error
 			_ = ping_beam_ids.appendPingBeam(idx, pinfo.Number_Beams)
 			_ = ping_data_chunk.appendPingData(&ping_data, contains_intensity, sensor_id, sr_schema_c)
 			_ = ping_data_chunk.fillNulls(&ping_data)
+
+			if dense_bd {
+				pad_size := fi.Metadata.Quality_Info.Min_Max_Beams[1] - pinfo.Number_Beams
+				if pad_size > uint16(0) {
+					_ = ping_data_chunk.padDense(pad_size)
+					_ = ping_beam_ids.padPingBeam(idx, pinfo.Number_Beams, pad_size)
+				}
+			}
 		}
 
 		// serialise chunk to the TileDB array

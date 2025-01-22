@@ -38,6 +38,7 @@ Most of the internal guts of the GSF data (stored as records) can be mapped into
 
 The beam data, including the backscatter data, is structured as a TileDB sparse array.
 This beam sparse array, could also be structured as a dense array, using [ping, beam] as the dimensional axes, which may prove useful for other purposes. For instance, algorithms that require input based on the sensor configuration; such as a beam adjacency filter that operates on a ping by ping basis.
+To structure the beam data as a dense array, use the *--dense* command line flag.
 The sound velocity profile and attitude data, are structured as dense TileDB arrays, using the [row number] as the dimensional axis.
 The sensor metadata, sensor imagery metadata (if backscatter is contained within the GSF file), and the ping header data are structured as dense TileDB arrays using the [Ping ID] as the dimensional axis.
 The ping header could also be structured as a sparse array using [lon, lat] as the dimensional axes.
@@ -77,6 +78,7 @@ OPTIONS:
    --outdir-uri value  URI or pathname to an output directory.
    --in-memory         Read the entire contents of a GSF file into memory before processing. (default: false)
    --metadata-only     Only decode and export metadata relating to the GSF file. (default: false)
+   --dense             Create a dense TileDB array schema for the beam data. Default is sparse. (default: false)
    --help, -h          show help
 ```
 
@@ -96,5 +98,6 @@ OPTIONS:
    --outdir-uri value  URI or pathname to an output directory.
    --in-memory         Read the entire contents of a GSF file into memory before processing. (default: false)
    --metadata-only     Only decode and export metadata relating to the GSF files. (default: false)
+   --dense             Create a dense TileDB array schema for the beam data. Default is sparse. (default: false)
    --help, -h          show help
 ```

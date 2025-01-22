@@ -14,7 +14,7 @@ import (
 	"github.com/sixy6e/go-gsf"
 )
 
-func convert_gsf(gsf_uri, config_uri, outdir_uri string, in_memory, metadata_only bool) error {
+func convert_gsf(gsf_uri, config_uri, outdir_uri string, in_memory, metadata_only, dense bool) error {
 	var (
 		out_uri string
 		err     error
@@ -74,7 +74,7 @@ func convert_gsf(gsf_uri, config_uri, outdir_uri string, in_memory, metadata_onl
 		}
 
 		log.Println("Reading and writing swath bathymetry ping data")
-		err = src.SbpToTileDB(&file_info, config_uri, outdir_uri)
+		err = src.SbpToTileDB(&file_info, config_uri, outdir_uri, dense)
 		if err != nil {
 			return err
 		}
@@ -85,7 +85,7 @@ func convert_gsf(gsf_uri, config_uri, outdir_uri string, in_memory, metadata_onl
 	return nil
 }
 
-func convert_gsf_list(uri, config_uri, outdir_uri string, in_memory, metadata_only bool) error {
+func convert_gsf_list(uri, config_uri, outdir_uri string, in_memory, metadata_only, dense bool) error {
 	log.Println("Searching uri:", uri)
 	items := gsf.FindGsf(uri, config_uri)
 	log.Println("Number of GSFs to process:", len(items))
@@ -102,7 +102,7 @@ func convert_gsf_list(uri, config_uri, outdir_uri string, in_memory, metadata_on
 	for _, name := range items {
 		item_uri := name
 		pool.Submit(func() {
-			_ = convert_gsf(item_uri, config_uri, outdir_uri, in_memory, metadata_only)
+			_ = convert_gsf(item_uri, config_uri, outdir_uri, in_memory, metadata_only, dense)
 			// if err != nil {
 			//     return err
 			// }
@@ -138,9 +138,13 @@ func main() {
 						Name:  "metadata-only",
 						Usage: "Only decode and export metadata relating to the GSF file.",
 					},
+					&cli.BoolFlag{
+						Name:  "dense",
+						Usage: "Create a dense TileDB array schema for the beam data. Default is sparse.",
+					},
 				},
 				Action: func(cCtx *cli.Context) error {
-					err := convert_gsf(cCtx.String("gsf-uri"), cCtx.String("config-uri"), cCtx.String("outdir-uri"), cCtx.Bool("in-memory"), cCtx.Bool("metadata-only"))
+					err := convert_gsf(cCtx.String("gsf-uri"), cCtx.String("config-uri"), cCtx.String("outdir-uri"), cCtx.Bool("in-memory"), cCtx.Bool("metadata-only"), cCtx.Bool("dense"))
 					return err
 				},
 			},
@@ -167,9 +171,13 @@ func main() {
 						Name:  "metadata-only",
 						Usage: "Only decode and export metadata relating to the GSF files.",
 					},
+					&cli.BoolFlag{
+						Name:  "dense",
+						Usage: "Create a dense TileDB array schema for the beam data. Default is sparse.",
+					},
 				},
 				Action: func(cCtx *cli.Context) error {
-					err := convert_gsf_list(cCtx.String("uri"), cCtx.String("config-uri"), cCtx.String("outdir-uri"), cCtx.Bool("in-memory"), cCtx.Bool("metadata-only"))
+					err := convert_gsf_list(cCtx.String("uri"), cCtx.String("config-uri"), cCtx.String("outdir-uri"), cCtx.Bool("in-memory"), cCtx.Bool("metadata-only"), cCtx.Bool("dense"))
 					return err
 				},
 			},
