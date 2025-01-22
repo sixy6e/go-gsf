@@ -626,6 +626,11 @@ func (fi *FileInfo) pingTdbArrays(ph_ctx, s_md_ctx, si_md_ctx, bd_ctx *tiledb.Co
 	return nil
 }
 
+// basePingBeamSchema sets up a base schema using PingNumber and BeamNumber
+// as the dimensional axes.
+// Doesn't attach any attributes.
+// Used for the beam array data and if it exists, the brb intensity data.
+// The schema is set to row-major for both cell and tile ordering
 func basePingBeamSchema(ctx *tiledb.Context, npings uint64, max_beams uint16) (schema *tiledb.ArraySchema, err error) {
 	// array domain
 	domain, err := tiledb.NewDomain(ctx)

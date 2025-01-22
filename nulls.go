@@ -159,6 +159,14 @@ func (pd *PingData) fillNulls(singlePing *PingData) error {
 	return nil
 }
 
+// padDense pads the BeamArray, LatLon and BrbIntensity structures and their
+// numerous slices by a given size.
+// This padding is only applied when the beam data array is to be output as
+// a dense TileDB array.
+// Appropriate null values are inserted for each attribute.
+// Why is padding required? Because the number of beams for each ping
+// can differ from one another. Padding makes the BeamNumber dimensional axis
+// consistent across all pings.
 func (pd *PingData) padDense(size uint16) error {
 	for _, name := range pd.ba_subrecords {
 		subr_id := BeamDataName2SubRecordID[name]

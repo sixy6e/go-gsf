@@ -156,6 +156,12 @@ func (pb *PingBeamNumbers) appendPingBeam(ping_id uint64, number_beams uint16) e
 	return nil
 }
 
+// padPingBeam pads the ping and beam number slices by a given size.
+// This padding is only applied when the beam data array is to be output as
+// a dense TileDB array.
+// Why is padding required? Because the number of beams for each ping
+// can differ from one another. Padding makes the BeamNumber dimensional axis
+// consistent across all pings.
 func (pb *PingBeamNumbers) padPingBeam(ping_id uint64, number_beams uint16, size uint16) error {
 	n := number_beams + size
 	for i := number_beams; i < n; i++ {
