@@ -1373,7 +1373,7 @@ func (pd *PingData) writeBeamData(ctx *tiledb.Context, array *tiledb.Array, ping
 			n_obs := uint64(len(pd.Lon_lat.Longitude))
 			arr_offset := make([]uint64, n_obs)
 			offset := uint64(0)
-			bytes_val := uint64(4) // may look confusing with uint64, so 4*bytes for float32
+			bytes_val := uint64(8) // may look confusing with uint64, so 8*bytes for float64
 
 			for i := uint64(0); i < n_obs; i++ {
 				arr_offset[i] = offset
