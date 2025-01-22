@@ -637,7 +637,7 @@ func basePingBeamSchema(ctx *tiledb.Context, npings uint64, max_beams uint16) (s
 	// want to create blocks of pings. no sense in tiling on the beam axis.
 	// better to keep beams as discrete pieces for each ping
 	ping_tile_sz := uint64(math.Min(float64(1000), float64(npings)))
-	beam_tile_sz := max_beams
+	beam_tile_sz := uint64(max_beams)
 
 	// setup dimension options
 	// using a combination of delta filter (ascending rows) and zstandard
@@ -647,7 +647,7 @@ func basePingBeamSchema(ctx *tiledb.Context, npings uint64, max_beams uint16) (s
 	}
 	defer pdim.Free()
 
-	bdim, err := tiledb.NewDimension(ctx, "BeamNumber", tiledb.TILEDB_UINT16, []uint16{0, max_beams - uint16(1)}, beam_tile_sz)
+	bdim, err := tiledb.NewDimension(ctx, "BeamNumber", tiledb.TILEDB_UINT64, []uint64{0, uint64(max_beams) - uint64(1)}, beam_tile_sz)
 	if err != nil {
 		return nil, errors.Join(ErrCreateAttributeTdb, err)
 	}
