@@ -130,7 +130,7 @@ func newBeamArray(number_beams int, beam_names []string) (beam_array BeamArray) 
 
 type PingBeamNumbers struct {
 	PingNumber []uint64 `tiledb:"dtype=uint64,ftype=attr" filters:"zstd(level=16)"`
-	BeamNumber []uint16 `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	BeamNumber []uint64 `tiledb:"dtype=uint64,ftype=attr" filters:"zstd(level=16)"`
 }
 
 // appendPingBeam appends the ping and beam numbers to for a given ping
@@ -150,7 +150,7 @@ type PingBeamNumbers struct {
 func (pb *PingBeamNumbers) appendPingBeam(ping_id uint64, number_beams uint16) error {
 	for i := uint16(0); i < number_beams; i++ {
 		pb.PingNumber = append(pb.PingNumber, ping_id)
-		pb.BeamNumber = append(pb.BeamNumber, i)
+		pb.BeamNumber = append(pb.BeamNumber, uint64(i))
 	}
 
 	return nil
@@ -160,7 +160,7 @@ func (pb *PingBeamNumbers) padPingBeam(ping_id uint64, number_beams uint16, size
 	n := number_beams + size
 	for i := number_beams; i < n; i++ {
 		pb.PingNumber = append(pb.PingNumber, ping_id)
-		pb.BeamNumber = append(pb.BeamNumber, i)
+		pb.BeamNumber = append(pb.BeamNumber, uint64(i))
 	}
 
 	return nil
@@ -168,7 +168,7 @@ func (pb *PingBeamNumbers) padPingBeam(ping_id uint64, number_beams uint16, size
 
 func newPingBeamNumbers(number_beams int) (ping_beam_ids PingBeamNumbers) {
 	ping_id := make([]uint64, 0, number_beams)
-	beam_id := make([]uint16, 0, number_beams)
+	beam_id := make([]uint64, 0, number_beams)
 	ping_beam_ids = PingBeamNumbers{ping_id, beam_id}
 
 	return ping_beam_ids
@@ -1153,7 +1153,7 @@ func (pd *PingData) writeBeamData(ctx *tiledb.Context, array *tiledb.Array, ping
 	}
 	defer schema.Free()
 
-	dense, err := schema.Type()
+	arr_type, err := schema.Type()
 	if err != nil {
 		return err
 	}
@@ -1166,7 +1166,7 @@ func (pd *PingData) writeBeamData(ctx *tiledb.Context, array *tiledb.Array, ping
 	}
 	defer query.Free()
 
-	if dense == tiledb.TILEDB_DENSE {
+	if arr_type == tiledb.TILEDB_DENSE {
 		err = query.SetLayout(tiledb.TILEDB_ROW_MAJOR)
 		if err != nil {
 			errn := errors.New("Error setting TileDB layout")
@@ -1183,7 +1183,7 @@ func (pd *PingData) writeBeamData(ctx *tiledb.Context, array *tiledb.Array, ping
 		beam_end := ping_beam_ids.BeamNumber[beam_end_idx]
 
 		rng_ping := tiledb.MakeRange(ping_start, ping_end)
-		rng_beam := tiledb.MakeRange(uint16(0), beam_end)
+		rng_beam := tiledb.MakeRange(uint64(0), beam_end)
 
 		subarr, err := array.NewSubarray()
 		if err != nil {
@@ -1228,17 +1228,19 @@ func (pd *PingData) writeBeamData(ctx *tiledb.Context, array *tiledb.Array, ping
 		return errors.Join(err, errn)
 	}
 
-	// ping and beam ids for dense array
-	_, err = query.SetDataBuffer("PingNumber", ping_beam_ids.PingNumber)
-	if err != nil {
-		errn := errors.New("Error setting TileDB data buffer for dimension/attribute: PingNumber")
-		return errors.Join(err, errn)
-	}
+	if arr_type != tiledb.TILEDB_DENSE {
+		// ping and beam ids buffers are only set for sparse arrays
+		_, err = query.SetDataBuffer("PingNumber", ping_beam_ids.PingNumber)
+		if err != nil {
+			errn := errors.New("Error setting TileDB data buffer for dimension/attribute: PingNumber")
+			return errors.Join(err, errn)
+		}
 
-	_, err = query.SetDataBuffer("BeamNumber", ping_beam_ids.BeamNumber)
-	if err != nil {
-		errn := errors.New("Error setting TileDB data buffer for dimension/attribute: BeamNumber")
-		return errors.Join(err, errn)
+		_, err = query.SetDataBuffer("BeamNumber", ping_beam_ids.BeamNumber)
+		if err != nil {
+			errn := errors.New("Error setting TileDB data buffer for dimension/attribute: BeamNumber")
+			return errors.Join(err, errn)
+		}
 	}
 
 	// beam array buffers
