@@ -589,7 +589,7 @@ func beamTdbArray(ctx *tiledb.Context, array_uri string, beam_subrecords []strin
 	return nil
 }
 
-func (fi *FileInfo) pingTdbArrays(ph_ctx, s_md_ctx, si_md_ctx, bd_ctx *tiledb.Context, ph_uri, s_md_uri, si_md_uri, bd_uri string, dense_bd bool) (err error) {
+func (fi *FileInfo) pingTdbArrays(ctx *tiledb.Context, ph_uri, s_md_uri, si_md_uri, bd_uri string, dense_bd bool) (err error) {
 	beam_subrecords := fi.SubRecord_Schema
 	contains_intensity := lo.Contains(beam_subrecords, SubRecordNames[INTENSITY_SERIES])
 	rec_name := RecordNames[SWATH_BATHYMETRY_PING]
@@ -597,27 +597,27 @@ func (fi *FileInfo) pingTdbArrays(ph_ctx, s_md_ctx, si_md_ctx, bd_ctx *tiledb.Co
 	sensor_id := SubRecordID(fi.Metadata.Sensor_Info.Sensor_ID)
 	max_beams := fi.Metadata.Quality_Info.Min_Max_Beams[1]
 
-	err = phTdbArray(ph_ctx, ph_uri, npings)
+	err = phTdbArray(ctx, ph_uri, npings)
 	if err != nil {
 		err_ph := errors.New("Error creating PingHeaders TileDB array")
 		return errors.Join(err, err_ph)
 	}
 
-	err = senTdbArray(s_md_ctx, s_md_uri, npings, sensor_id)
+	err = senTdbArray(ctx, s_md_uri, npings, sensor_id)
 	if err != nil {
 		err_s := errors.New("Error creating SensorMetadata TileDB array")
 		return errors.Join(err, err_s)
 	}
 
 	if contains_intensity {
-		err = senImgTdbArray(si_md_ctx, si_md_uri, npings, sensor_id)
+		err = senImgTdbArray(ctx, si_md_uri, npings, sensor_id)
 		if err != nil {
 			err_si := errors.New("Error creating SensorImageryMetadata TileDB array")
 			return errors.Join(err, err_si)
 		}
 	}
 
-	err = beamTdbArray(bd_ctx, bd_uri, beam_subrecords, contains_intensity, dense_bd, npings, max_beams)
+	err = beamTdbArray(ctx, bd_uri, beam_subrecords, contains_intensity, dense_bd, npings, max_beams)
 	if err != nil {
 		err_ba := errors.New("Error creating TileDB beam array")
 		return errors.Join(err, err_ba)

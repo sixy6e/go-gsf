@@ -121,13 +121,13 @@ func convert_gsf(gsf_uri, config_uri, outdir_uri string, in_memory, metadata_onl
 		if err != nil {
 			return err
 		}
-		err = grp.AddMember(svp_name, "Attitude", true)
+		err = grp.AddMember(svp_name, "SVP", true)
 		if err != nil {
 			return err
 		}
 
 		log.Println("Reading and writing swath bathymetry ping data")
-		err = src.SbpToTileDB(&file_info, config_uri, outdir_uri, dense)
+		err = src.SbpToTileDB(&file_info, ctx, grp, outdir_uri, dense)
 		if err != nil {
 			return err
 		}

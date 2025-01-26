@@ -1554,20 +1554,20 @@ func (ph *PingHeaders) writePingHeaders(ctx *tiledb.Context, array *tiledb.Array
 // and PingBeamNumbers.
 // The ping metadata consists of the PingHeaders, sensor metadata, and
 // sensor imagery (if intensity exists)
-func (pd *PingData) toTileDB(ph_array, s_md_array, si_md_array, bd_array *tiledb.Array, ph_ctx, s_md_ctx, si_md_ctx, ba_ctx *tiledb.Context, ping_beam_ids *PingBeamNumbers, sensor_id SubRecordID, contains_intensity bool) error {
+func (pd *PingData) toTileDB(ph_array, s_md_array, si_md_array, bd_array *tiledb.Array, ctx *tiledb.Context, ping_beam_ids *PingBeamNumbers, sensor_id SubRecordID, contains_intensity bool) error {
 	ping_start := ping_beam_ids.PingNumber[0]
 	end_idx := len(ping_beam_ids.PingNumber) - 1
 	ping_end := ping_beam_ids.PingNumber[end_idx]
 
 	// PingHeaders
-	err := pd.Ping_headers.writePingHeaders(ph_ctx, ph_array, ping_start, ping_end)
+	err := pd.Ping_headers.writePingHeaders(ctx, ph_array, ping_start, ping_end)
 	if err != nil {
 		errn := errors.New("Error writing PingHeaders")
 		return errors.Join(err, errn)
 	}
 
 	// SensorMetadata
-	err = pd.Sensor_metadata.writeSensorMetadata(s_md_ctx, s_md_array, sensor_id, ping_start, ping_end)
+	err = pd.Sensor_metadata.writeSensorMetadata(ctx, s_md_array, sensor_id, ping_start, ping_end)
 	if err != nil {
 		errn := errors.New("Error writing SensorMetadata")
 		return errors.Join(err, errn)
@@ -1575,7 +1575,7 @@ func (pd *PingData) toTileDB(ph_array, s_md_array, si_md_array, bd_array *tiledb
 
 	// SensorImageryMetadata
 	if contains_intensity {
-		err = pd.Sensor_imagery_metadata.writeSensorImageryMetadata(si_md_ctx, si_md_array, sensor_id, ping_start, ping_end)
+		err = pd.Sensor_imagery_metadata.writeSensorImageryMetadata(ctx, si_md_array, sensor_id, ping_start, ping_end)
 		if err != nil {
 			errn := errors.New("Error writing SensorImageryMetadata")
 			return errors.Join(err, errn)
@@ -1583,7 +1583,7 @@ func (pd *PingData) toTileDB(ph_array, s_md_array, si_md_array, bd_array *tiledb
 	}
 
 	// beam array data; BeamArray, PingBeamNumbers, LonLat, BrbIntensity
-	err = pd.writeBeamData(ba_ctx, bd_array, ping_beam_ids)
+	err = pd.writeBeamData(ctx, bd_array, ping_beam_ids)
 	if err != nil {
 		errn := errors.New("Error writing beam data")
 		return errors.Join(err, errn)
@@ -1607,18 +1607,18 @@ func (pd *PingData) toTileDB(ph_array, s_md_array, si_md_array, bd_array *tiledb
 // as the dimensional axes. The rationale is for input into algorithms that require
 // input based on the sensor configuration; such as a beam adjacency filter that
 // operates on a ping by ping basis.
-func (g *GsfFile) SbpToTileDB(fi *FileInfo, config_uri, outdir_uri string, dense_bd bool) error {
+func (g *GsfFile) SbpToTileDB(fi *FileInfo, ctx *tiledb.Context, grp *tiledb.Group, outdir_uri string, dense_bd bool) error {
 	var (
 		ping_data       PingData
 		ping_data_chunk PingData
 		ping_beam_ids   PingBeamNumbers
-		config          *tiledb.Config
-		err             error
-		number_beams    uint64
+		// config          *tiledb.Config
+		err          error
+		number_beams uint64
 
 		// declaring these so they can be passed through to various
 		// funcs, even if no intensity data is present
-		si_md_ctx   *tiledb.Context
+		// si_md_ctx   *tiledb.Context
 		si_md_array *tiledb.Array
 	)
 	number_beams = 0
@@ -1641,65 +1641,87 @@ func (g *GsfFile) SbpToTileDB(fi *FileInfo, config_uri, outdir_uri string, dense
 	sensor_id := SubRecordID(fi.Metadata.Sensor_Info.Sensor_ID)
 
 	// get a generic config if no path provided
-	if config_uri == "" {
-		config, err = tiledb.NewConfig()
-		if err != nil {
-			return err
-		}
-	} else {
-		config, err = tiledb.LoadConfig(config_uri)
-		if err != nil {
-			return err
-		}
-	}
-	defer config.Free()
+	// if config_uri == "" {
+	// 	config, err = tiledb.NewConfig()
+	// 	if err != nil {
+	// 		return err
+	// 	}
+	// } else {
+	// 	config, err = tiledb.LoadConfig(config_uri)
+	// 	if err != nil {
+	// 		return err
+	// 	}
+	// }
+	// defer config.Free()
 
 	// PingHeaders
-	ph_ctx, err := tiledb.NewContext(config)
-	if err != nil {
-		return err
-	}
-	defer ph_ctx.Free()
+	// ph_ctx, err := tiledb.NewContext(config)
+	// if err != nil {
+	// 	return err
+	// }
+	// defer ph_ctx.Free()
 
 	// SensorMetadata
-	s_md_ctx, err := tiledb.NewContext(config)
-	if err != nil {
-		return err
-	}
-	defer s_md_ctx.Free()
+	// s_md_ctx, err := tiledb.NewContext(config)
+	// if err != nil {
+	// 	return err
+	// }
+	// defer s_md_ctx.Free()
 
 	// SensorImageryMetadata (only exists if intensity exists)
-	if contains_intensity {
-		si_md_ctx, err = tiledb.NewContext(config)
-		if err != nil {
-			return err
-		}
-		defer si_md_ctx.Free()
-	}
+	// if contains_intensity {
+	// 	si_md_ctx, err = tiledb.NewContext(config)
+	// 	if err != nil {
+	// 		return err
+	// 	}
+	// 	defer si_md_ctx.Free()
+	// }
 
 	// beam array data; BeamArray, LonLat, PingBeamNumbers, BrbIntensity
-	bd_ctx, err := tiledb.NewContext(config)
-	if err != nil {
-		return err
-	}
-	defer bd_ctx.Free()
+	// bd_ctx, err := tiledb.NewContext(config)
+	// if err != nil {
+	// 	return err
+	// }
+	// defer bd_ctx.Free()
 
 	// output locations
-	_, fname := filepath.Split(g.Uri)
-	ph_uri := filepath.Join(outdir_uri, fname+"-ping-header.tiledb")
-	s_md_uri := filepath.Join(outdir_uri, fname+"-sensor-metadata.tiledb")
-	si_md_uri := filepath.Join(outdir_uri, fname+"-sensor-imagery-metadata.tiledb")
-	bd_uri := filepath.Join(outdir_uri, fname+"-beam-data.tiledb")
+	// _, fname := filepath.Split(g.Uri)
+	ph_name := "PingHeader.tiledb"
+	ph_aname := "PingHeader"
+	s_md_name := "SensorMetadata.tiledb"
+	s_md_aname := "SensorMetadata"
+	si_md_name := "SensorImageryMetadata.tiledb"
+	si_md_aname := "SensorImageryMetadata"
+	bd_name := "BeamData.tiledb"
+	bd_aname := "BeamData"
+	ph_uri := filepath.Join(outdir_uri, ph_name)
+	s_md_uri := filepath.Join(outdir_uri, s_md_name)
+	si_md_uri := filepath.Join(outdir_uri, si_md_name)
+	bd_uri := filepath.Join(outdir_uri, bd_name)
 
-	err = fi.pingTdbArrays(ph_ctx, s_md_ctx, si_md_ctx, bd_ctx, ph_uri, s_md_uri, si_md_uri, bd_uri, dense_bd)
+	err = fi.pingTdbArrays(ctx, ph_uri, s_md_uri, si_md_uri, bd_uri, dense_bd)
 	if err != nil {
 		return errors.Join(err, errors.New("Error creating PingData TileDB arrays"))
+	}
+
+	// add arrays to tiledb group
+	err = grp.AddMember(ph_name, ph_aname, true)
+	if err != nil {
+		return errors.Join(err, errors.New("Error adding ping headers to group"))
+	}
+	err = grp.AddMember(s_md_name, s_md_aname, true)
+	if err != nil {
+		return errors.Join(err, errors.New("Error adding sensor metadata to group"))
+	}
+	err = grp.AddMember(bd_name, bd_aname, true)
+	if err != nil {
+		return errors.Join(err, errors.New("Error adding beam data to group"))
 	}
 
 	// open the arrays for writing
 
 	// PingHeaders
-	ph_array, err := ArrayOpen(ph_ctx, ph_uri, tiledb.TILEDB_WRITE)
+	ph_array, err := ArrayOpen(ctx, ph_uri, tiledb.TILEDB_WRITE)
 	if err != nil {
 		return errors.Join(err, ErrWriteBdTdb, errors.New("Error opening (w) PingHeaders TileDB array"))
 	}
@@ -1707,7 +1729,7 @@ func (g *GsfFile) SbpToTileDB(fi *FileInfo, config_uri, outdir_uri string, dense
 	defer ph_array.Close()
 
 	// SensorMetadata
-	s_md_array, err := ArrayOpen(s_md_ctx, s_md_uri, tiledb.TILEDB_WRITE)
+	s_md_array, err := ArrayOpen(ctx, s_md_uri, tiledb.TILEDB_WRITE)
 	if err != nil {
 		return errors.Join(err, ErrWriteBdTdb, errors.New("Error opening (w) SensorMetadata TileDB array"))
 	}
@@ -1716,7 +1738,12 @@ func (g *GsfFile) SbpToTileDB(fi *FileInfo, config_uri, outdir_uri string, dense
 
 	// SensorImageryMetadata (only exists if intensity exists)
 	if contains_intensity {
-		si_md_array, err = ArrayOpen(si_md_ctx, si_md_uri, tiledb.TILEDB_WRITE)
+		err = grp.AddMember(si_md_name, si_md_aname, true)
+		if err != nil {
+			return errors.Join(err, errors.New("Error adding sensor imagery metadata to group"))
+		}
+
+		si_md_array, err = ArrayOpen(ctx, si_md_uri, tiledb.TILEDB_WRITE)
 		if err != nil {
 			return errors.Join(err, ErrWriteBdTdb, errors.New("Error opening (w) SensorImageryMetadata TileDB array"))
 		}
@@ -1725,7 +1752,7 @@ func (g *GsfFile) SbpToTileDB(fi *FileInfo, config_uri, outdir_uri string, dense
 	}
 
 	// beam data; BeamArray, LonLat, PingBeamNumbers, BrbIntensity
-	bd_array, err := ArrayOpen(bd_ctx, bd_uri, tiledb.TILEDB_WRITE)
+	bd_array, err := ArrayOpen(ctx, bd_uri, tiledb.TILEDB_WRITE)
 	if err != nil {
 		return errors.Join(err, ErrWriteBdTdb, errors.New("Error opening (w) TileDB beam array"))
 	}
@@ -1805,10 +1832,7 @@ func (g *GsfFile) SbpToTileDB(fi *FileInfo, config_uri, outdir_uri string, dense
 			s_md_array,
 			si_md_array,
 			bd_array,
-			ph_ctx,
-			s_md_ctx,
-			si_md_ctx,
-			bd_ctx,
+			ctx,
 			&ping_beam_ids,
 			sensor_id,
 			contains_intensity,
