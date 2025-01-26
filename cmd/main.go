@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"runtime"
 
+	tiledb "github.com/TileDB-Inc/TileDB-Go"
 	"github.com/alitto/pond"
 	"github.com/urfave/cli/v2"
 
@@ -20,6 +21,7 @@ func convert_gsf(gsf_uri, config_uri, outdir_uri string, in_memory, metadata_onl
 		err     error
 		dir     string
 		file    string
+		config  *tiledb.Config
 	)
 
 	dir, file = filepath.Split(gsf_uri)
@@ -42,13 +44,6 @@ func convert_gsf(gsf_uri, config_uri, outdir_uri string, in_memory, metadata_onl
 		return err
 	}
 
-	log.Println("Writing proc-info")
-	out_uri = filepath.Join(outdir_uri, file+"-proc-info.json")
-	_, err = gsf.WriteJson(out_uri, config_uri, proc_info)
-	if err != nil {
-		return err
-	}
-
 	log.Println("Writing index")
 	out_uri = filepath.Join(outdir_uri, file+"-index.json")
 	_, err = gsf.WriteJson(out_uri, config_uri, file_info.Index)
@@ -57,18 +52,76 @@ func convert_gsf(gsf_uri, config_uri, outdir_uri string, in_memory, metadata_onl
 	}
 
 	if !metadata_only {
+		// get a generic config if no path provided
+		if config_uri == "" {
+			config, err = tiledb.NewConfig()
+			if err != nil {
+				return err
+			}
+		} else {
+			config, err = tiledb.LoadConfig(config_uri)
+			if err != nil {
+				return err
+			}
+		}
+
+		defer config.Free()
+
+		ctx, err := tiledb.NewContext(config)
+		if err != nil {
+			return err
+		}
+		defer ctx.Free()
+
+		grp_uri := filepath.Join(outdir_uri, file+".tiledb")
+		grp, err := tiledb.NewGroup(ctx, grp_uri)
+		if err != nil {
+			return err
+		}
+		defer grp.Free()
+
+		err = grp.Create()
+		if err != nil {
+			return err
+		}
+
+		log.Println("Writing GSF data processing information to group metadata")
+		jsn, err := gsf.JsonIndentDumps(proc_info)
+		if err != nil {
+			return err
+		}
+		err = grp.PutMetadata("Data-Processing-Information", jsn)
+		if err != nil {
+			return err
+		}
+		// out_uri = filepath.Join(outdir_uri, file+"-proc-info.json")
+		// _, err = gsf.WriteJson(out_uri, config_uri, proc_info)
+		// if err != nil {
+		// 	return err
+		// }
+
 		log.Println("Processing Attitude")
-		out_uri = filepath.Join(outdir_uri, file+"-attitude.tiledb")
+		att_name := "Attitude.tiledb"
+		out_uri = filepath.Join(outdir_uri, att_name)
 		att := src.AttitudeRecords(&file_info)
-		err = att.ToTileDB(out_uri, config_uri)
+		err = att.ToTileDB(out_uri, ctx)
+		if err != nil {
+			return err
+		}
+		err = grp.AddMember(att_name, "Attitude", true)
 		if err != nil {
 			return err
 		}
 
 		log.Println("Processing SVP")
-		out_uri = filepath.Join(outdir_uri, file+"-svp.tiledb")
+		svp_name := "SVP.tiledb"
+		out_uri = filepath.Join(outdir_uri, svp_name)
 		svp := src.SoundVelocityProfileRecords(&file_info)
-		err = svp.ToTileDB(out_uri, config_uri)
+		err = svp.ToTileDB(out_uri, ctx)
+		if err != nil {
+			return err
+		}
+		err = grp.AddMember(svp_name, "Attitude", true)
 		if err != nil {
 			return err
 		}
