@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"log"
 	"os"
 	"os/signal"
@@ -110,7 +111,7 @@ func convert_gsf(gsf_uri, config_uri, outdir_uri string, in_memory, metadata_onl
 		}
 		err = grp.AddMember(att_name, "Attitude", true)
 		if err != nil {
-			return err
+			return errors.Join(err, errors.New("Error adding attitude to group"))
 		}
 
 		log.Println("Processing SVP")
@@ -123,7 +124,7 @@ func convert_gsf(gsf_uri, config_uri, outdir_uri string, in_memory, metadata_onl
 		}
 		err = grp.AddMember(svp_name, "SVP", true)
 		if err != nil {
-			return err
+			return errors.Join(err, errors.New("Error adding svp to group"))
 		}
 
 		log.Println("Reading and writing swath bathymetry ping data")
