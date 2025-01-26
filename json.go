@@ -68,3 +68,14 @@ func JsonDumps(data any) (string, error) {
 
 	return string(jsn), nil
 }
+
+// JsonIndentDumps constructs a json string of the supplied data using an
+// indentation of four spaces.
+func JsonIndentDumps(data any) (string, error) {
+	jsn, err := json.MarshalIndent(data, "", "    ")
+	if err != nil {
+		return "", err
+	}
+
+	return string(jsn), nil
+}
