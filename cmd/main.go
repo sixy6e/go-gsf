@@ -83,7 +83,12 @@ func convert_gsf(gsf_uri, config_uri, outdir_uri string, in_memory, metadata_onl
 
 		err = grp.Create()
 		if err != nil {
-			return err
+			return errors.Join(err, errors.New("Error creating tiledb group"))
+		}
+
+		err = grp.Open(tiledb.TILEDB_WRITE)
+		if err != nil {
+			return errors.Join(err, errors.New("Error opening tiledb group in write mode"))
 		}
 
 		log.Println("Writing GSF data processing information to group metadata")
@@ -103,7 +108,7 @@ func convert_gsf(gsf_uri, config_uri, outdir_uri string, in_memory, metadata_onl
 
 		log.Println("Processing Attitude")
 		att_name := "Attitude.tiledb"
-		out_uri = filepath.Join(outdir_uri, att_name)
+		out_uri = filepath.Join(grp_uri, att_name)
 		att := src.AttitudeRecords(&file_info)
 		err = att.ToTileDB(out_uri, ctx)
 		if err != nil {
@@ -116,7 +121,7 @@ func convert_gsf(gsf_uri, config_uri, outdir_uri string, in_memory, metadata_onl
 
 		log.Println("Processing SVP")
 		svp_name := "SVP.tiledb"
-		out_uri = filepath.Join(outdir_uri, svp_name)
+		out_uri = filepath.Join(grp_uri, svp_name)
 		svp := src.SoundVelocityProfileRecords(&file_info)
 		err = svp.ToTileDB(out_uri, ctx)
 		if err != nil {
@@ -128,7 +133,7 @@ func convert_gsf(gsf_uri, config_uri, outdir_uri string, in_memory, metadata_onl
 		}
 
 		log.Println("Reading and writing swath bathymetry ping data")
-		err = src.SbpToTileDB(&file_info, ctx, grp, outdir_uri, dense)
+		err = src.SbpToTileDB(&file_info, ctx, grp, grp_uri, dense)
 		if err != nil {
 			return err
 		}
