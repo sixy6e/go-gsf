@@ -297,30 +297,30 @@ func (a *Attitude) schemaAttrs(schema *tiledb.ArraySchema, ctx *tiledb.Context) 
 // thing anyway.
 // Column structure:
 // [__tiledb_rows (dim), timestamp (attr), pitch (attr), roll (attr), heave (attr), heading (attr)].
-func (a *Attitude) ToTileDB(file_uri string, config_uri string) error {
-	var config *tiledb.Config
+func (a *Attitude) ToTileDB(file_uri string, ctx *tiledb.Context) error {
+	// var config *tiledb.Config
 	var err error
 
 	// get a generic config if no path provided
-	if config_uri == "" {
-		config, err = tiledb.NewConfig()
-		if err != nil {
-			return err
-		}
-	} else {
-		config, err = tiledb.LoadConfig(config_uri)
-		if err != nil {
-			return err
-		}
-	}
+	// if config_uri == "" {
+	// 	config, err = tiledb.NewConfig()
+	// 	if err != nil {
+	// 		return err
+	// 	}
+	// } else {
+	// 	config, err = tiledb.LoadConfig(config_uri)
+	// 	if err != nil {
+	// 		return err
+	// 	}
+	// }
 
-	defer config.Free()
+	// defer config.Free()
 
-	ctx, err := tiledb.NewContext(config)
-	if err != nil {
-		return err
-	}
-	defer ctx.Free()
+	// ctx, err := tiledb.NewContext(config)
+	// if err != nil {
+	// 	return err
+	// }
+	// defer ctx.Free()
 
 	nrows := uint64(len(a.Timestamp))
 	err = a.attitude_tiledb_array(file_uri, ctx, nrows)

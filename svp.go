@@ -378,9 +378,9 @@ func (s *SoundVelocityProfile) schemaAttrs(schema *tiledb.ArraySchema, ctx *tile
 // [__tiledb_rows (dim), observation_timestamp (attr), applied_timestamp (attr), longitude (attr), latitude (attr), depth (attr), sound_velocity (attr)].
 // The depth and sound_velocity attributes are variable length arrays that contain the
 // profile for the specific acquisition defined by observation timestamp, longitude and latitude.
-func (s *SoundVelocityProfile) ToTileDB(file_uri string, config_uri string) error {
+func (s *SoundVelocityProfile) ToTileDB(file_uri string, ctx *tiledb.Context) error {
 	var (
-		config     *tiledb.Config
+		// config     *tiledb.Config
 		err        error
 		arr_offset []uint64
 		offset     uint64
@@ -388,25 +388,25 @@ func (s *SoundVelocityProfile) ToTileDB(file_uri string, config_uri string) erro
 	)
 
 	// get a generic config if no path provided
-	if config_uri == "" {
-		config, err = tiledb.NewConfig()
-		if err != nil {
-			return err
-		}
-	} else {
-		config, err = tiledb.LoadConfig(config_uri)
-		if err != nil {
-			return err
-		}
-	}
+	// if config_uri == "" {
+	// 	config, err = tiledb.NewConfig()
+	// 	if err != nil {
+	// 		return err
+	// 	}
+	// } else {
+	// 	config, err = tiledb.LoadConfig(config_uri)
+	// 	if err != nil {
+	// 		return err
+	// 	}
+	// }
 
-	defer config.Free()
+	// defer config.Free()
 
-	ctx, err := tiledb.NewContext(config)
-	if err != nil {
-		return err
-	}
-	defer ctx.Free()
+	// ctx, err := tiledb.NewContext(config)
+	// if err != nil {
+	// 	return err
+	// }
+	// defer ctx.Free()
 
 	nrows := uint64(len(s.Observation_timestamp))
 	err = s.svp_tiledb_array(file_uri, ctx, nrows)
