@@ -44,6 +44,8 @@ type SoundVelocityProfile struct {
 	n_points              uint64
 }
 
+// svp_hdr contains the base information decoded from the SOUND_VELOCITY_PROFILE
+// record header.
 type svp_hdr struct {
 	Observation_timestamp time.Time
 	Applied_timestamp     time.Time
@@ -52,6 +54,8 @@ type svp_hdr struct {
 	N_points              uint64
 }
 
+// svp_header decodes the SOUND_VELOCITY_PROFILE record and constructs the
+// svp_hdr type.
 func svp_header(reader *bytes.Reader) (hdr svp_hdr) {
 	var (
 		base struct {
