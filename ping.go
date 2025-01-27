@@ -1612,13 +1612,11 @@ func (g *GsfFile) SbpToTileDB(fi *FileInfo, ctx *tiledb.Context, grp *tiledb.Gro
 		ping_data       PingData
 		ping_data_chunk PingData
 		ping_beam_ids   PingBeamNumbers
-		// config          *tiledb.Config
-		err          error
-		number_beams uint64
+		err             error
+		number_beams    uint64
 
 		// declaring these so they can be passed through to various
 		// funcs, even if no intensity data is present
-		// si_md_ctx   *tiledb.Context
 		si_md_array *tiledb.Array
 	)
 	number_beams = 0
@@ -1640,52 +1638,7 @@ func (g *GsfFile) SbpToTileDB(fi *FileInfo, ctx *tiledb.Context, grp *tiledb.Gro
 	contains_intensity := lo.Contains(sr_schema, SubRecordNames[INTENSITY_SERIES])
 	sensor_id := SubRecordID(fi.Metadata.Sensor_Info.Sensor_ID)
 
-	// get a generic config if no path provided
-	// if config_uri == "" {
-	// 	config, err = tiledb.NewConfig()
-	// 	if err != nil {
-	// 		return err
-	// 	}
-	// } else {
-	// 	config, err = tiledb.LoadConfig(config_uri)
-	// 	if err != nil {
-	// 		return err
-	// 	}
-	// }
-	// defer config.Free()
-
-	// PingHeaders
-	// ph_ctx, err := tiledb.NewContext(config)
-	// if err != nil {
-	// 	return err
-	// }
-	// defer ph_ctx.Free()
-
-	// SensorMetadata
-	// s_md_ctx, err := tiledb.NewContext(config)
-	// if err != nil {
-	// 	return err
-	// }
-	// defer s_md_ctx.Free()
-
-	// SensorImageryMetadata (only exists if intensity exists)
-	// if contains_intensity {
-	// 	si_md_ctx, err = tiledb.NewContext(config)
-	// 	if err != nil {
-	// 		return err
-	// 	}
-	// 	defer si_md_ctx.Free()
-	// }
-
-	// beam array data; BeamArray, LonLat, PingBeamNumbers, BrbIntensity
-	// bd_ctx, err := tiledb.NewContext(config)
-	// if err != nil {
-	// 	return err
-	// }
-	// defer bd_ctx.Free()
-
 	// output locations
-	// _, fname := filepath.Split(g.Uri)
 	ph_name := "PingHeader.tiledb"
 	ph_aname := "PingHeader"
 	s_md_name := "SensorMetadata.tiledb"

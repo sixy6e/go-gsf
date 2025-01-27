@@ -380,33 +380,11 @@ func (s *SoundVelocityProfile) schemaAttrs(schema *tiledb.ArraySchema, ctx *tile
 // profile for the specific acquisition defined by observation timestamp, longitude and latitude.
 func (s *SoundVelocityProfile) ToTileDB(file_uri string, ctx *tiledb.Context) error {
 	var (
-		// config     *tiledb.Config
 		err        error
 		arr_offset []uint64
 		offset     uint64
 		bytes_val  uint64
 	)
-
-	// get a generic config if no path provided
-	// if config_uri == "" {
-	// 	config, err = tiledb.NewConfig()
-	// 	if err != nil {
-	// 		return err
-	// 	}
-	// } else {
-	// 	config, err = tiledb.LoadConfig(config_uri)
-	// 	if err != nil {
-	// 		return err
-	// 	}
-	// }
-
-	// defer config.Free()
-
-	// ctx, err := tiledb.NewContext(config)
-	// if err != nil {
-	// 	return err
-	// }
-	// defer ctx.Free()
 
 	nrows := uint64(len(s.Observation_timestamp))
 	err = s.svp_tiledb_array(file_uri, ctx, nrows)
