@@ -1674,7 +1674,7 @@ func (g *GsfFile) SbpToTileDB(fi *FileInfo, ctx *tiledb.Context, grp *tiledb.Gro
 	// open the arrays for writing
 
 	// PingHeaders
-	ph_array, err := ArrayOpen(ctx, ph_uri, tiledb.TILEDB_WRITE)
+	ph_array, err := ArrayOpenWrite(ctx, ph_uri)
 	if err != nil {
 		return errors.Join(err, ErrWriteBdTdb, errors.New("Error opening (w) PingHeaders TileDB array"))
 	}
@@ -1682,7 +1682,7 @@ func (g *GsfFile) SbpToTileDB(fi *FileInfo, ctx *tiledb.Context, grp *tiledb.Gro
 	defer ph_array.Close()
 
 	// SensorMetadata
-	s_md_array, err := ArrayOpen(ctx, s_md_uri, tiledb.TILEDB_WRITE)
+	s_md_array, err := ArrayOpenWrite(ctx, s_md_uri)
 	if err != nil {
 		return errors.Join(err, ErrWriteBdTdb, errors.New("Error opening (w) SensorMetadata TileDB array"))
 	}
@@ -1696,7 +1696,7 @@ func (g *GsfFile) SbpToTileDB(fi *FileInfo, ctx *tiledb.Context, grp *tiledb.Gro
 			return errors.Join(err, errors.New("Error adding sensor imagery metadata to group"))
 		}
 
-		si_md_array, err = ArrayOpen(ctx, si_md_uri, tiledb.TILEDB_WRITE)
+		si_md_array, err = ArrayOpenWrite(ctx, si_md_uri)
 		if err != nil {
 			return errors.Join(err, ErrWriteBdTdb, errors.New("Error opening (w) SensorImageryMetadata TileDB array"))
 		}
@@ -1705,7 +1705,7 @@ func (g *GsfFile) SbpToTileDB(fi *FileInfo, ctx *tiledb.Context, grp *tiledb.Gro
 	}
 
 	// beam data; BeamArray, LonLat, PingBeamNumbers, BrbIntensity
-	bd_array, err := ArrayOpen(ctx, bd_uri, tiledb.TILEDB_WRITE)
+	bd_array, err := ArrayOpenWrite(ctx, bd_uri)
 	if err != nil {
 		return errors.Join(err, ErrWriteBdTdb, errors.New("Error opening (w) TileDB beam array"))
 	}

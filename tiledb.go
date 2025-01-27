@@ -16,14 +16,24 @@ var ErrDims = errors.New("Error Dims is > 2")                   // we should not
 var ErrDtype = errors.New("Error slice datatype is unexpected") // we should not have any slices > 2D
 var ErrSetBuff = errors.New("Error setting tiledb buffer")      // we should not have any slices > 2D
 
-// ArrayOpen is a helper func for opening a tiledb array.
-func ArrayOpen(ctx *tiledb.Context, uri string, mode tiledb.QueryType) (*tiledb.Array, error) {
+// The initial version id to use in the GSF to TileDB conversion process.
+// Whilst not a timestamp, the value can be considered as the first version
+// defined for the conversion and creation process.
+// Consider it an experimental decision that needs to be refined.
+// It is assumed that array modifications post the GSF-TileDB conversion will process
+// will increment this initial value.
+const VERSION_ID uint64 = 1
+
+// ArrayOpenWrite is a helper func for opening a tiledb array in write mode.
+// It is explicitly coded to set to open the array with a specific version ID/timestamp
+// defined by VERSION_ID.
+func ArrayOpenWrite(ctx *tiledb.Context, uri string) (*tiledb.Array, error) {
 	array, err := tiledb.NewArray(ctx, uri)
 	if err != nil {
 		return nil, err
 	}
 
-	err = array.Open(mode)
+	err = array.OpenWithOptions(tiledb.TILEDB_WRITE, tiledb.WithStartTimestamp(VERSION_ID), tiledb.WithEndTimestamp(VERSION_ID))
 	if err != nil {
 		array.Free()
 		return nil, err
