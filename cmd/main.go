@@ -100,11 +100,6 @@ func convert_gsf(gsf_uri, config_uri, outdir_uri string, in_memory, metadata_onl
 		if err != nil {
 			return err
 		}
-		// out_uri = filepath.Join(outdir_uri, file+"-proc-info.json")
-		// _, err = gsf.WriteJson(out_uri, config_uri, proc_info)
-		// if err != nil {
-		// 	return err
-		// }
 
 		log.Println("Processing Attitude")
 		att_name := "Attitude.tiledb"
