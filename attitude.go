@@ -34,6 +34,8 @@ type Attitude struct {
 	Heading   []float32   `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
 }
 
+// attitude_hdr type contains the relevant information decoded from the
+// ATTITUDE record.
 type attitude_hdr struct {
 	Seconds      int64
 	Nano_seconds int64
@@ -41,6 +43,8 @@ type attitude_hdr struct {
 	Measurements uint64
 }
 
+// attitude_header decodes the header for the ATTITUDE record and constructs the
+// attitude_hdr type.
 func attitude_header(reader *bytes.Reader) (att_hdr attitude_hdr) {
 	var (
 		base struct {
