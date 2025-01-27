@@ -11,6 +11,16 @@ import (
 var ErrSensor = errors.New("Sensor not supported")
 var ErrWriteSensorMd = errors.New("Error writing sensor metadata")
 
+// SensorMetadata embeds the base types for each sensor defined in the GSF file.
+// If a new sensor is to be incorporated, it needs to be specifically defined and
+// embedded here.
+// In reality, only 1 sensor will actually be populated when processing a GSF
+// file. I can't see how a multi-sensor GSF file could be constructed.
+// Every sensor type can contain different information, and this type acts as
+// a placeholder to store all sensors rather than explicity passing around
+// sensors of any type. If there were more commonalities between the different
+// sensors, then a base sensor type could be constructed, but that approach
+// seemed more problematic.
 type SensorMetadata struct {
 	Seabeam          Seabeam
 	Em12             Em12
@@ -300,6 +310,8 @@ func (sm *SensorMetadata) writeSensorMetadata(ctx *tiledb.Context, array *tiledb
 	return nil
 }
 
+// attachAttrs attaches the attributes to a TileDB schema based on the fields defined for a
+// specific sensor.
 func (sm *SensorMetadata) attachAttrs(schema *tiledb.ArraySchema, ctx *tiledb.Context, sensor_id SubRecordID) (err error) {
 	switch sensor_id {
 
@@ -510,6 +522,10 @@ func (sm *SensorMetadata) attachAttrs(schema *tiledb.ArraySchema, ctx *tiledb.Co
 	return nil
 }
 
+// appendSensorMetadata is a helper function that appends another block of
+// SensorMetadata to existing SensorMetadata.<sensor_type> slices.
+// Pings are processed sequentially, and groups of n pings appended are then written
+// to a TileDB array, before moving onto the next group of pings.
 func (sm *SensorMetadata) appendSensorMetadata(sp *SensorMetadata, sensor_id SubRecordID) error {
 	// sp refers to a single pings worth of SensorMetadata
 	// whereas sm should be pointing back to the chunks of pings
@@ -1033,6 +1049,10 @@ func newSensorMetadata(number_pings int, sensor_id SubRecordID) (sen_md SensorMe
 	return sen_md
 }
 
+// SensorImageryMetadata embeds the base types for each sensor defined in the GSF file.
+// Only those sensor that capture backscatter will be defined here.
+// If a new sensor is to be incorporated, it needs to be specifically defined and
+// embedded here.
 type SensorImageryMetadata struct {
 	Em3_imagery          Em3Imagery
 	Em4_imagery          Em4Imagery
@@ -1146,6 +1166,8 @@ func (sim *SensorImageryMetadata) writeSensorImageryMetadata(ctx *tiledb.Context
 	return nil
 }
 
+// attachAttrs attaches the attributes to a TileDB schema based on the fields defined for a
+// specific sensor.
 func (sim *SensorImageryMetadata) attachAttrs(schema *tiledb.ArraySchema, ctx *tiledb.Context, sensor_id SubRecordID) (err error) {
 	switch sensor_id {
 
@@ -1202,6 +1224,10 @@ func (sim *SensorImageryMetadata) attachAttrs(schema *tiledb.ArraySchema, ctx *t
 	return nil
 }
 
+// appendSensorImageryMetadata is a helper function that appends another block of
+// SensorImageryMetadata to existing SensorImageryMetadata.<sensor_type> slices.
+// Pings are processed sequentially, and groups of n pings appended are then written
+// to a TileDB array, before moving onto the next group of pings.
 func (sim *SensorImageryMetadata) appendSensorImageryMetadata(sp *SensorImageryMetadata, sensor_id SubRecordID) error {
 	// sp refers to a single pings worth of SensorImageryMetadata
 	// whereas sim should be pointing back to the chunks of pings
