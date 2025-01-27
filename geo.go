@@ -36,6 +36,7 @@ func NewCoefWgs84() *GeoCoefficients {
 	return g
 }
 
+// LonLat contains the longitude and latitude data for each beam in each ping.
 type LonLat struct {
 	Longitude []float64 `tiledb:"dtype=float64,ftype=dim" filters:"zstd(level=16)"`
 	Latitude  []float64 `tiledb:"dtype=float64,ftype=dim" filters:"zstd(level=16)"`

@@ -6,6 +6,10 @@ import (
 	"github.com/samber/lo"
 )
 
+// QualityInfo contains information pertaining to the quality of the GSF file.
+// Quality is a subjective matter, and this is looking at file makeup and assessing
+// for duplicate SWATH_BATHYMETRY_PING records, whether the number of beams is consistent
+// across all pings, and whether the ping SubRecords are consistent across all pings.
 type QualityInfo struct {
 	Min_Max_Beams     []uint16
 	Consistent_Beams  bool
@@ -15,6 +19,7 @@ type QualityInfo struct {
 	Consistent_Schema bool
 }
 
+// QInfo is a constructor for the QualityInfo type.
 func (fi *FileInfo) QInfo() {
 	var (
 		nbeams     []uint16

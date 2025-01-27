@@ -41,6 +41,9 @@ func DecodeRecordHdr(stream Stream) RecordHdr {
 	return rec_hdr
 }
 
+// SubRecord contains information pertaining to the SubRecord, such as the ID,
+// the size in bytes of the record, and where does the SubRecord start as a byte
+// index location.
 type SubRecord struct {
 	Id         SubRecordID
 	Datasize   uint32

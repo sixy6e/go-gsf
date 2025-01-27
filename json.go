@@ -6,6 +6,8 @@ import (
 	tiledb "github.com/TileDB-Inc/TileDB-Go"
 )
 
+// WriteJson serialises data to a JSON file. The output location can be locally
+// or an object store such as s3.
 func WriteJson(file_uri string, config_uri string, data any) (int, error) {
 
 	var config *tiledb.Config
@@ -59,7 +61,7 @@ func WriteJson(file_uri string, config_uri string, data any) (int, error) {
 	return bytes_written, nil
 }
 
-// JsonDumps constructs a json string of the supplied data.
+// JsonDumps constructs a JSON string of the supplied data.
 func JsonDumps(data any) (string, error) {
 	jsn, err := json.Marshal(data)
 	if err != nil {

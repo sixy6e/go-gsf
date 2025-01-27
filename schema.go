@@ -31,6 +31,7 @@ func pascalCase(name string) (result string) {
 	return result
 }
 
+// fieldNames takes a type and returns a list of the field/attribute names.
 func fieldNames(t any) (names []string) {
 	names = make([]string, 0, 10)
 
@@ -79,6 +80,8 @@ func chunkedBeamArray(t any, length int, beam_names []string) error {
 	return nil
 }
 
+// schemaAttrs is a helper func for defining a tiledb.ArraySchema based on the
+// input type.
 func schemaAttrs(t any, schema *tiledb.ArraySchema, ctx *tiledb.Context) error {
 	var (
 		field_tdb_defs map[string]stgpsr.Definition
@@ -309,6 +312,7 @@ func baseLonLatSchema(ctx *tiledb.Context) (schema *tiledb.ArraySchema, err erro
 	return schema, nil
 }
 
+// beamAttachAttrs attaches the attributes to a schema for the BeamArray.
 func beamAttachAttrs(schema *tiledb.ArraySchema, ctx *tiledb.Context, beam_subrecords []string, contains_intensity bool) (err error) {
 	var (
 		field_tdb_defs map[string]stgpsr.Definition
@@ -398,6 +402,7 @@ func beamAttachAttrs(schema *tiledb.ArraySchema, ctx *tiledb.Context, beam_subre
 	return nil
 }
 
+// phTdbArray sets of the PingHeaders TileDB array.
 func phTdbArray(ctx *tiledb.Context, array_uri string, npings uint64) error {
 	schema, err := basePidSchema(ctx, npings)
 	if err != nil {
@@ -441,6 +446,7 @@ func phTdbArray(ctx *tiledb.Context, array_uri string, npings uint64) error {
 	return nil
 }
 
+// senTdbArray sets up the SensorMetadata TileDB array.
 func senTdbArray(ctx *tiledb.Context, array_uri string, npings uint64, sensor_id SubRecordID) error {
 	schema, err := basePidSchema(ctx, npings)
 	if err != nil {
@@ -485,6 +491,7 @@ func senTdbArray(ctx *tiledb.Context, array_uri string, npings uint64, sensor_id
 	return nil
 }
 
+// senImgTdbArray sets up the SensorImageryMetadata TileDB array.
 func senImgTdbArray(ctx *tiledb.Context, array_uri string, npings uint64, sensor_id SubRecordID) error {
 	schema, err := basePidSchema(ctx, npings)
 	if err != nil {
@@ -529,6 +536,7 @@ func senImgTdbArray(ctx *tiledb.Context, array_uri string, npings uint64, sensor
 	return nil
 }
 
+// beamTdbArray sets up the BeamArray TileDB array.
 func beamTdbArray(ctx *tiledb.Context, array_uri string, beam_subrecords []string, contains_intensity, dense_bd bool, npings uint64, max_beams uint16) error {
 	var (
 		schema *tiledb.ArraySchema
@@ -589,6 +597,8 @@ func beamTdbArray(ctx *tiledb.Context, array_uri string, beam_subrecords []strin
 	return nil
 }
 
+// pingTdbArrays orchestrates the creation of the PingHeaders, SensorMetadata,
+// SensorImageryMetadata and the BeamArray TileDB arrays.
 func (fi *FileInfo) pingTdbArrays(ctx *tiledb.Context, ph_uri, s_md_uri, si_md_uri, bd_uri string, dense_bd bool) (err error) {
 	beam_subrecords := fi.SubRecord_Schema
 	contains_intensity := lo.Contains(beam_subrecords, SubRecordNames[INTENSITY_SERIES])

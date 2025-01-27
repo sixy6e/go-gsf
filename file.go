@@ -37,6 +37,8 @@ type Crs struct {
 	Vertical_Datum   string
 }
 
+// GsfFile constains the relevant information for an opened GSF file to enable
+// streamed reading.
 type GsfFile struct {
 	Uri      string
 	filesize uint64
@@ -47,6 +49,7 @@ type GsfFile struct {
 	Stream
 }
 
+// OpenGSF opens a GSF file for streamed IO and constructs a GsfFile type.
 func OpenGSF(gsf_uri string, config_uri string, in_memory bool) GsfFile {
 	var (
 		gsf    GsfFile
@@ -124,6 +127,8 @@ func (g *GsfFile) RecBuf(r RecordHdr) (buffer []byte) {
 	return buffer
 }
 
+// ProcInfo decodes the PROCESSING_PARAMETERS record and sets up the
+// Processing_Parameters type.
 func (g *GsfFile) ProcInfo(fi *FileInfo) (proc_info ProcessingInfo) {
 	proc_info.Histories = g.HistoryRecords(fi)
 	proc_info.Comments = g.CommentRecords(fi)
@@ -134,12 +139,15 @@ func (g *GsfFile) ProcInfo(fi *FileInfo) (proc_info ProcessingInfo) {
 	return proc_info
 }
 
+// GsfDetails stores the information relevant to the GSF file such as the path
+// location, GSF version and the size of the file in bytes.
 type GsfDetails struct {
 	GSF_URI     string
 	GSF_Version string
 	Size        uint64
 }
 
+// MajorMinor interprets the major and minor version of the GSF file.
 func (gd *GsfDetails) MajorMinor() (major, minor int) {
 	v := gd.GSF_Version[5:]
 	split := strings.Split(v, ".")
@@ -161,11 +169,16 @@ func (gd *GsfDetails) MajorMinor() (major, minor int) {
 	return major, minor
 }
 
+// SensorInfo contains the information pertaining to the sensor that recorded the
+// information stored within the GSF file.
 type SensorInfo struct {
 	Sensor_ID   int32
 	Sensor_Name string
 }
 
+// Metadata contains various metadata relevant to the GSF file such as sensor information,
+// how many Records and SubRecords, and generic quality information about the contents
+// of the file (not necessarily the quality of the underlying data).
 type Metadata struct {
 	GSF_Details        GsfDetails
 	Sensor_Info        SensorInfo
@@ -178,11 +191,15 @@ type Metadata struct {
 	Swath_Summary      SwathBathySummary
 }
 
+// Index contains the index information of the GSF file. i.e. the byte locations
+// for every Record contained within the GSF file.
 type Index struct {
 	Ping_Groups  []PingGroup
 	Record_Index map[string][]RecordHdr
 }
 
+// ProcessingInfo contains the general information defined by the operator who processed
+// the data and encoded the GSF file.
 type ProcessingInfo struct {
 	Histories             []History
 	Comments              []Comment
