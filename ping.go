@@ -19,6 +19,8 @@ var ErrWriteBdTdb = errors.New("Error Writing Beam Data TileDB Array")
 var ErrCreateMdTdb = errors.New("Error Creating Metadata TileDB Array")
 var ErrWriteMdTdb = errors.New("Error Writing Metadata TileDB Array")
 
+// PingHeader contains the base information recorded for every SWATH_BATHYMETRY_PING
+// record.
 type PingHeader struct {
 	Timestamp          time.Time
 	Longitude          float64
@@ -39,6 +41,9 @@ type PingHeader struct {
 	Ping_flags         uint16
 }
 
+// PingHeaders extends the PingHeader type by converting every attribute into
+// a slice. Mostly used as a convienience for directly serialising the data to
+// a TileDB array, rather than building the slice upon write from a []PingHeader.
 type PingHeaders struct {
 	Timestamp          []time.Time `tiledb:"dtype=datetime_ns,ftype=attr" filters:"zstd(level=16)"`
 	Longitude          []float64   `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
@@ -70,11 +75,15 @@ func newPingHeaders(number_pings int) (ping_headers PingHeaders) {
 	return ping_headers
 }
 
+// ScaleOffset defines the scale and offset used in the decoding process
+// that most of the BeamArray SubRecord types are stored as within the GSF file.
 type ScaleOffset struct {
 	Scale  float64
 	Offset float64
 }
 
+// ScaleFactor contains the relevant information for a BeamArray SubRecord such
+// as the SubRecordID and the ScaleOffset and whether or not it was compressed.
 type ScaleFactor struct {
 	Id SubRecordID
 	ScaleOffset
@@ -83,6 +92,10 @@ type ScaleFactor struct {
 	Field_size       int
 }
 
+// BeamArray is the main type for holding all the BeamArray data contained within the SubRecords
+// of the SWATH_BATHYMETRY_PING record.
+// The data stored in this type have already been converted to their normal units, i.e.
+// applied any relevant scale and offsets in the decoding process.
 type BeamArray struct {
 	Z                    []float64 `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
 	NominalDepth         []float64 `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
@@ -128,6 +141,11 @@ func newBeamArray(number_beams int, beam_names []string) (beam_array BeamArray) 
 	return beam_array
 }
 
+// PingBeamNumbers contains the ping and beam number ids for a group of Pings decoded
+// from the SWATH_BATHYMETRY_PING record.
+// Essentially, slices of n length, where the ping number will be repeated n times
+// for as many beams are in a given ping.
+// Eg PingBeamNumbers{[0, 0, 0, 1, 1, 1, 2, 2, 2], [0, 1, 2, 0, 1, 2, 0, 1, 2]}
 type PingBeamNumbers struct {
 	PingNumber []uint64 `tiledb:"dtype=uint64,ftype=attr" filters:"zstd(level=16)"`
 	BeamNumber []uint64 `tiledb:"dtype=uint64,ftype=attr" filters:"zstd(level=16)"`
@@ -172,6 +190,7 @@ func (pb *PingBeamNumbers) padPingBeam(ping_id uint64, number_beams uint16, size
 	return nil
 }
 
+// newPingBeamNumbers initialises the PingBeamNumbers type.
 func newPingBeamNumbers(number_beams int) (ping_beam_ids PingBeamNumbers) {
 	ping_id := make([]uint64, 0, number_beams)
 	beam_id := make([]uint64, 0, number_beams)
@@ -180,6 +199,13 @@ func newPingBeamNumbers(number_beams int) (ping_beam_ids PingBeamNumbers) {
 	return ping_beam_ids
 }
 
+// PingGroup defines a group of pings defined by Start and Stop ping IDs.
+// It contains the total count of the number of beams across all pings which is
+// used to setup the total length of the BeamArray slices. It also contains the
+// the scale factors for the SubRecords associated with this group of Pings.
+// Ping groups are defined by their commonality of shared scale factors.
+// So across the entire GSF, the length of each Ping groups varies depending
+// on which pings use shared scale factors.
 type PingGroup struct {
 	Start         uint64
 	Stop          uint64
@@ -200,6 +226,8 @@ type PingInfo struct {
 	scale_factors map[SubRecordID]ScaleFactor
 }
 
+// PingData is the main type for holding all information relevant to n pings worth
+// of SWATH_BATHYMETRY_PING records.
 type PingData struct {
 	Ping_headers            PingHeaders
 	Beam_array              BeamArray
@@ -274,6 +302,7 @@ func (pd *PingData) appendPingData(singlePing *PingData, contains_intensity bool
 	return nil
 }
 
+// newPingData initialises the PingData type with a set number of beams (total number of beams across n pings).
 func newPingData(npings int, number_beams uint64, sensor_id SubRecordID, beam_names []string, contains_intensity bool) (pdata PingData) {
 	var (
 		brb        BrbIntensity
@@ -418,6 +447,7 @@ func decode_ping_hdr(reader *bytes.Reader, gsfd GsfDetails) PingHeader {
 	return hdr
 }
 
+// SubRecHdr decodes the header for a SubRecord and constructs a SubRecord.
 func SubRecHdr(reader *bytes.Reader, offset int64) SubRecord {
 	var subrecord_hdr int32
 
@@ -433,6 +463,7 @@ func SubRecHdr(reader *bytes.Reader, offset int64) SubRecord {
 	return subhdr
 }
 
+// scale_factors_rec decodes the scale factors subrecord defined by SCALE_FACTORS.
 func scale_factors_rec(reader *bytes.Reader) (scale_factors map[SubRecordID]ScaleFactor, nbytes int64) {
 	var (
 		i            int32
@@ -470,6 +501,8 @@ func scale_factors_rec(reader *bytes.Reader) (scale_factors map[SubRecordID]Scal
 	return scale_factors, nbytes
 }
 
+// ping_info decodes the SWATH_BATHYMETRY_PING record such as the header,
+// SubRecord's and constructs the PingInfo type.
 func ping_info(reader *bytes.Reader, rec RecordHdr, gsfd GsfDetails) PingInfo {
 	var (
 		idx     int64 = 0
