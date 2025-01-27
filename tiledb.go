@@ -458,6 +458,10 @@ func sliceOffsets[T any](s [][]T, byte_size uint64) (slc_offset []uint64) {
 	return slc_offset
 }
 
+// setStructFieldBuffersn is a helper function for setting the data buffers
+// when serialising to a TileDB array, based on the input type.
+// For example, writing sensor metadata to a TileDB array:
+// setStructFieldBuffers(query, &SensorMetadata.Seabeam).
 func setStructFieldBuffers(query *tiledb.Query, t any) error {
 	var (
 		err error
