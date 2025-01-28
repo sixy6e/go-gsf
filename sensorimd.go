@@ -9,6 +9,10 @@ import (
 
 var ErrSensorImgMetadata = errors.New("Error reading Sensor Imagery Metadata")
 
+// Em3Imagery caters for generation 3 EM sensors. Specifically:
+// EM120, EM120_RAW, EM300, EM300_RAW, EM1002, EM1002_RAW, EM2000, EM2000_RAW,
+// EM3000, EM3000_RAW, EM3002, EM3002_RAW, EM3000D, EM3000D_RAW, EM3002D,
+// EM3002D_RAW, EM121A_SIS, EM121A_SIS_RAW.
 type Em3Imagery struct {
 	RangeNorm      []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
 	StartTvgRamp   []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
@@ -18,6 +22,8 @@ type Em3Imagery struct {
 	MeanAbsorption []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
 }
 
+// DecodeEm3Imagery decodes generation 3 EM INTENSITY_SERIES SubRecord and
+// constructs the Em3Imagery type.
 func DecodeEm3Imagery(reader *bytes.Reader) (img_md Em3Imagery, scl_off ScaleOffset, err error) {
 	var (
 		base struct {
@@ -52,6 +58,8 @@ func DecodeEm3Imagery(reader *bytes.Reader) (img_md Em3Imagery, scl_off ScaleOff
 	return img_md, scl_off, err
 }
 
+// Em4Imagery caters for generation 4 EM sensors. Specifically:
+// EM710, EM302, EM122, EM2040.
 type Em4Imagery struct {
 	SamplingFrequency   []float64 `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
 	MeanAbsorption      []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
@@ -65,6 +73,7 @@ type Em4Imagery struct {
 	TvgCrossOver        []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
 }
 
+// DecodeEm4Imagery decodes generation 4 EM INTENSITY_SERIES SubRecords and constructs the Em4Imagery type.
 func DecodeEm4Imagery(reader *bytes.Reader) (img_md Em4Imagery, scl_off ScaleOffset, err error) {
 
 	var (
@@ -112,10 +121,14 @@ func DecodeEm4Imagery(reader *bytes.Reader) (img_md Em4Imagery, scl_off ScaleOff
 	return img_md, scl_off, err
 }
 
+// Reson7100Imagery caters for the Reson7100 series sensors, specifically:
+// RESON_7125.
 type Reson7100Imagery struct {
 	Null []uint8 `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
 }
 
+// DecodeReson7100Imagery decodes Reson7100 INTENSITY_SERIES SubRecords and constructs
+// the Reson7100Imagery type.
 func DecodeReson7100Imagery(reader *bytes.Reader) (img_md Reson7100Imagery, scl_off ScaleOffset, err error) {
 	var buffer struct {
 		Size  uint16
@@ -135,10 +148,13 @@ func DecodeReson7100Imagery(reader *bytes.Reader) (img_md Reson7100Imagery, scl_
 	return img_md, scl_off, err
 }
 
+// Reson7100Imagery caters for the ResonTSeries sensor.
 type ResonTSeriesImagery struct {
 	Null []uint8 `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
 }
 
+// DecodeResonTSeriesImagery decodes the ResonTSeries INTENSITY_SERIES SubRecord
+// and constructs the ResonTSeriesImagery type.
 func DecodeResonTSeriesImagery(reader *bytes.Reader) (img_md ResonTSeriesImagery, scl_off ScaleOffset, err error) {
 	var buffer struct {
 		Size  uint16
@@ -158,10 +174,14 @@ func DecodeResonTSeriesImagery(reader *bytes.Reader) (img_md ResonTSeriesImagery
 	return img_md, scl_off, err
 }
 
+// Reson8100Imagery caters for Reson8100 series sensors specifically:
+// RESON_8101, RESON_8111, RESON_8124, RESON_8125, RESON_8150, RESON_8160.
 type Reson8100Imagery struct {
 	Null []uint8 `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
 }
 
+// DecodeReson8100Imagery decodes Reson8100 INTENSITY_SERIES SubRecord and constructs
+// the Reson8100Imagery type.
 func DecodeReson8100Imagery(reader *bytes.Reader) (img_md Reson8100Imagery, scl_off ScaleOffset, err error) {
 	var buffer struct {
 		Spare [8]byte
@@ -180,10 +200,13 @@ func DecodeReson8100Imagery(reader *bytes.Reader) (img_md Reson8100Imagery, scl_
 	return img_md, scl_off, err
 }
 
+// KmallImagery caters for KMALL sensors.
 type KmallImagery struct {
 	Null []uint8 `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
 }
 
+// DecodeKmallImagery decodes KMALL INTENSITY_SERIES SubRecord and constructs the
+// KmallImagery type.
 func DecodeKmallImagery(reader *bytes.Reader) (img_md KmallImagery, scl_off ScaleOffset, err error) {
 	var buffer struct {
 		Spare [64]byte
@@ -202,12 +225,15 @@ func DecodeKmallImagery(reader *bytes.Reader) (img_md KmallImagery, scl_off Scal
 	return img_md, scl_off, err
 }
 
+// Klein5410BssImagery caters for the KLEIN_5410_BSS sensor.
 type Klein5410BssImagery struct {
 	ResolutionMode []uint16   `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
 	TvgPage        []uint16   `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
 	BeamId         [][]uint16 `tiledb:"dtype=uint16,ftype=attr,var" filters:"zstd(level=16)"`
 }
 
+// DecodeKlein5410BssImagery decodes KLEIN_5410_BSS INTENSITY_SERIES SubRecord
+// and constructs the Klein5410BssImagery type.
 func DecodeKlein5410BssImagery(reader *bytes.Reader) (img_md Klein5410BssImagery, scl_off ScaleOffset, err error) {
 	var buffer struct {
 		ResolutionMode uint16
@@ -231,6 +257,8 @@ func DecodeKlein5410BssImagery(reader *bytes.Reader) (img_md Klein5410BssImagery
 	return img_md, scl_off, err
 }
 
+// R2SonicImagery caters for R2Sonic sensors specifically:
+// R2SONIC_2020, R2SONIC_2022, R2SONIC_2024.
 type R2SonicImagery struct {
 	ModelNumber      []string    `tiledb:"dtype=string,ftype=attr" filters:"zstd(level=16)"`
 	SerialNumber     []string    `tiledb:"dtype=string,ftype=attr" filters:"zstd(level=16)"`
@@ -258,6 +286,8 @@ type R2SonicImagery struct {
 	MoreInfo         [][]float64 `tiledb:"dtype=float64,ftype=attr,var" filters:"zstd(level=16)"`
 }
 
+// DecodeR2SonicImagery decodes R2Sonic INTENSITY_SERIES SubRecord and constructs
+// the R2SonicImagery type.
 func DecodeR2SonicImagery(reader *bytes.Reader) (img_md R2SonicImagery, scl_off ScaleOffset, err error) {
 	var (
 		buffer struct {
