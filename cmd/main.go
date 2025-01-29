@@ -16,6 +16,7 @@ import (
 	"github.com/sixy6e/go-gsf"
 )
 
+// convert_gsf handles the conversion process for a single GSF file.
 func convert_gsf(gsf_uri, config_uri, outdir_uri string, in_memory, metadata_only, dense bool) error {
 	var (
 		out_uri string
@@ -139,6 +140,9 @@ func convert_gsf(gsf_uri, config_uri, outdir_uri string, in_memory, metadata_onl
 	return nil
 }
 
+// convert_gsf_list is responsible for submitting a list of GSF files to a processing pool
+// that converts each GSF file. The processing pool uses 2 * n_CPUs workers to spread the
+// work across.
 func convert_gsf_list(uri, config_uri, outdir_uri string, in_memory, metadata_only, dense bool) error {
 	log.Println("Searching uri:", uri)
 	items := gsf.FindGsf(uri, config_uri)

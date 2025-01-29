@@ -25,10 +25,13 @@ import (
 
 var ErrSensorMetadata = errors.New("Error reading Sensor Metadata")
 
+// Seabeam caters for the SEABEAM sensor metadata.
 type Seabeam struct {
 	EclipseTime []uint16 `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
 }
 
+// DecodeSeabeamSpecific decodes SEABEAM sensor specific SubRecord and
+// constructs the Seabeam type.
 func DecodeSeabeamSpecific(reader *bytes.Reader) (sensor_data Seabeam, err error) {
 	var buffer struct {
 		EclipseTime uint16
@@ -45,6 +48,7 @@ func DecodeSeabeamSpecific(reader *bytes.Reader) (sensor_data Seabeam, err error
 	return sensor_data, err
 }
 
+// Em12 caters for the EM12 sensor metadata.
 type Em12 struct {
 	PingNumber    []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
 	Resolution    []uint8   `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
@@ -53,6 +57,8 @@ type Em12 struct {
 	Mode          []uint8   `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
 }
 
+// DecodeEm12Specific decodes the EM12 sensor specific SubRecord and constructs
+// the EM12 type.
 func DecodeEm12Specific(reader *bytes.Reader) (sensor_data Em12, err error) {
 	var buffer struct {
 		PingNumber    uint16
@@ -78,6 +84,7 @@ func DecodeEm12Specific(reader *bytes.Reader) (sensor_data Em12, err error) {
 	return sensor_data, err
 }
 
+// Em100 caters for the EM100 sensor metadata.
 type Em100 struct {
 	ShipPitch       []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
 	TransducerPitch []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
@@ -89,6 +96,8 @@ type Em100 struct {
 	Counter         []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
 }
 
+// DecodeEm100Specific decodes the EM100 sensor specific SubRecord and constructs
+// the Em100 type.
 func DecodeEm100Specific(reader *bytes.Reader) (sensor_data Em100, err error) {
 	var buffer struct {
 		ShipPitch       int16
@@ -119,6 +128,7 @@ func DecodeEm100Specific(reader *bytes.Reader) (sensor_data Em100, err error) {
 	return sensor_data, err
 }
 
+// Em950 caters for the EM950 sensor metadata.
 type Em950 struct {
 	PingNumber           []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
 	Mode                 []uint8   `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
@@ -128,6 +138,8 @@ type Em950 struct {
 	SurfaceSoundVelocity []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
 }
 
+// DecodeEm950Specific decodes the EM950 sensor specific SubRecord and constructs
+// the Em950 type.
 func DecodeEm950Specific(reader *bytes.Reader) (sensor_data Em950, err error) {
 	var buffer struct {
 		PingNumber           uint16
@@ -154,6 +166,7 @@ func DecodeEm950Specific(reader *bytes.Reader) (sensor_data Em950, err error) {
 	return sensor_data, err
 }
 
+// Em121A caters for the EM121A sensor metadata.
 type Em121A struct {
 	PingNumber           []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
 	Mode                 []uint8   `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
@@ -166,6 +179,8 @@ type Em121A struct {
 	SurfaceSoundVelocity []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
 }
 
+// DecodeEm121ASpecific decodes the EM121A sensor specific SubRecord and constructs
+// the Em121A type.
 func DecodeEm121ASpecific(reader *bytes.Reader) (sensor_data Em121A, err error) {
 	var buffer struct {
 		PingNumber           uint16
@@ -198,6 +213,7 @@ func DecodeEm121ASpecific(reader *bytes.Reader) (sensor_data Em121A, err error) 
 	return sensor_data, err
 }
 
+// Em121 caters for the EM121 sensor metadata.
 type Em121 struct {
 	PingNumber           []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
 	Mode                 []uint8   `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
@@ -210,6 +226,8 @@ type Em121 struct {
 	SurfaceSoundVelocity []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
 }
 
+// DecodeEm121Specific decodes the EM121 sensor specific SubRecord and constructs
+// the Em121 type.
 func DecodeEm121Specific(reader *bytes.Reader) (sensor_data Em121, err error) {
 	var buffer struct {
 		PingNumber           uint16
@@ -242,6 +260,7 @@ func DecodeEm121Specific(reader *bytes.Reader) (sensor_data Em121, err error) {
 	return sensor_data, err
 }
 
+// Sass caters for the SASS sensor metadata.
 type Sass struct {
 	LeftMostBeam       []uint16 `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
 	RightMostBeam      []uint16 `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
@@ -251,6 +270,8 @@ type Sass struct {
 	MissionNumber      []uint16 `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
 }
 
+// DecodeSassSpecfic decodes the SASS sensor specific SubRecord and constructs
+// the Sass type.
 func DecodeSassSpecfic(reader *bytes.Reader) (sensor_data Sass, err error) {
 	var buffer struct {
 		LeftMostBeam       uint16
@@ -277,6 +298,7 @@ func DecodeSassSpecfic(reader *bytes.Reader) (sensor_data Sass, err error) {
 	return sensor_data, err
 }
 
+// SeaMap caters for the SEAMAP sensor metadata.
 type SeaMap struct {
 	PortTransmit1        []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
 	PortTransmit2        []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
@@ -291,6 +313,8 @@ type SeaMap struct {
 	Temperature          []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
 }
 
+// DecodeSeaMapSpecific decodes the SEAMAP sensor specific SubRecord and constructs
+// the SeaMap type.
 func DecodeSeaMapSpecific(reader *bytes.Reader, gsfd GsfDetails) (sensor_data SeaMap, err error) {
 	var (
 		buffer1 struct {
@@ -351,6 +375,7 @@ func DecodeSeaMapSpecific(reader *bytes.Reader, gsfd GsfDetails) (sensor_data Se
 	return sensor_data, err
 }
 
+// SeaBat caters for the SEABAT sensor metadata.
 type SeaBat struct {
 	PingNumber           []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
 	SurfaceSoundVelocity []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
@@ -360,6 +385,8 @@ type SeaBat struct {
 	ReceiveGain          []uint8   `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
 }
 
+// DecodeSeaBatSpecific decodes the SEABAT sensor specific SubRecord and constructs
+// the SeaBat type.
 func DecodeSeaBatSpecific(reader *bytes.Reader) (sensor_data SeaBat, err error) {
 	var buffer struct {
 		PingNumber           uint16
@@ -386,6 +413,7 @@ func DecodeSeaBatSpecific(reader *bytes.Reader) (sensor_data SeaBat, err error) 
 	return sensor_data, err
 }
 
+// Em1000 caters for the EM1000 sensor metadata.
 type Em1000 struct {
 	PingNumber           []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
 	Mode                 []uint8   `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
@@ -395,6 +423,8 @@ type Em1000 struct {
 	SurfaceSoundVelocity []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
 }
 
+// DecodeEm1000Specific decodes the Em1000 sensor specific SubRecord and constructs
+// the Em1000 type.
 func DecodeEm1000Specific(reader *bytes.Reader) (sensor_data Em1000, err error) {
 	var buffer struct {
 		PingNumber           uint16
@@ -421,6 +451,7 @@ func DecodeEm1000Specific(reader *bytes.Reader) (sensor_data Em1000, err error) 
 	return sensor_data, err
 }
 
+// TypeIIISeabeam caters for the TYPEIII_SEABEAM sensor metadata.
 type TypeIIISeabeam struct {
 	LeftMostBeam       []uint16 `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
 	RightMostBeam      []uint16 `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
@@ -430,6 +461,8 @@ type TypeIIISeabeam struct {
 	MissionNumber      []uint16 `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
 }
 
+// DecodeTypeIIISeabeamSpecific decodes the TypeIIISeabeam sensor specific
+// SubRecord and constructs the TypeIIISeabeam type.
 func DecodeTypeIIISeabeamSpecific(reader *bytes.Reader) (sensor_data TypeIIISeabeam, err error) {
 	var buffer struct {
 		LeftMostBeam       uint16
@@ -456,6 +489,7 @@ func DecodeTypeIIISeabeamSpecific(reader *bytes.Reader) (sensor_data TypeIIISeab
 	return sensor_data, err
 }
 
+// SbAmp caters for the SB_AMP sensor metadata.
 type SbAmp struct {
 	Hour         []uint8  `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
 	Minute       []uint8  `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
@@ -465,6 +499,8 @@ type SbAmp struct {
 	AvgGateDepth []uint16 `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
 }
 
+// DecodeSbAmpSpecific decodes the SB_AMP sensor specific SubRecord and constructs
+// the SbAmp type.
 func DecodeSbAmpSpecific(reader *bytes.Reader) (sensor_data SbAmp, err error) {
 	var buffer struct {
 		Hour         uint8
@@ -491,6 +527,7 @@ func DecodeSbAmpSpecific(reader *bytes.Reader) (sensor_data SbAmp, err error) {
 	return sensor_data, err
 }
 
+// SeaBatII caters for the SEABAT_II sensor metadata.
 type SeaBatII struct {
 	PingNumber           []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
 	SurfaceSoundVelocity []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
@@ -502,6 +539,8 @@ type SeaBatII struct {
 	AthwartBandwidth     []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
 }
 
+// DecodeSeaBatIISpecific decodes the SEABAT_II sensor specific SubRecord and constructs
+// the SeaBatII type.
 func DecodeSeaBatIISpecific(reader *bytes.Reader) (sensor_data SeaBatII, err error) {
 	var buffer struct {
 		PingNumber           uint16
@@ -533,6 +572,7 @@ func DecodeSeaBatIISpecific(reader *bytes.Reader) (sensor_data SeaBatII, err err
 	return sensor_data, err
 }
 
+// SeaBat8101 caters for the SEABAT_8101 sensor metadata.
 type SeaBat8101 struct {
 	PingNumber           []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
 	SurfaceSoundVelocity []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
@@ -552,6 +592,8 @@ type SeaBat8101 struct {
 	ProjectorType        []uint8   `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
 }
 
+// DecodeSeaBat8101Specific decodes the SEABAT_8101 sensor specific SubRecord and constructs
+// the SeaBat8101 type.
 func DecodeSeaBat8101Specific(reader *bytes.Reader) (sensor_data SeaBat8101, err error) {
 	var buffer struct {
 		PingNumber           uint16
@@ -599,6 +641,7 @@ func DecodeSeaBat8101Specific(reader *bytes.Reader) (sensor_data SeaBat8101, err
 	return sensor_data, err
 }
 
+// Seabeam2112 caters for the SEABEAM_2112 sensor metadata.
 type Seabeam2112 struct {
 	Mode                   []uint8   `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
 	SurfaceSoundVelocity   []float64 `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
@@ -610,6 +653,8 @@ type Seabeam2112 struct {
 	AlgorithmOrder         []string  `tiledb:"dtype=string,ftype=attr" filters:"zstd(level=16)"`
 }
 
+// DecodeSeabeam2112Specific decodes the SEABEAM_2112 sensor specific SubRecord and constructs
+// the Seabeam2112 type.
 func DecodeSeabeam2112Specific(reader *bytes.Reader) (sensor_data Seabeam2112, err error) {
 	var buffer struct {
 		Mode                   uint8
@@ -641,6 +686,7 @@ func DecodeSeabeam2112Specific(reader *bytes.Reader) (sensor_data Seabeam2112, e
 	return sensor_data, err
 }
 
+// ElacMkII caters for the ELAC_MKII sensor metadata.
 type ElacMkII struct {
 	Mode                  []uint8  `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
 	PingNumber            []uint16 `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
@@ -650,6 +696,8 @@ type ElacMkII struct {
 	ReceiverGainPort      []uint8  `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
 }
 
+// DecodeElacMkIISpecific decodes the ELAC_MKII sensor specific SubRecord and constructs
+// the ElacMkII type.
 func DecodeElacMkIISpecific(reader *bytes.Reader) (sensor_data ElacMkII, err error) {
 	var buffer struct {
 		Mode                  uint8
@@ -677,11 +725,14 @@ func DecodeElacMkIISpecific(reader *bytes.Reader) (sensor_data ElacMkII, err err
 	return sensor_data, err
 }
 
+// CmpSass caters for the CMP_SAAS sensor metadata.
 type CmpSass struct {
 	Lfreq  []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
 	Lntens []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
 }
 
+// DecodeCmpSass decodes the CMP_SAAS sensor specific SubRecord and constructs
+// the CmpSass type.
 func DecodeCmpSass(reader *bytes.Reader) (sensor_data CmpSass, err error) {
 	var buffer struct {
 		Lfreq  uint16
@@ -700,6 +751,8 @@ func DecodeCmpSass(reader *bytes.Reader) (sensor_data CmpSass, err error) {
 	return sensor_data, err
 }
 
+// Reson8100 caters for the RESON 8100 series sensors metadata, specifically:
+// RESON_8101, RESON_8111, RESON_8124, RESON_8125, RESON_8150, RESON_8160.
 type Reson8100 struct {
 	Latency              []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
 	PingNumber           []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
@@ -729,6 +782,9 @@ type Reson8100 struct {
 	BeamSpacing          []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
 }
 
+// DecodeReson8100 decodes the RESON 8100 series sensor specific SubRecords and constructs
+// the Reson8100 type. Specific sensors are:
+// RESON_8101, RESON_8111, RESON_8124, RESON_8125, RESON_8150, RESON_8160.
 func DecodeReson8100(reader *bytes.Reader) (sensor_data Reson8100, err error) {
 	var buffer struct {
 		Latency              uint16
@@ -796,6 +852,8 @@ func DecodeReson8100(reader *bytes.Reader) (sensor_data Reson8100, err error) {
 	return sensor_data, err
 }
 
+// Em3 caters for generation 3 EM sensors metadata, specifically:
+// EM120, EM300, EM1002, EM2000, EM3000, EM3002, EM3000D, EM3002D, EM121A_SIS.
 type Em3 struct {
 	ModelNumber          []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
 	PingNumber           []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
@@ -836,6 +894,9 @@ type Em3 struct {
 	RunTimeCoverageSector          [][]uint16    `tiledb:"dtype=uint16,ftype=attr,var" filters:"zstd(level=16)"`
 }
 
+// DecodeEm3Specific decodes generation 3 EM  sensor specific SubRecords and constructs
+// the Em3 type. Specific sensors are:
+// EM120, EM300, EM1002, EM2000, EM3000, EM3002, EM3000D, EM3002D, EM121A_SIS.
 func DecodeEm3Specific(reader *bytes.Reader) (sensor_data Em3, err error) {
 	var (
 		buffer struct {
@@ -1096,11 +1157,15 @@ func DecodeEm3Specific(reader *bytes.Reader) (sensor_data Em3, err error) {
 	return sensor_data, err
 }
 
+// for EM4
 // float64 may be overkill
 // where scale factors are applied, float32 is used
 // where it's confident float32 is enough to represent the value
 // TODO; align into 64bit chunks
 // the spec says binary integers are stored as either 1-byte unsigned, 2-byte signed or unsigned, or 4-byte signed
+
+// Em4 caters for generation 4 EM sensors metadata, specifically:
+// EM710, EM302, EM122, EM2040.
 type Em4 struct {
 	ModelNumber                       []uint16    `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
 	PingCounter                       []uint16    `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
@@ -1157,6 +1222,9 @@ type Em4 struct {
 	ProcessorUnitYawStabilization     []float32   `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
 }
 
+// DecodeEm4Specific decodes generation 4 EM sensor specific SubRecords and constructs
+// the Em4 type. Specific sensors are:
+// EM710, EM302, EM122, EM2040.
 func DecodeEm4Specific(reader *bytes.Reader) (sensor_data Em4, err error) {
 
 	var (
@@ -1393,6 +1461,8 @@ func DecodeEm4Specific(reader *bytes.Reader) (sensor_data Em4, err error) {
 
 // GeoSwathPlus TODO; change DataSource and Side types from uint16 to uint8.
 // Seems a waste to store 2 bytes for data that is only a 0 or 1.
+
+// GeoSwathPlus caters for the GEOSWATH_PLUS sensor metadata.
 type GeoSwathPlus struct {
 	// (0 = CBF, 1 = RDF) why 2bytes? why not uint8? could convert to string ...
 	DataSource []uint16 `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
@@ -1422,6 +1492,8 @@ type GeoSwathPlus struct {
 	AngleUncertainty      []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
 }
 
+// DecodeGeoSwathPlusSpecific decodes the GEOSWATH_PLUS sensor specific SubRecord and constructs
+// the GeoSwathPlus type.
 func DecodeGeoSwathPlusSpecific(reader *bytes.Reader) (sensor_data GeoSwathPlus, err error) {
 	var buffer struct {
 		DataSource            uint16
@@ -1487,6 +1559,8 @@ func DecodeGeoSwathPlusSpecific(reader *bytes.Reader) (sensor_data GeoSwathPlus,
 
 // DecodeKlein5410Bss TODO; change DataSource and Side types from uint16 to uint8.
 // Seems a waste to store 2 bytes for data that is only a 0 or 1.
+
+// Klein5410Bss caters for the KLEIN_5410_BSS sensor metadata.
 type Klein5410Bss struct {
 	DataSource        []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
 	Side              []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
@@ -1506,6 +1580,8 @@ type Klein5410Bss struct {
 	RawDataConfig     []uint32  `tiledb:"dtype=uint32,ftype=attr" filters:"zstd(level=16)"`
 }
 
+// DecodeKlein5410BssSpecific decodes the KLEIN_5410_BSS sensor specific SubRecord and constructs
+// the Klein5410Bss type.
 func DecodeKlein5410BssSpecific(reader *bytes.Reader) (sensor_data Klein5410Bss, err error) {
 	var buffer struct {
 		DataSource        uint16
@@ -1553,6 +1629,8 @@ func DecodeKlein5410BssSpecific(reader *bytes.Reader) (sensor_data Klein5410Bss,
 	return sensor_data, err
 }
 
+// Reson7100 caters for the RESON 7100 series sensor metadata, specifically:
+// RESON_7125.
 type Reson7100 struct {
 	ProtocolVersion                   []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
 	DeviceID                          []uint32  `tiledb:"dtype=uint32,ftype=attr" filters:"zstd(level=16)"`
@@ -1600,6 +1678,9 @@ type Reson7100 struct {
 	// TxPulseReserved                   []uint32  `tiledb:"dtype=uint32,ftype=attr" filters:"zstd(level=16)"`
 }
 
+// DecodeReson7100Specific decodes RESON 7100 series sensor specific SubRecords and constructs
+// the Reson7100 type. Specific sensors are:
+// RESON_7125.
 func DecodeReson7100Specific(reader *bytes.Reader) (sensor_data Reson7100, err error) {
 	var buffer struct {
 		ProtocolVersion                   uint16
@@ -1704,6 +1785,9 @@ func DecodeReson7100Specific(reader *bytes.Reader) (sensor_data Reson7100, err e
 	return sensor_data, err
 }
 
+// Em3Raw caters for the generation 3 EM Raw sensor metadata, specifically:
+// EM300_RAW, EM1002_RAW, EM2000_RAW, EM3000_RAW, EM120_RAW, EM3002_RAW,
+// EM3000D_RAW, EM3002D_RAW, EM121A_SIS_RAW.
 type Em3Raw struct {
 	ModelNumber                       []uint16    `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
 	PingCounter                       []uint16    `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
@@ -1761,6 +1845,10 @@ type Em3Raw struct {
 	PuStatusYawStabilization          []float32   `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
 }
 
+// DecodeEm3RawSpecific decodes generation 3 EM Raw sensor specific SubRecords and constructs
+// the Em3Raw type. Specific sensors are:
+// EM300_RAW, EM1002_RAW, EM2000_RAW, EM3000_RAW, EM120_RAW, EM3002_RAW,
+// EM3000D_RAW, EM3002D_RAW, EM121A_SIS_RAW.
 func DecodeEm3RawSpecific(reader *bytes.Reader) (sensor_data Em3Raw, err error) {
 	var (
 		buffer struct {
@@ -1991,6 +2079,7 @@ func DecodeEm3RawSpecific(reader *bytes.Reader) (sensor_data Em3Raw, err error) 
 	return sensor_data, err
 }
 
+// DeltaT caters for the DELTA_T sensor metadata.
 type DeltaT struct {
 	FileExtension        []string    `tiledb:"dtype=string,ftype=attr" filters:"zstd(level=16)"`
 	Version              []uint8     `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
@@ -2022,6 +2111,8 @@ type DeltaT struct {
 	AthwartBeamwidth     []float32   `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
 }
 
+// DecodeDeltaTSpecific decodes the DELTA_T sensor specific SubRecord and constructs
+// the DeltaT type.
 func DecodeDeltaTSpecific(reader *bytes.Reader) (sensor_data DeltaT, err error) {
 	var buffer struct {
 		FileExtension        [4]byte
@@ -2094,6 +2185,8 @@ func DecodeDeltaTSpecific(reader *bytes.Reader) (sensor_data DeltaT, err error) 
 	return sensor_data, err
 }
 
+// R2Sonic caters for the R2 Sonic sensors metadata, specifically:
+// R2SONIC_2022, R2SONIC_2024, R2SONIC_2020.
 type R2Sonic struct {
 	ModelNumber      []string    `tiledb:"dtype=string,ftype=attr" filters:"zstd(level=16)"`
 	SerialNumber     []string    `tiledb:"dtype=string,ftype=attr" filters:"zstd(level=16)"`
@@ -2125,6 +2218,9 @@ type R2Sonic struct {
 	G0DepthGateSlope []float64   `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
 }
 
+// DecodeR2SonicSpecific decodes R2 Sonic sensor specific SubRecords and constructs
+// the R2Sonic type. Specific sensors are:
+// R2SONIC_2022, R2SONIC_2024, R2SONIC_2020.
 func DecodeR2SonicSpecific(reader *bytes.Reader) (sensor_data R2Sonic, err error) {
 	var (
 		buffer1 struct {
@@ -2229,6 +2325,7 @@ func DecodeR2SonicSpecific(reader *bytes.Reader) (sensor_data R2Sonic, err error
 	return sensor_data, err
 }
 
+// ResonTSeries caters for the RESON_TSERIES sensor metadata.
 type ResonTSeries struct {
 	ProtocolVersion                   []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
 	DeviceID                          []uint32  `tiledb:"dtype=uint32,ftype=attr" filters:"zstd(level=16)"`
@@ -2287,6 +2384,8 @@ type ResonTSeries struct {
 	DeviceDescription                 []string  `tiledb:"dtype=string,ftype=attr" filters:"zstd(level=16)"`
 }
 
+// DecodeResonTSeriesSonicSpecific decodes the RESON_TSERIES sensor specific SubRecord
+// and constructs the ResonTSeries type.
 func DecodeResonTSeriesSonicSpecific(reader *bytes.Reader) (sensor_data ResonTSeries, err error) {
 	var buffer struct {
 		ProtocolVersion                   uint16
@@ -2422,6 +2521,7 @@ func DecodeResonTSeriesSonicSpecific(reader *bytes.Reader) (sensor_data ResonTSe
 	return sensor_data, err
 }
 
+// Kmall caters for the KMALL sensor metadata.
 type Kmall struct {
 	KmallVersion                       []uint8     `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
 	DgmType                            []uint8     `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
@@ -2510,6 +2610,8 @@ type Kmall struct {
 	AlarmFlag                          [][]uint8   `tiledb:"dtype=uint8,ftype=attr,var" filters:"zstd(level=16)"`
 }
 
+// DecodeKmallSpecific decodes the KMALL sensor specific SubRecord
+// and constructs the Kmall type.
 func DecodeKmallSpecific(reader *bytes.Reader) (sensor_data Kmall, err error) {
 	var (
 		buffer struct {
@@ -2804,6 +2906,8 @@ func DecodeKmallSpecific(reader *bytes.Reader) (sensor_data Kmall, err error) {
 
 // Single beam types (specified as swath as they're specific to reading from the SWATH_BATHYMETRY_PING record
 
+// SwathSbEchotrac caters for the SWATH_SB_ECHOTRAC, SWATH_SB_BATHY2000, SWATH_SB_PDD
+// sensors metadata.
 type SwathSbEchotrac struct {
 	NavigationError []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
 	MppSource       []uint8   `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
@@ -2811,6 +2915,8 @@ type SwathSbEchotrac struct {
 	DynamicDraft    []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
 }
 
+// DecodeSwathSbEchotracSpecific decodes the SWATH_SB_ECHOTRAC, SWATH_SB_BATHY2000, SWATH_SB_PDD
+// sensor specific SubRecords and constructs the SwathSbEchotrac type.
 func DecodeSwathSbEchotracSpecific(reader *bytes.Reader) (sensor_data SwathSbEchotrac, err error) {
 	var buffer struct {
 		NavigationError uint16
@@ -2834,6 +2940,7 @@ func DecodeSwathSbEchotracSpecific(reader *bytes.Reader) (sensor_data SwathSbEch
 	return sensor_data, err
 }
 
+// SwathSbMgd77 caters for the SWATH_SB_MGD77 sensor metadata.
 type SwathSbMgd77 struct {
 	TimeZoneCorrection []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
 	PositionTypeCode   []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
@@ -2843,6 +2950,8 @@ type SwathSbMgd77 struct {
 	TravelTime         []float64 `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
 }
 
+// DecodeSwathSbMGD77Specific decodes the SWATH_SB_MGD77 sensor specific SubRecord
+// and constructs the SwathSbMgd77 type.
 func DecodeSwathSbMGD77Specific(reader *bytes.Reader) (sensor_data SwathSbMgd77, err error) {
 	var buffer struct {
 		TimeZoneCorrection uint16
@@ -2870,6 +2979,7 @@ func DecodeSwathSbMGD77Specific(reader *bytes.Reader) (sensor_data SwathSbMgd77,
 	return sensor_data, err
 }
 
+// SwathSbBdb caters for the SWATH_SB_BDB sensor metadata.
 type SwathSbBdb struct {
 	TravelTime           []uint32 `tiledb:"dtype=uint32,ftype=attr" filters:"zstd(level=16)"`
 	EvaluationFlag       []uint8  `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
@@ -2880,6 +2990,8 @@ type SwathSbBdb struct {
 	DatumFlag            []uint8  `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
 }
 
+// DecodeSwathSbBdbSpecific decodes the SWATH_SB_BDB sensor specific SubRecord
+// and constructs the SwathSbBdb type.
 func DecodeSwathSbBdbSpecific(reader *bytes.Reader) (sensor_data SwathSbBdb, err error) {
 	var buffer struct {
 		TravelTime           uint32
@@ -2909,11 +3021,14 @@ func DecodeSwathSbBdbSpecific(reader *bytes.Reader) (sensor_data SwathSbBdb, err
 	return sensor_data, err
 }
 
+// SwathSbNoShDb caters for the SWATH_SB_NOSHDB sensor metadata.
 type SwathSbNoShDb struct {
 	TypeCode         []uint16 `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
 	CartographicCode []uint16 `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
 }
 
+// DecodeSwathSbNoShDbSpecific decodes the SWATH_SB_NOSHDB sensor specific SubRecord
+// and constructs the SwathSbNoShDb type.
 func DecodeSwathSbNoShDbSpecific(reader *bytes.Reader) (sensor_data SwathSbNoShDb, err error) {
 	var buffer struct {
 		TypeCode         uint16
@@ -2933,10 +3048,13 @@ func DecodeSwathSbNoShDbSpecific(reader *bytes.Reader) (sensor_data SwathSbNoShD
 	return sensor_data, err
 }
 
+// SwathSbNavisound caters for the SWATH_SB_NAVISOUND sensor metadata.
 type SwathSbNavisound struct {
 	PulseLength []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
 }
 
+// DecodeSwathSbNavisoundSpecific decodes the SWATH_SB_NAVISOUND sensor specific SubRecord
+// and constructs the SwathSbNavisound type.
 func DecodeSwathSbNavisoundSpecific(reader *bytes.Reader) (sensor_data SwathSbNavisound, err error) {
 	var buffer struct {
 		PulseLength uint16
@@ -2959,12 +3077,19 @@ func DecodeSwathSbNavisoundSpecific(reader *bytes.Reader) (sensor_data SwathSbNa
 // Others are a duplicate. But for the time being, and consistency, separate types will be
 // defined. At a future date, duplicates types and associated decoders may be considered for removal.
 
+// SbEchotrac caters for the SB_ECHOTRAC sensor metadata.
+// Whilst defined, the codebase currently doesn't handle the explicit single-beam sensor records.
+// Instead, they should use their *SWATH* equivalent SubRecord type.
 type SbEchotrac struct {
 	NavigationError []uint16 `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
 	MppSource       []uint8  `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
 	TideSource      []uint8  `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
 }
 
+// DecodeSbEchotracSpecific decodes the SB_ECHOTRAC sensor specific SubRecord
+// and constructs the SbEchotrac type.
+// Whilst defined, the codebase currently doesn't handle the explicit single-beam sensor records.
+// Instead, they should use their *SWATH* equivalent SubRecord type.
 func DecodeSbEchotracSpecific(reader *bytes.Reader) (sensor_data SbEchotrac, err error) {
 	var buffer struct {
 		NavigationError uint16
@@ -2985,6 +3110,9 @@ func DecodeSbEchotracSpecific(reader *bytes.Reader) (sensor_data SbEchotrac, err
 	return sensor_data, err
 }
 
+// SbMgd77 caters for the SB_MGD77 sensor metadata.
+// Whilst defined, the codebase currently doesn't handle the explicit single-beam sensor records.
+// Instead, they should use their *SWATH* equivalent SubRecord type.
 type SbMgd77 struct {
 	TimeZoneCorrection []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
 	PositionTypeCode   []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
@@ -2994,6 +3122,10 @@ type SbMgd77 struct {
 	TravelTime         []float64 `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
 }
 
+// DecodeSbMGD77Specific decodes the SB_MGD77 sensor specific SubRecord
+// and constructs the SbMgd77 type.
+// Whilst defined, the codebase currently doesn't handle the explicit single-beam sensor records.
+// Instead, they should use their *SWATH* equivalent SubRecord type.
 func DecodeSbMGD77Specific(reader *bytes.Reader) (sensor_data SbMgd77, err error) {
 	var buffer struct {
 		TimeZoneCorrection uint16
@@ -3020,6 +3152,9 @@ func DecodeSbMGD77Specific(reader *bytes.Reader) (sensor_data SbMgd77, err error
 	return sensor_data, err
 }
 
+// SbBdb caters for the SB_BDB sensor metadata.
+// Whilst defined, the codebase currently doesn't handle the explicit single-beam sensor records.
+// Instead, they should use their *SWATH* equivalent SubRecord type.
 type SbBdb struct {
 	TravelTime           []uint32 `tiledb:"dtype=uint32,ftype=attr" filters:"zstd(level=16)"`
 	EvaluationFlag       []uint8  `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
@@ -3030,6 +3165,10 @@ type SbBdb struct {
 	DatumFlag            []uint8  `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
 }
 
+// DecodeSbBdbSpecific decodes the SB_BDB sensor specific SubRecord
+// and constructs the SbBdb type.
+// Whilst defined, the codebase currently doesn't handle the explicit single-beam sensor reocords.
+// Instead, they should use their *SWATH* equivalent SubRecord type.
 func DecodeSbBdbSpecific(reader *bytes.Reader) (sensor_data SbBdb, err error) {
 	var buffer struct {
 		TravelTime           uint32
@@ -3058,11 +3197,18 @@ func DecodeSbBdbSpecific(reader *bytes.Reader) (sensor_data SbBdb, err error) {
 	return sensor_data, err
 }
 
+// SbNoShDb caters for the SB_NOSHDB sensor metadata.
+// Whilst defined, the codebase currently doesn't handle the explicit single-beam sensors.
+// Instead, they should use their *SWATH* equivalent SubRecord type.
 type SbNoShDb struct {
 	TypeCode         []uint16 `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
 	CartographicCode []uint16 `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
 }
 
+// DecodeSbNoShDbSpecific decodes the SB_NOSHDB sensor specific SubRecord
+// and constructs the SbNoShDb type.
+// Whilst defined, the codebase currently doesn't handle the explicit single-beam sensor records.
+// Instead, they should use their *SWATH* equivalent SubRecord type.
 func DecodeSbNoShDbSpecific(reader *bytes.Reader) (sensor_data SbNoShDb, err error) {
 	var buffer struct {
 		TypeCode         uint16
