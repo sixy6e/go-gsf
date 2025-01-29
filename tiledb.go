@@ -264,7 +264,7 @@ func CreateAttr(
 			if !status {
 				return errors.Join(ErrCreateSvpTdb, errors.New("gzip level not defined"))
 			}
-			filt, err := ZstdFilter(ctx, int32(level.(int64)))
+			filt, err := GzipFilter(ctx, int32(level.(int64)))
 			if err != nil {
 				return errors.Join(ErrCreateSvpTdb, err)
 			}
