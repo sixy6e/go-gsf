@@ -248,7 +248,7 @@ func CreateAttr(
 		case "zstd":
 			level, status := filter.Attribute("level")
 			if !status {
-				return errors.Join(ErrCreateSvpTdb, errors.New("zstd level not defined"))
+				return errors.New("zstd level not defined")
 			}
 			filt, err := ZstdFilter(ctx, int32(level.(int64)))
 			if err != nil {
@@ -262,7 +262,7 @@ func CreateAttr(
 		case "gzip":
 			level, status := filter.Attribute("level")
 			if !status {
-				return errors.Join(ErrCreateSvpTdb, errors.New("gzip level not defined"))
+				return errors.New("gzip level not defined")
 			}
 			filt, err := GzipFilter(ctx, int32(level.(int64)))
 			if err != nil {
@@ -276,7 +276,7 @@ func CreateAttr(
 		case "lz4":
 			level, status := filter.Attribute("level")
 			if !status {
-				return errors.Join(ErrCreateSvpTdb, errors.New("lz4 level not defined"))
+				return errors.New("lz4 level not defined")
 			}
 			filt, err := Lz4Filter(ctx, int32(level.(int64)))
 			if err != nil {
@@ -290,7 +290,7 @@ func CreateAttr(
 		case "rle":
 			level, status := filter.Attribute("level")
 			if !status {
-				return errors.Join(ErrCreateSvpTdb, errors.New("rle level not defined"))
+				return errors.New("rle level not defined")
 			}
 			filt, err := RleFilter(ctx, int32(level.(int64)))
 			if err != nil {
@@ -304,7 +304,7 @@ func CreateAttr(
 		case "bzip2":
 			level, status := filter.Attribute("level")
 			if !status {
-				return errors.Join(ErrCreateSvpTdb, errors.New("bzip2 level not defined"))
+				return errors.New("bzip2 level not defined")
 			}
 			filt, err := Bzip2Filter(ctx, int32(level.(int64)))
 			if err != nil {
@@ -318,7 +318,7 @@ func CreateAttr(
 		case "bitw":
 			win, status := filter.Attribute("window")
 			if !status {
-				return errors.Join(ErrCreateSvpTdb, errors.New("bitwidth window not defined"))
+				return errors.New("bitwidth window not defined")
 			}
 			filt, err := BitWidthReductionFilter(ctx, int32(win.(int64)))
 			if err != nil {
