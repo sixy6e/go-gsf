@@ -252,12 +252,12 @@ func CreateAttr(
 			}
 			filt, err := ZstdFilter(ctx, int32(level.(int64)))
 			if err != nil {
-				return errors.Join(ErrCreateSvpTdb, err)
+				return err
 			}
 			defer filt.Free()
 			err = attr_filts.AddFilter(filt)
 			if err != nil {
-				return errors.Join(ErrCreateSvpTdb, err)
+				return errors.Join(ErrAddFilters, err)
 			}
 		case "gzip":
 			level, status := filter.Attribute("level")
@@ -266,12 +266,12 @@ func CreateAttr(
 			}
 			filt, err := GzipFilter(ctx, int32(level.(int64)))
 			if err != nil {
-				return errors.Join(ErrCreateSvpTdb, err)
+				return errors.Join(ErrAddFilters, err)
 			}
 			defer filt.Free()
 			err = attr_filts.AddFilter(filt)
 			if err != nil {
-				return errors.Join(ErrCreateSvpTdb, err)
+				return errors.Join(ErrAddFilters, err)
 			}
 		case "lz4":
 			level, status := filter.Attribute("level")
@@ -280,12 +280,12 @@ func CreateAttr(
 			}
 			filt, err := Lz4Filter(ctx, int32(level.(int64)))
 			if err != nil {
-				return errors.Join(ErrCreateSvpTdb, err)
+				return errors.Join(ErrAddFilters, err)
 			}
 			defer filt.Free()
 			err = attr_filts.AddFilter(filt)
 			if err != nil {
-				return errors.Join(ErrCreateSvpTdb, err)
+				return errors.Join(ErrAddFilters, err)
 			}
 		case "rle":
 			level, status := filter.Attribute("level")
@@ -294,12 +294,12 @@ func CreateAttr(
 			}
 			filt, err := RleFilter(ctx, int32(level.(int64)))
 			if err != nil {
-				return errors.Join(ErrCreateSvpTdb, err)
+				return err
 			}
 			defer filt.Free()
 			err = attr_filts.AddFilter(filt)
 			if err != nil {
-				return errors.Join(ErrCreateSvpTdb, err)
+				return errors.Join(ErrAddFilters, err)
 			}
 		case "bzip2":
 			level, status := filter.Attribute("level")
@@ -308,12 +308,12 @@ func CreateAttr(
 			}
 			filt, err := Bzip2Filter(ctx, int32(level.(int64)))
 			if err != nil {
-				return errors.Join(ErrCreateSvpTdb, err)
+				return errors.Join(ErrAddFilters, err)
 			}
 			defer filt.Free()
 			err = attr_filts.AddFilter(filt)
 			if err != nil {
-				return errors.Join(ErrCreateSvpTdb, err)
+				return errors.Join(ErrAddFilters, err)
 			}
 		case "bitw":
 			win, status := filter.Attribute("window")
@@ -322,32 +322,32 @@ func CreateAttr(
 			}
 			filt, err := BitWidthReductionFilter(ctx, int32(win.(int64)))
 			if err != nil {
-				return errors.Join(ErrCreateSvpTdb, err)
+				return err
 			}
 			defer filt.Free()
 			err = attr_filts.AddFilter(filt)
 			if err != nil {
-				return errors.Join(ErrCreateSvpTdb, err)
+				return errors.Join(ErrAddFilters, err)
 			}
 		case "bish":
 			filt, err := tiledb.NewFilter(ctx, tiledb.TILEDB_FILTER_BITSHUFFLE)
 			if err != nil {
-				return errors.Join(ErrCreateSvpTdb, err)
+				return err
 			}
 			defer filt.Free()
 			err = attr_filts.AddFilter(filt)
 			if err != nil {
-				return errors.Join(ErrCreateSvpTdb, err)
+				return errors.Join(ErrAddFilters, err)
 			}
 		case "bysh":
 			filt, err := tiledb.NewFilter(ctx, tiledb.TILEDB_FILTER_BYTESHUFFLE)
 			if err != nil {
-				return errors.Join(ErrCreateSvpTdb, err)
+				return err
 			}
 			defer filt.Free()
 			err = attr_filts.AddFilter(filt)
 			if err != nil {
-				return errors.Join(ErrCreateSvpTdb, err)
+				return errors.Join(ErrAddFilters, err)
 			}
 		}
 	}
