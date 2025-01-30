@@ -252,6 +252,8 @@ const (
 	NULL_FLOAT64_ZERO           float64 = 0.0 // Would NaN be better?
 	NULL_UINT8_ZERO             uint8   = 0
 	NULL_UINT16_ZERO            uint16  = 0
+	NULL_UINT32_ZERO            uint32  = 0
+	NULL_UINT64_ZERO            uint64  = 0
 )
 
 // Field sizes for ping subarrays
