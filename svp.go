@@ -11,9 +11,6 @@ import (
 	stgpsr "github.com/yuin/stagparser"
 )
 
-var ErrCreateSvpTdb = errors.New("Error Creating SVP TileDB Array")
-var ErrWriteSvpTdb = errors.New("Error Writing SVP TileDB Array")
-
 // SoundVelocityProfile contains the values of sound velocity used in estimating
 // individual sounding locations.
 // It consists of; the time the profile was observed, the time it was introduced into the

@@ -14,11 +14,6 @@ import (
 	"github.com/samber/lo"
 )
 
-var ErrCreateBdTdb = errors.New("Error Creating Beam Data TileDB Array")
-var ErrWriteBdTdb = errors.New("Error Writing Beam Data TileDB Array")
-var ErrCreateMdTdb = errors.New("Error Creating Metadata TileDB Array")
-var ErrWriteMdTdb = errors.New("Error Writing Metadata TileDB Array")
-
 // PingHeader contains the base information recorded for every SWATH_BATHYMETRY_PING
 // record.
 type PingHeader struct {

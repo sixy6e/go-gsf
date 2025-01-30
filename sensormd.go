@@ -23,8 +23,6 @@ import (
 // we'll keep as uint16 and not promote to int32.
 // TODO; look at the int8 assignments and confirm if *p is unsigned
 
-var ErrSensorMetadata = errors.New("Error reading Sensor Metadata")
-
 // Seabeam caters for the SEABEAM sensor metadata.
 type Seabeam struct {
 	EclipseTime []uint16 `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`

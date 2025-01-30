@@ -7,8 +7,6 @@ import (
 	"time"
 )
 
-var ErrSensorImgMetadata = errors.New("Error reading Sensor Imagery Metadata")
-
 // Em3Imagery caters for generation 3 EM sensors. Specifically:
 // EM120, EM120_RAW, EM300, EM300_RAW, EM1002, EM1002_RAW, EM2000, EM2000_RAW,
 // EM3000, EM3000_RAW, EM3002, EM3002_RAW, EM3000D, EM3000D_RAW, EM3002D,

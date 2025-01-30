@@ -11,17 +11,6 @@ import (
 	stgpsr "github.com/yuin/stagparser"
 )
 
-var ErrAddFilters = errors.New("Error Adding Filter To FilterList")
-var ErrDims = errors.New("Error Dims is > 2")
-var ErrDtype = errors.New("Error slice datatype is unexpected") // we should not have any slices > 2D
-var ErrSetBuff = errors.New("Error setting tiledb buffer")
-var ErrFiltList = errors.New("Error creating tiledb filter list")
-var ErrNewAttr = errors.New("Error creating tiledb attribute")
-var ErrNewFilt = errors.New("Error creating tiledb filter")
-var ErrSetFiltList = errors.New("Error setting tiledb filter list")
-var ErrAddAttr = errors.New("Error adding tiledb attribute")
-var ErrZstdFilt = errors.New("Error creating tiledb zstandard filter")
-
 // The initial version id to use in the GSF to TileDB conversion process.
 // Whilst not a timestamp, the value can be considered as the first version
 // defined for the conversion and creation process.

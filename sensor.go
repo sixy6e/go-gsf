@@ -8,9 +8,6 @@ import (
 	tiledb "github.com/TileDB-Inc/TileDB-Go"
 )
 
-var ErrSensor = errors.New("Sensor not supported")
-var ErrWriteSensorMd = errors.New("Error writing sensor metadata")
-
 // SensorMetadata embeds the base types for each sensor defined in the GSF file.
 // If a new sensor is to be incorporated, it needs to be specifically defined and
 // embedded here.

@@ -12,9 +12,6 @@ import (
 	stgpsr "github.com/yuin/stagparser"
 )
 
-var ErrCreateAttitudeTdb = errors.New("Error Creating Attitude TileDB Array")
-var ErrWriteAttitudeTdb = errors.New("Error Writing Attitude TileDB Array")
-
 // The start and end datetimes, might not reflect the true start and end datetimes.
 // The records use and offset for each measurement, so the end time will surely
 // occur after the base time for the last attitude record.

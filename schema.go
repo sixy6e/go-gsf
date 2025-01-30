@@ -11,12 +11,6 @@ import (
 	stgpsr "github.com/yuin/stagparser"
 )
 
-var ErrCreateAttributeTdb = errors.New("Error Creating Attribute for TileDB Array")
-var ErrCreateMdDenseTdb = errors.New("Error Creating Dense Metadata TileDB Array")
-var ErrCreateBeamSparseTdb = errors.New("Error Creating Beam Sparse TileDB Array")
-var ErrCreateSchemaTdb = errors.New("Error Creating TileDB Schema")
-var ErrCreateDimTdb = errors.New("Error Creating TileDB Dimension")
-
 // pascalCase convert a string separated by underscores into
 // PascalCase. For example, ALPHA_BETA_GAMMA -> AlphaBetaGamma.
 func pascalCase(name string) (result string) {
