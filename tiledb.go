@@ -12,9 +12,15 @@ import (
 )
 
 var ErrAddFilters = errors.New("Error Adding Filter To FilterList")
-var ErrDims = errors.New("Error Dims is > 2")                   // we should not have any slices > 2D
+var ErrDims = errors.New("Error Dims is > 2")
 var ErrDtype = errors.New("Error slice datatype is unexpected") // we should not have any slices > 2D
-var ErrSetBuff = errors.New("Error setting tiledb buffer")      // we should not have any slices > 2D
+var ErrSetBuff = errors.New("Error setting tiledb buffer")
+var ErrFiltList = errors.New("Error creating tiledb filter list")
+var ErrNewAttr = errors.New("Error creating tiledb attribute")
+var ErrNewFilt = errors.New("Error creating tiledb filter")
+var ErrSetFiltList = errors.New("Error setting tiledb filter list")
+var ErrAddAttr = errors.New("Error adding tiledb attribute")
+var ErrZstdFilt = errors.New("Error creating tiledb zstandard filter")
 
 // The initial version id to use in the GSF to TileDB conversion process.
 // Whilst not a timestamp, the value can be considered as the first version
@@ -204,7 +210,7 @@ func CreateAttr(
 
 	def, status = tiledb_defs["dtype"]
 	if !status {
-		return errors.Join(ErrCreateSvpTdb, errors.New("dtype tag not found"))
+		return errors.New("dtype tag not found")
 	}
 	dtype, _ := def.Attribute("dtype")
 
@@ -238,7 +244,7 @@ func CreateAttr(
 
 	attr_filts, err := tiledb.NewFilterList(ctx)
 	if err != nil {
-		return errors.Join(ErrCreateSvpTdb, err)
+		return errors.Join(ErrFiltList, err)
 	}
 	defer attr_filts.Free()
 
@@ -355,7 +361,7 @@ func CreateAttr(
 	// create attr
 	attr, err := tiledb.NewAttribute(ctx, field_name, tdb_dtype)
 	if err != nil {
-		return errors.Join(ErrCreateSvpTdb, err)
+		return errors.Join(ErrNewAttr, err)
 	}
 	defer attr.Free()
 
@@ -364,20 +370,20 @@ func CreateAttr(
 	if status {
 		attr.SetCellValNum(tiledb.TILEDB_VAR_NUM)
 		if err != nil {
-			return errors.Join(ErrCreateSvpTdb, err)
+			return err
 		}
 	}
 
 	// attach filter pipeline to attr
 	err = AttachFilters(attr_filts, attr)
 	if err != nil {
-		return errors.Join(ErrCreateSvpTdb, err)
+		return errors.Join(ErrSetFiltList, err)
 	}
 
 	// attach attr to schema
 	err = schema.AddAttributes(attr)
 	if err != nil {
-		return errors.Join(ErrCreateSvpTdb, err)
+		return errors.Join(ErrAddAttr, err)
 	}
 
 	// variable length attrs filters
@@ -386,32 +392,32 @@ func CreateAttr(
 	if status {
 		offset_filts, err := tiledb.NewFilterList(ctx)
 		if err != nil {
-			return errors.Join(ErrCreateSvpTdb, err)
+			return errors.Join(ErrFiltList, err)
 		}
 
 		dd_filt, err := tiledb.NewFilter(ctx, tiledb.TILEDB_FILTER_POSITIVE_DELTA)
 		if err != nil {
-			return errors.Join(ErrCreateSvpTdb, err)
+			return errors.Join(ErrNewFilt, err)
 		}
 
 		bysh_filt, err := tiledb.NewFilter(ctx, tiledb.TILEDB_FILTER_BYTESHUFFLE)
 		if err != nil {
-			return errors.Join(ErrCreateSvpTdb, err)
+			return errors.Join(ErrNewFilt, err)
 		}
 
 		zstd_filt, err := ZstdFilter(ctx, int32(16))
 		if err != nil {
-			return errors.Join(ErrCreateSvpTdb, err)
+			return errors.Join(ErrZstdFilt, err)
 		}
 
 		err = AddFilters(offset_filts, dd_filt, bysh_filt, zstd_filt)
 		if err != nil {
-			return errors.Join(ErrCreateSvpTdb, err)
+			return errors.Join(ErrAddFilters, err)
 		}
 
 		err = schema.SetOffsetsFilterList(offset_filts)
 		if err != nil {
-			return errors.Join(ErrCreateSvpTdb, err)
+			return errors.Join(ErrAddFilters, err)
 		}
 	}
 
