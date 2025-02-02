@@ -13,7 +13,8 @@ import (
 // slice, but index values have included values that are outside the array.
 // i.e TimeSeries samples = 6, BottomDetectIndex = 6
 // This would be ok if it is 1-based indexing stored in the GSF file for this particular
-// piece of data, except that the BottomDetectIndex also contains values of 0.
+// piece of data, except that the BottomDetectIndex also contains values of 0,
+// eg TimeSeries samples = 2, BottomDetectIndex = 0.
 
 // BrbIntensity
 type BrbIntensity struct {
