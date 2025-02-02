@@ -285,6 +285,7 @@ func (pd *PingData) appendPingData(singlePing *PingData, contains_intensity bool
 		// pd.Brb_intensity.BottomDetect = append(singlePing.Brb_intensity.BottomDetect, singlePing.Brb_intensity.BottomDetect...)
 		pd.Brb_intensity.BottomDetectIndex = append(pd.Brb_intensity.BottomDetectIndex, singlePing.Brb_intensity.BottomDetectIndex...)
 		pd.Brb_intensity.StartRange = append(pd.Brb_intensity.StartRange, singlePing.Brb_intensity.StartRange...)
+		pd.Brb_intensity.TsMean = append(pd.Brb_intensity.TsMean, singlePing.Brb_intensity.TsMean...)
 		pd.Brb_intensity.sample_count = append(pd.Brb_intensity.sample_count, singlePing.Brb_intensity.sample_count...)
 
 		// Sensor_imagery_metadata
@@ -1448,6 +1449,12 @@ func (pd *PingData) writeBeamData(ctx *tiledb.Context, array *tiledb.Array, ping
 			_, err = query.SetDataBuffer("StartRange", pd.Brb_intensity.StartRange)
 			if err != nil {
 				errn := errors.New("Error setting TileDB data buffer for attribute: StartRange")
+				return errors.Join(err, errn)
+			}
+
+			_, err = query.SetDataBuffer("TsMean", pd.Brb_intensity.TsMean)
+			if err != nil {
+				errn := errors.New("Error setting TileDB data buffer for attribute: TsMean")
 				return errors.Join(err, errn)
 			}
 		case SECTOR_NUMBER:

@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"encoding/binary"
 	"math"
+
+	"github.com/samber/lo"
 )
 
 // Removing BrbIntensity.BottomDetect for now. Need to get more info on what the
@@ -17,8 +19,9 @@ import (
 type BrbIntensity struct {
 	TimeSeries []float64 `tiledb:"dtype=float64,ftype=attr,var" filters:"zstd(level=16)"`
 	// BottomDetect      []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
-	BottomDetectIndex []uint16 `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
-	StartRange        []uint16 `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	BottomDetectIndex []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	StartRange        []uint16  `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
+	TsMean            []float64 `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
 	sample_count      []uint16
 	// timeseries        [][]float32
 }
@@ -38,6 +41,7 @@ func newBrbIntensity(number_beams int) (brb_int BrbIntensity) {
 		// make([]float32, 0, number_beams),
 		make([]uint16, 0, number_beams),
 		make([]uint16, 0, number_beams),
+		make([]float64, 0, number_beams),
 		make([]uint16, 0, number_beams),
 	}
 	return brb_int
@@ -72,6 +76,7 @@ func DecodeBrbIntensity(reader *bytes.Reader, nbeams uint16, sensor_id SubRecord
 		three_bytes  [3]byte
 		unpack_bytes [4]byte
 		scl_off      ScaleOffset
+		ts_mean      []float64
 		// n_bytes      int64
 		// img_md      SensorImageryMetadata
 		// timeseries [][]float32
@@ -82,6 +87,7 @@ func DecodeBrbIntensity(reader *bytes.Reader, nbeams uint16, sensor_id SubRecord
 	// detect_val = make([]float32, 0, nbeams)
 	st_rng = make([]uint16, 0, nbeams)
 	timeseries = make([]float64, 0, nbeams*66) // 66 ... just becasuse
+	ts_mean = make([]float64, 0, nbeams)
 
 	_ = binary.Read(reader, binary.BigEndian, &base)
 
@@ -262,6 +268,9 @@ func DecodeBrbIntensity(reader *bytes.Reader, nbeams uint16, sensor_id SubRecord
 		if base2.Sample_count == 0 {
 			samples_f64 = make([]float64, 1)
 			samples_f64[0] = math.NaN()
+			ts_mean = append(ts_mean, math.NaN())
+		} else {
+			ts_mean = append(ts_mean, lo.Mean(samples_f64))
 		}
 
 		// append
@@ -273,6 +282,7 @@ func DecodeBrbIntensity(reader *bytes.Reader, nbeams uint16, sensor_id SubRecord
 	// intensity.BottomDetect = detect_val
 	intensity.StartRange = st_rng
 	intensity.BottomDetectIndex = detect
+	intensity.TsMean = ts_mean
 	intensity.sample_count = count
 
 	return intensity, img_md, err
