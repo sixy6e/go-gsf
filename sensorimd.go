@@ -83,8 +83,8 @@ func DecodeEm4Imagery(reader *bytes.Reader) (img_md Em4Imagery, scl_off ScaleOff
 			RangeNorm           uint16
 			StartTvgRamp        uint16
 			StopTvgRamp         uint16
-			BackscatterN        int16
-			BackscatterO        int16
+			BackscatterN        uint16
+			BackscatterO        uint16
 			TransmitBeamWidth   uint16
 			TvgCrossOver        uint16
 			Offset              int16
@@ -109,8 +109,8 @@ func DecodeEm4Imagery(reader *bytes.Reader) (img_md Em4Imagery, scl_off ScaleOff
 	img_md.RangeNorm = []uint16{base.RangeNorm}
 	img_md.StartTvgRamp = []uint16{base.StartTvgRamp}
 	img_md.StopTvgRamp = []uint16{base.StopTvgRamp}
-	img_md.BackscatterN = []float32{float32(base.BackscatterN) / SCALE_1_F32}
-	img_md.BackscatterO = []float32{float32(base.BackscatterO) / SCALE_1_F32}
+	img_md.BackscatterN = []float32{float32(int16(base.BackscatterN)) / SCALE_1_F32}
+	img_md.BackscatterO = []float32{float32(int16(base.BackscatterO)) / SCALE_1_F32}
 	img_md.TransmitBeamWidth = []float32{float32(base.TransmitBeamWidth) / SCALE_1_F32}
 	img_md.TvgCrossOver = []float32{float32(base.TvgCrossOver) / SCALE_1_F32}
 
