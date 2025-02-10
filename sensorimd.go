@@ -301,8 +301,8 @@ func DecodeR2SonicImagery(reader *bytes.Reader) (img_md R2SonicImagery, scl_off 
 			TxPulseWidth     uint32
 			TxBeamWidthVert  uint32
 			TxBeamWidthHoriz uint32
-			TxSteeringVert   int32
-			TxSteeringHoriz  int32
+			TxSteeringVert   uint32
+			TxSteeringHoriz  uint32
 			TxMiscInfo       uint32
 			RxBandwidth      uint32
 			RxSampleRate     uint32
@@ -310,13 +310,13 @@ func DecodeR2SonicImagery(reader *bytes.Reader) (img_md R2SonicImagery, scl_off 
 			RxGain           uint32
 			RxSpreading      uint32
 			RxAbsorption     uint32
-			RxMountTilt      int32
+			RxMountTilt      uint32
 			RxMiscInfo       uint32
 			Spare1           [2]byte
 			NumberBeams      uint16
 		}
 		var_buf struct {
-			MoreInfo [6]int32
+			MoreInfo [6]uint32
 			Spare2   [32]byte
 		}
 	)
@@ -339,8 +339,8 @@ func DecodeR2SonicImagery(reader *bytes.Reader) (img_md R2SonicImagery, scl_off 
 	img_md.TxPulseWidth = []float64{float64(buffer.TxPulseWidth) / SCALE_7_F64}
 	img_md.TxBeamWidthVert = []float64{float64(buffer.TxBeamWidthVert) / SCALE_6_F64}
 	img_md.TxBeamWidthHoriz = []float64{float64(buffer.TxBeamWidthHoriz) / SCALE_6_F64}
-	img_md.TxSteeringVert = []float64{float64(buffer.TxSteeringVert) / SCALE_6_F64}
-	img_md.TxSteeringHoriz = []float64{float64(buffer.TxSteeringHoriz) / SCALE_6_F64}
+	img_md.TxSteeringVert = []float64{float64(int32(buffer.TxSteeringVert)) / SCALE_6_F64}
+	img_md.TxSteeringHoriz = []float64{float64(int32(buffer.TxSteeringHoriz)) / SCALE_6_F64}
 	img_md.TxMiscInfo = []uint32{buffer.TxMiscInfo}
 	img_md.RxBandwidth = []float64{float64(buffer.RxBandwidth) / SCALE_4_F64}
 	img_md.RxSampleRate = []float64{float64(buffer.RxSampleRate) / SCALE_3_F64}
@@ -348,7 +348,7 @@ func DecodeR2SonicImagery(reader *bytes.Reader) (img_md R2SonicImagery, scl_off 
 	img_md.RxGain = []float64{float64(buffer.RxGain) / SCALE_2_F64}
 	img_md.RxSpreading = []float64{float64(buffer.RxSpreading) / SCALE_3_F64}
 	img_md.RxAbsorption = []float64{float64(buffer.RxAbsorption) / SCALE_3_F64}
-	img_md.RxMountTilt = []float64{float64(buffer.RxMountTilt) / SCALE_6_F64}
+	img_md.RxMountTilt = []float64{float64(int32(buffer.RxMountTilt)) / SCALE_6_F64}
 	img_md.RxMiscInfo = []uint32{buffer.RxMiscInfo}
 	img_md.NumberBeams = []uint16{buffer.NumberBeams}
 
@@ -361,7 +361,7 @@ func DecodeR2SonicImagery(reader *bytes.Reader) (img_md R2SonicImagery, scl_off 
 	}
 	minfo := make([]float64, 0, 6)
 	for i := 0; i < 6; i++ {
-		minfo = append(minfo, float64(var_buf.MoreInfo[i])/SCALE_6_F64)
+		minfo = append(minfo, float64(int32(var_buf.MoreInfo[i]))/SCALE_6_F64)
 	}
 
 	img_md.MoreInfo = [][]float64{minfo}
