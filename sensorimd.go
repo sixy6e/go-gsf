@@ -76,8 +76,8 @@ func DecodeEm4Imagery(reader *bytes.Reader) (img_md Em4Imagery, scl_off ScaleOff
 
 	var (
 		base struct {
-			SamplingFrequency1  int32
-			SamplingFrequency2  int32
+			SamplingFrequency1  uint32
+			SamplingFrequency2  uint32
 			MeanAbsorption      uint16
 			TransmitPulseLength uint16
 			RangeNorm           uint16
