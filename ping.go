@@ -381,25 +381,25 @@ func decode_ping_hdr(reader *bytes.Reader, gsfd GsfDetails) PingHeader {
 		hdr_base struct {
 			Seconds         uint32
 			Nano_seconds    uint32
-			Longitude       int32
-			Latitude        int32
+			Longitude       uint32
+			Latitude        uint32
 			Number_beams    uint16
 			Centre_beam     uint16
 			Ping_flags      uint16
 			Reserved        uint16
-			Tide_corrector  int16
-			Depth_corrector int32
+			Tide_corrector  uint16
+			Depth_corrector uint32
 			Heading         uint16
-			Pitch           int16
-			Roll            int16
-			Heave           int16
+			Pitch           uint16
+			Roll            uint16
+			Heave           uint16
 			Course          uint16
 			Speed           uint16
 		}
 		hdr_xtra struct {
-			Height             int32
-			Separation         int32
-			GPS_tide_corrector int32
+			Height             uint32
+			Separation         uint32
+			GPS_tide_corrector uint32
 			Spare              [2]byte
 		}
 		hdr    PingHeader
@@ -413,9 +413,9 @@ func decode_ping_hdr(reader *bytes.Reader, gsfd GsfDetails) PingHeader {
 	major, _ := gsfd.MajorMinor()
 	if major > 2 {
 		_ = binary.Read(reader, binary.BigEndian, &hdr_xtra)
-		height = float64(hdr_xtra.Height) / SCALE_3_F64
-		sep = float64(hdr_xtra.Separation) / SCALE_3_F64
-		gps_tc = float64(hdr_xtra.GPS_tide_corrector) / SCALE_3_F64
+		height = float64(int32(hdr_xtra.Height)) / SCALE_3_F64
+		sep = float64(int32(hdr_xtra.Separation)) / SCALE_3_F64
+		gps_tc = float64(int32(hdr_xtra.GPS_tide_corrector)) / SCALE_3_F64
 	} else {
 		height = NULL_HEIGHT
 		sep = NULL_SEP
@@ -423,17 +423,17 @@ func decode_ping_hdr(reader *bytes.Reader, gsfd GsfDetails) PingHeader {
 	}
 
 	hdr.Timestamp = time.Unix(int64(hdr_base.Seconds), int64(hdr_base.Nano_seconds)).UTC()
-	hdr.Longitude = float64(hdr_base.Longitude) / SCALE_7_F64
-	hdr.Latitude = float64(hdr_base.Latitude) / SCALE_7_F64
+	hdr.Longitude = float64(int32(hdr_base.Longitude)) / SCALE_7_F64
+	hdr.Latitude = float64(int32(hdr_base.Latitude)) / SCALE_7_F64
 	hdr.Number_beams = hdr_base.Number_beams
 	hdr.Centre_beam = hdr_base.Centre_beam
 	hdr.Ping_flags = hdr_base.Ping_flags
-	hdr.Tide_corrector = float32(float64(hdr_base.Tide_corrector) / SCALE_2_F64)
-	hdr.Depth_corrector = float64(hdr_base.Depth_corrector) / SCALE_2_F64
+	hdr.Tide_corrector = float32(float64(int16(hdr_base.Tide_corrector)) / SCALE_2_F64)
+	hdr.Depth_corrector = float64(int32(hdr_base.Depth_corrector)) / SCALE_2_F64
 	hdr.Heading = float32(float64(hdr_base.Heading) / SCALE_2_F64)
-	hdr.Pitch = float32(float64(hdr_base.Pitch) / SCALE_2_F64)
-	hdr.Roll = float32(float64(hdr_base.Roll) / SCALE_2_F64)
-	hdr.Heave = float32(float64(hdr_base.Heave) / SCALE_2_F64)
+	hdr.Pitch = float32(float64(int16(hdr_base.Pitch)) / SCALE_2_F64)
+	hdr.Roll = float32(float64(int16(hdr_base.Roll)) / SCALE_2_F64)
+	hdr.Heave = float32(float64(int16(hdr_base.Heave)) / SCALE_2_F64)
 	hdr.Course = float32(float64(hdr_base.Course) / SCALE_2_F64)
 	hdr.Speed = float32(float64(hdr_base.Speed) / SCALE_2_F64)
 	hdr.Height = height
