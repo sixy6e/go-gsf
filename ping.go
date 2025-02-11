@@ -82,9 +82,9 @@ type ScaleOffset struct {
 type ScaleFactor struct {
 	Id SubRecordID
 	ScaleOffset
-	Compression_flag int
+	Compression_flag uint32
 	Compressed       bool // if true, then the associated array is compressed
-	Field_size       int
+	Field_size       uint32
 }
 
 // BeamArray is the main type for holding all the BeamArray data contained within the SubRecords
@@ -462,11 +462,11 @@ func SubRecHdr(reader *bytes.Reader, offset int64) SubRecord {
 // scale_factors_rec decodes the scale factors subrecord defined by SCALE_FACTORS.
 func scale_factors_rec(reader *bytes.Reader) (scale_factors map[SubRecordID]ScaleFactor, nbytes int64) {
 	var (
-		i            int32
-		num_factors  int32
+		i            uint32
+		num_factors  uint32
 		scale_factor ScaleFactor
 	)
-	data := make([]int32, 3) // id, scale, offset
+	data := make([]uint32, 3) // id, scale, offset
 	scale_factors = map[SubRecordID]ScaleFactor{}
 
 	_ = binary.Read(reader, binary.BigEndian, &num_factors)
@@ -475,15 +475,15 @@ func scale_factors_rec(reader *bytes.Reader) (scale_factors map[SubRecordID]Scal
 	for i = 0; i < num_factors; i++ {
 		_ = binary.Read(reader, binary.BigEndian, &data)
 
-		subid := (int64(data[0]) & 0xFF000000) >> 24   // TODO; define const for 0xFF000000
-		comp_flag := (int(data[0]) & 0x00FF0000) >> 16 // TODO; define const for 0x00FF0000
-		comp := (comp_flag & 0x0F) == 1                // TODO; define const for 0x00FF0000
+		subid := (data[0] & 0xFF000000) >> 24     // TODO; define const for 0xFF000000
+		comp_flag := (data[0] & 0x00FF0000) >> 16 // TODO; define const for 0x00FF0000
+		comp := (comp_flag & 0x0F) == 1           // TODO; define const for 0x00FF0000
 		cnvrt_subid := SubRecordID(subid)
 		field_size := comp_flag & 0xF0
 
 		scale_factor = ScaleFactor{
 			Id:               cnvrt_subid,
-			ScaleOffset:      ScaleOffset{float64(data[1]), float64(data[2])},
+			ScaleOffset:      ScaleOffset{float64(data[1]), float64(int32(data[2]))},
 			Compression_flag: comp_flag, // TODO; implement compression decoder
 			Compressed:       comp,
 			Field_size:       field_size, // this field doesn't appear to be used in the C code ???
