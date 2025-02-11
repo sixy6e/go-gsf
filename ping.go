@@ -445,16 +445,16 @@ func decode_ping_hdr(reader *bytes.Reader, gsfd GsfDetails) PingHeader {
 
 // SubRecHdr decodes the header for a SubRecord and constructs a SubRecord.
 func SubRecHdr(reader *bytes.Reader, offset int64) SubRecord {
-	var subrecord_hdr int32
+	var subrecord_hdr uint32
 
 	_ = binary.Read(reader, binary.BigEndian, &subrecord_hdr)
 
-	subrecord_id := (int(subrecord_hdr) & 0xFF000000) >> 24 // TODO; define a const as int64
-	subrecord_size := int(subrecord_hdr) & 0x00FFFFFF       // TODO; define a const as int64
+	subrecord_id := (subrecord_hdr & 0xFF000000) >> 24 // TODO; define a const as int64
+	subrecord_size := subrecord_hdr & 0x00FFFFFF       // TODO; define a const as int64
 
 	byte_index := offset + 4
 
-	subhdr := SubRecord{SubRecordID(subrecord_id), uint32(subrecord_size), byte_index} // include a byte_index??
+	subhdr := SubRecord{SubRecordID(subrecord_id), subrecord_size, byte_index} // include a byte_index??
 
 	return subhdr
 }
