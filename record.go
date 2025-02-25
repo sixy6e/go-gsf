@@ -153,16 +153,16 @@ func (sr *SubRecord) DecodeSignedTwoByteArray(
 	scale_factor ScaleFactor,
 ) (scaled_data []float64) {
 	var (
-		data []int16
+		data []uint16
 	)
 
-	data = make([]int16, number_beams)
+	data = make([]uint16, number_beams)
 	scaled_data = make([]float64, number_beams)
 
 	_ = binary.Read(reader, binary.BigEndian, &data)
 
 	for k, v := range data {
-		scaled_data[k] = apply_scale_factor(float64(v), scale_factor)
+		scaled_data[k] = apply_scale_factor(float64(int16(v)), scale_factor)
 	}
 
 	return scaled_data
@@ -197,16 +197,16 @@ func (sr *SubRecord) DecodeSignedFourByteArray(
 	scale_factor ScaleFactor,
 ) (scaled_data []float64) {
 	var (
-		data []int32
+		data []uint32
 	)
 
-	data = make([]int32, number_beams)
+	data = make([]uint32, number_beams)
 	scaled_data = make([]float64, number_beams)
 
 	_ = binary.Read(reader, binary.BigEndian, &data)
 
 	for k, v := range data {
-		scaled_data[k] = apply_scale_factor(float64(v), scale_factor)
+		scaled_data[k] = apply_scale_factor(float64(int32(v)), scale_factor)
 	}
 
 	return scaled_data
@@ -237,22 +237,22 @@ func (sr *SubRecord) DecodeSubRecArray(
 	case true:
 		switch bytes_per_beam {
 		case BYTES_PER_BEAM_ONE:
-			data := make([]int8, number_beams)
+			data := make([]int8, number_beams) // reference decoded direct into int8
 			_ = binary.Read(reader, binary.BigEndian, &data)
 			for k, v := range data {
 				scaled_data[k] = apply_scale_factor(float64(v), scale_factor)
 			}
 		case BYTES_PER_BEAM_TWO:
-			data := make([]int16, number_beams)
+			data := make([]uint16, number_beams)
 			_ = binary.Read(reader, binary.BigEndian, &data)
 			for k, v := range data {
-				scaled_data[k] = apply_scale_factor(float64(v), scale_factor)
+				scaled_data[k] = apply_scale_factor(float64(int32(v)), scale_factor)
 			}
 		case BYTES_PER_BEAM_FOUR:
-			data := make([]int32, number_beams)
+			data := make([]uint32, number_beams)
 			_ = binary.Read(reader, binary.BigEndian, &data)
 			for k, v := range data {
-				scaled_data[k] = apply_scale_factor(float64(v), scale_factor)
+				scaled_data[k] = apply_scale_factor(float64(int32(v)), scale_factor)
 			}
 		}
 	case false:
