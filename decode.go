@@ -4,7 +4,7 @@ import (
 	"github.com/samber/lo"
 )
 
-type RecordID int32
+type RecordID uint32
 type SubRecordID int32
 type SensorID uint16
 

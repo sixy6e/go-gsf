@@ -449,8 +449,8 @@ func SubRecHdr(reader *bytes.Reader, offset int64) SubRecord {
 
 	_ = binary.Read(reader, binary.BigEndian, &subrecord_hdr)
 
-	subrecord_id := (subrecord_hdr & 0xFF000000) >> 24 // TODO; define a const as int64
-	subrecord_size := subrecord_hdr & 0x00FFFFFF       // TODO; define a const as int64
+	subrecord_id := (subrecord_hdr & 0xFF000000) >> 24
+	subrecord_size := subrecord_hdr & 0x00FFFFFF
 
 	byte_index := offset + 4
 
@@ -475,9 +475,9 @@ func scale_factors_rec(reader *bytes.Reader) (scale_factors map[SubRecordID]Scal
 	for i = 0; i < num_factors; i++ {
 		_ = binary.Read(reader, binary.BigEndian, &data)
 
-		subid := (data[0] & 0xFF000000) >> 24     // TODO; define const for 0xFF000000
-		comp_flag := (data[0] & 0x00FF0000) >> 16 // TODO; define const for 0x00FF0000
-		comp := (comp_flag & 0x0F) == 1           // TODO; define const for 0x00FF0000
+		subid := (data[0] & 0xFF000000) >> 24
+		comp_flag := (data[0] & 0x00FF0000) >> 16
+		comp := (comp_flag & 0x0F) == 1
 		cnvrt_subid := SubRecordID(subid)
 		field_size := comp_flag & 0xF0
 

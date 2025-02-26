@@ -14,6 +14,7 @@ type RecordHdr struct {
 	Datasize      uint32
 	Byte_index    int64
 	Checksum_flag bool
+	Reserved      uint32
 }
 
 // DecodeRecordHdr acts as the constructor for RecordHdr by decoding the header of
@@ -25,9 +26,10 @@ func DecodeRecordHdr(stream Stream) RecordHdr {
 	blob := [2]uint32{}
 	_ = binary.Read(stream, binary.BigEndian, &blob)
 	data_size := blob[0]
-	record_id := RecordID(blob[1])
-	bits := int64(record_id) & 0x80000000
+	record_id := RecordID(blob[1] & 0x003FFFFF)
+	bits := blob[1] & 0x80000000
 	checksum_flag := bits == 1
+	reserved := (blob[1] & 0x7FC00000) >> 22
 
 	pos, _ := Tell(stream)
 
@@ -36,6 +38,7 @@ func DecodeRecordHdr(stream Stream) RecordHdr {
 		Datasize:      data_size,
 		Byte_index:    pos,
 		Checksum_flag: checksum_flag,
+		Reserved:      reserved,
 	}
 
 	return rec_hdr
