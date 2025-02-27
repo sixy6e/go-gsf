@@ -833,7 +833,7 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 			beam_array.HorizontalError = f64_to_f32(beam_data)
 			ba_read = append(ba_read, pascalCase(SubRecordNames[HORIZONTAL_ERROR]))
 		case INTENSITY_SERIES:
-			intensity, img_md, err = DecodeBrbIntensity(reader, pinfo.Number_Beams, sensor_id)
+			intensity, img_md, err = DecodeBrbIntensity(reader, pinfo.Number_Beams, sensor_id, pinfo.scale_factors[sub_rec.Id])
 			if err != nil {
 				return ping_data, err
 			}

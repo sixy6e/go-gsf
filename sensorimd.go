@@ -51,6 +51,16 @@ func DecodeEm3Imagery(reader *bytes.Reader) (img_md Em3Imagery, scl_off ScaleOff
 	img_md.BackscatterO = []uint8{base.BackscatterO}
 	img_md.MeanAbsorption = []float32{float32(base.MeanAbsorption) / SCALE_2_F32}
 
+	// The gsf spec mentions that the scale factor is 2 for EM3 based sensors
+	// Ideally the stored value should be used, unfortunately, some of the sample
+	// files had incorrect scale factors due to a bug in the source software that
+	// generated the file.
+	// The other issue, is that some source software put different values again
+	// in the SCALE_FACTORS SubRecord, and were using those.
+	// So if at any point, the intensity timeseries data doesn't look right,
+	// potentially the code needs to be adjusted to read the correct factors.
+
+	// scl_off = ScaleOffset{float64(2), float64(base.Offset)}
 	scl_off = ScaleOffset{float64(base.Scale), float64(base.Offset)}
 
 	return img_md, scl_off, err
@@ -114,6 +124,16 @@ func DecodeEm4Imagery(reader *bytes.Reader) (img_md Em4Imagery, scl_off ScaleOff
 	img_md.TransmitBeamWidth = []float32{float32(base.TransmitBeamWidth) / SCALE_1_F32}
 	img_md.TvgCrossOver = []float32{float32(base.TvgCrossOver) / SCALE_1_F32}
 
+	// The gsf spec mentions that the scale factor is 10 for EM4 based sensors
+	// Ideally the stored value should be used, unfortunately, some of the sample
+	// files had incorrect scale factors due to a bug in the source software that
+	// generated the file.
+	// The other issue, is that some source software put different values again
+	// in the SCALE_FACTORS SubRecord, and were using those.
+	// So if at any point, the intensity timeseries data doesn't look right,
+	// potentially the code needs to be adjusted to read the correct factors.
+
+	// scl_off = ScaleOffset{float64(10), float64(base.Offset)}
 	scl_off = ScaleOffset{float64(base.Scale), float64(base.Offset)}
 
 	return img_md, scl_off, err
@@ -127,7 +147,7 @@ type Reson7100Imagery struct {
 
 // DecodeReson7100Imagery decodes Reson7100 INTENSITY_SERIES SubRecords and constructs
 // the Reson7100Imagery type.
-func DecodeReson7100Imagery(reader *bytes.Reader) (img_md Reson7100Imagery, scl_off ScaleOffset, err error) {
+func DecodeReson7100Imagery(reader *bytes.Reader) (img_md Reson7100Imagery, err error) {
 	var buffer struct {
 		Size  uint16
 		Spare [64]byte
@@ -136,14 +156,12 @@ func DecodeReson7100Imagery(reader *bytes.Reader) (img_md Reson7100Imagery, scl_
 	if err != nil {
 		errn := errors.New("Reson7100 sensor")
 		err = errors.Join(err, ErrSensorImgMetadata, errn)
-		return img_md, scl_off, err
+		return img_md, err
 	}
 
 	img_md.Null = []uint8{0}
 
-	scl_off = ScaleOffset{Scale: float64(1), Offset: float64(0)}
-
-	return img_md, scl_off, err
+	return img_md, err
 }
 
 // Reson7100Imagery caters for the ResonTSeries sensor.
@@ -153,7 +171,7 @@ type ResonTSeriesImagery struct {
 
 // DecodeResonTSeriesImagery decodes the ResonTSeries INTENSITY_SERIES SubRecord
 // and constructs the ResonTSeriesImagery type.
-func DecodeResonTSeriesImagery(reader *bytes.Reader) (img_md ResonTSeriesImagery, scl_off ScaleOffset, err error) {
+func DecodeResonTSeriesImagery(reader *bytes.Reader) (img_md ResonTSeriesImagery, err error) {
 	var buffer struct {
 		Size  uint16
 		Spare [64]byte
@@ -162,14 +180,12 @@ func DecodeResonTSeriesImagery(reader *bytes.Reader) (img_md ResonTSeriesImagery
 	if err != nil {
 		errn := errors.New("ResonTSeries sensor")
 		err = errors.Join(err, ErrSensorImgMetadata, errn)
-		return img_md, scl_off, err
+		return img_md, err
 	}
 
 	img_md.Null = []uint8{0}
 
-	scl_off = ScaleOffset{Scale: float64(1), Offset: float64(0)}
-
-	return img_md, scl_off, err
+	return img_md, err
 }
 
 // Reson8100Imagery caters for Reson8100 series sensors specifically:
@@ -180,7 +196,7 @@ type Reson8100Imagery struct {
 
 // DecodeReson8100Imagery decodes Reson8100 INTENSITY_SERIES SubRecord and constructs
 // the Reson8100Imagery type.
-func DecodeReson8100Imagery(reader *bytes.Reader) (img_md Reson8100Imagery, scl_off ScaleOffset, err error) {
+func DecodeReson8100Imagery(reader *bytes.Reader) (img_md Reson8100Imagery, err error) {
 	var buffer struct {
 		Spare [8]byte
 	}
@@ -188,14 +204,12 @@ func DecodeReson8100Imagery(reader *bytes.Reader) (img_md Reson8100Imagery, scl_
 	if err != nil {
 		errn := errors.New("Reson8100 sensor")
 		err = errors.Join(err, ErrSensorImgMetadata, errn)
-		return img_md, scl_off, err
+		return img_md, err
 	}
 
 	img_md.Null = []uint8{0}
 
-	scl_off = ScaleOffset{Scale: float64(1), Offset: float64(0)}
-
-	return img_md, scl_off, err
+	return img_md, err
 }
 
 // KmallImagery caters for KMALL sensors.
@@ -205,7 +219,7 @@ type KmallImagery struct {
 
 // DecodeKmallImagery decodes KMALL INTENSITY_SERIES SubRecord and constructs the
 // KmallImagery type.
-func DecodeKmallImagery(reader *bytes.Reader) (img_md KmallImagery, scl_off ScaleOffset, err error) {
+func DecodeKmallImagery(reader *bytes.Reader) (img_md KmallImagery, err error) {
 	var buffer struct {
 		Spare [64]byte
 	}
@@ -213,14 +227,12 @@ func DecodeKmallImagery(reader *bytes.Reader) (img_md KmallImagery, scl_off Scal
 	if err != nil {
 		errn := errors.New("KMALL sensor")
 		err = errors.Join(err, ErrSensorImgMetadata, errn)
-		return img_md, scl_off, err
+		return img_md, err
 	}
 
 	img_md.Null = []uint8{0}
 
-	scl_off = ScaleOffset{Scale: float64(1), Offset: float64(0)}
-
-	return img_md, scl_off, err
+	return img_md, err
 }
 
 // Klein5410BssImagery caters for the KLEIN_5410_BSS sensor.
@@ -232,7 +244,7 @@ type Klein5410BssImagery struct {
 
 // DecodeKlein5410BssImagery decodes KLEIN_5410_BSS INTENSITY_SERIES SubRecord
 // and constructs the Klein5410BssImagery type.
-func DecodeKlein5410BssImagery(reader *bytes.Reader) (img_md Klein5410BssImagery, scl_off ScaleOffset, err error) {
+func DecodeKlein5410BssImagery(reader *bytes.Reader) (img_md Klein5410BssImagery, err error) {
 	var buffer struct {
 		ResolutionMode uint16
 		TvgPage        uint16
@@ -243,16 +255,14 @@ func DecodeKlein5410BssImagery(reader *bytes.Reader) (img_md Klein5410BssImagery
 	if err != nil {
 		errn := errors.New("Klein5410BSS sensor")
 		err = errors.Join(err, ErrSensorImgMetadata, errn)
-		return img_md, scl_off, err
+		return img_md, err
 	}
 
 	img_md.ResolutionMode = []uint16{buffer.ResolutionMode}
 	img_md.TvgPage = []uint16{buffer.TvgPage}
 	img_md.BeamId = [][]uint16{buffer.BeamId[:]}
 
-	scl_off = ScaleOffset{Scale: float64(1), Offset: float64(0)}
-
-	return img_md, scl_off, err
+	return img_md, err
 }
 
 // R2SonicImagery caters for R2Sonic sensors specifically:
@@ -286,7 +296,7 @@ type R2SonicImagery struct {
 
 // DecodeR2SonicImagery decodes R2Sonic INTENSITY_SERIES SubRecord and constructs
 // the R2SonicImagery type.
-func DecodeR2SonicImagery(reader *bytes.Reader) (img_md R2SonicImagery, scl_off ScaleOffset, err error) {
+func DecodeR2SonicImagery(reader *bytes.Reader) (img_md R2SonicImagery, err error) {
 	var (
 		buffer struct {
 			ModelNumber      [12]byte
@@ -326,7 +336,7 @@ func DecodeR2SonicImagery(reader *bytes.Reader) (img_md R2SonicImagery, scl_off 
 	if err != nil {
 		errn := errors.New("R2Sonic sensor")
 		err = errors.Join(err, ErrSensorImgMetadata, errn)
-		return img_md, scl_off, err
+		return img_md, err
 	}
 	img_md.ModelNumber = []string{string(buffer.ModelNumber[:])}
 	img_md.SerialNumber = []string{string(buffer.SerialNumber[:])}
@@ -357,7 +367,7 @@ func DecodeR2SonicImagery(reader *bytes.Reader) (img_md R2SonicImagery, scl_off 
 	if err != nil {
 		errn := errors.New("R2Sonic sensor")
 		err = errors.Join(err, ErrSensorImgMetadata, errn)
-		return img_md, scl_off, err
+		return img_md, err
 	}
 	minfo := make([]float64, 0, 6)
 	for i := 0; i < 6; i++ {
@@ -366,7 +376,5 @@ func DecodeR2SonicImagery(reader *bytes.Reader) (img_md R2SonicImagery, scl_off 
 
 	img_md.MoreInfo = [][]float64{minfo}
 
-	scl_off = ScaleOffset{Scale: float64(1), Offset: float64(0)}
-
-	return img_md, scl_off, err
+	return img_md, err
 }
