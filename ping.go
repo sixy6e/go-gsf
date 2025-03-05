@@ -1055,7 +1055,7 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 			if err != nil {
 				return ping_data, err
 			}
-		case EM710, EM302, EM122, EM2040:
+		case EM710, EM302, EM122, EM2040, ME70BO:
 			// DecodeEM4
 			sen_md.Em4, err = DecodeEm4Specific(reader)
 			if err != nil {

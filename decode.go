@@ -159,7 +159,8 @@ const (
 	R2SONIC_2020
 	SR_NOT_DEFINED // the spec makes no mention of ID 154
 	RESON_TSERIES
-	KMALL // 156
+	KMALL  // 156
+	ME70BO // 157 (added in GDF v3.10)
 )
 
 // Single beam sensor subrecord IDs.

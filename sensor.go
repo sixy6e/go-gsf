@@ -202,7 +202,7 @@ func (sm *SensorMetadata) writeSensorMetadata(ctx *tiledb.Context, array *tiledb
 			errn := errors.New("Error writing SensorMetadata.Em3 metadata")
 			return errors.Join(err, errn)
 		}
-	case EM710, EM302, EM122, EM2040:
+	case EM710, EM302, EM122, EM2040, ME70BO:
 		err := setStructFieldBuffers(query, &sm.Em4)
 		if err != nil {
 			errn := errors.New("Error writing SensorMetadata.Em4 metadata")
@@ -426,7 +426,7 @@ func (sm *SensorMetadata) attachAttrs(schema *tiledb.ArraySchema, ctx *tiledb.Co
 			err_md := errors.New("Error creating SensorMetadata.Em3 attributes")
 			return errors.Join(err, err_md)
 		}
-	case EM710, EM302, EM122, EM2040:
+	case EM710, EM302, EM122, EM2040, ME70BO:
 		err = schemaAttrs(&sm.Em4, schema, ctx)
 		if err != nil {
 			err_md := errors.New("Error creating SensorMetadata.Em4 attributes")
@@ -736,7 +736,7 @@ func (sm *SensorMetadata) appendSensorMetadata(sp *SensorMetadata, sensor_id Sub
 			field_sp := rf_sp.FieldByName(name)
 			field_pd.Set(reflect.AppendSlice(field_pd, field_sp))
 		}
-	case EM710, EM302, EM122, EM2040:
+	case EM710, EM302, EM122, EM2040, ME70BO:
 		rf_pd := reflect.ValueOf(&sm.Em4).Elem()
 		rf_sp := reflect.ValueOf(&sp.Em4).Elem()
 		types := rf_pd.Type()
@@ -982,7 +982,7 @@ func newSensorMetadata(number_pings int, sensor_id SubRecordID) (sen_md SensorMe
 		md := Em3{}
 		chunkedStructSlices(&md, number_pings)
 		sen_md.Em3 = md
-	case EM710, EM302, EM122, EM2040:
+	case EM710, EM302, EM122, EM2040, ME70BO:
 		md := Em4{}
 		chunkedStructSlices(&md, number_pings)
 		sen_md.Em4 = md
@@ -1095,7 +1095,7 @@ func (sim *SensorImageryMetadata) writeSensorImageryMetadata(ctx *tiledb.Context
 	}
 
 	switch sensor_id {
-	case EM710, EM302, EM122, EM2040:
+	case EM710, EM302, EM122, EM2040, ME70BO:
 		err := setStructFieldBuffers(query, &sim.Em4_imagery)
 		if err != nil {
 			errn := errors.New("Error writing SensorImageryMetadata.Em4_imagery metadata")
@@ -1192,7 +1192,7 @@ func (sim *SensorImageryMetadata) attachAttrs(schema *tiledb.ArraySchema, ctx *t
 			err_md := errors.New("Error creating SensorImageryMetadata.Reson8100_imagery attributes")
 			return errors.Join(err, err_md)
 		}
-	case EM122, EM302, EM710, EM2040:
+	case EM122, EM302, EM710, EM2040, ME70BO:
 		err = schemaAttrs(&Em4Imagery{}, schema, ctx)
 		if err != nil {
 			err_md := errors.New("Error creating SensorImageryMetadata.Em4_imagery attributes")
@@ -1229,7 +1229,7 @@ func (sim *SensorImageryMetadata) appendSensorImageryMetadata(sp *SensorImageryM
 	// sp refers to a single pings worth of SensorImageryMetadata
 	// whereas sim should be pointing back to the chunks of pings
 	switch sensor_id {
-	case EM710, EM302, EM122, EM2040:
+	case EM710, EM302, EM122, EM2040, ME70BO:
 		rf_pd := reflect.ValueOf(&sim.Em4_imagery).Elem()
 		rf_sp := reflect.ValueOf(&sp.Em4_imagery).Elem()
 		types := rf_pd.Type()
@@ -1333,7 +1333,7 @@ func newSensorImageryMetadata(number_pings int, sensor_id SubRecordID) (sen_img_
 	sen_img_md = SensorImageryMetadata{}
 
 	switch sensor_id {
-	case EM710, EM302, EM122, EM2040:
+	case EM710, EM302, EM122, EM2040, ME70BO:
 		em4i := Em4Imagery{}
 		chunkedStructSlices(&em4i, number_pings)
 		sen_img_md.Em4_imagery = em4i
