@@ -40,7 +40,7 @@ const (
 )
 
 const (
-	MAX_BEAM_ARRAY_SUBRECORD_ID SubRecordID = 30
+	MAX_BEAM_ARRAY_SUBRECORD_ID SubRecordID = 31
 )
 
 // Base record IDs.
@@ -91,6 +91,7 @@ const (
 	SONAR_HORZ_UNCERTAINTY
 	DETECTION_WINDOW
 	MEAN_ABS_COEF // 30
+	TVG_DB        // 31 (added in GSF v3.10)
 )
 
 // General subrecord IDs.
