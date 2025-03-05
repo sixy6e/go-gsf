@@ -2592,8 +2592,8 @@ type Kmall struct {
 	TotalSignalLengthSec               [][]float64 `tiledb:"dtype=float64,ftype=attr,var" filters:"zstd(level=16)"`
 	PulseShading                       [][]uint8   `tiledb:"dtype=uint8,ftype=attr,var" filters:"zstd(level=16)"`
 	SignalWaveForm                     [][]uint8   `tiledb:"dtype=uint8,ftype=attr,var" filters:"zstd(level=16)"`
-	HighVoltageLevelDB                 [][]float64 `tiledb:"dtype=float64,ftype=attr,var" filters:"zstd(level=16)"`
-	SectorTrackingCorrDB               [][]float64 `tiledb:"dtype=float64,ftype=attr,var" filters:"zstd(level=16)"`
+	HighVoltageLevelDb                 [][]float64 `tiledb:"dtype=float64,ftype=attr,var" filters:"zstd(level=16)"`
+	SectorTrackingCorrDb               [][]float64 `tiledb:"dtype=float64,ftype=attr,var" filters:"zstd(level=16)"`
 	EffectiveSignalLengthSec           [][]float64 `tiledb:"dtype=float64,ftype=attr,var" filters:"zstd(level=16)"`
 	NumBytesRxInfo                     []uint16    `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
 	NumSoundingsMaxMain                []uint16    `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
@@ -2698,8 +2698,8 @@ func DecodeKmallSpecific(reader *bytes.Reader) (sensor_data Kmall, err error) {
 			TotalSignalLengthSec     uint32
 			PulseShading             uint8
 			SignalWaveForm           uint8
-			HighVoltageLevelDB       uint32
-			SectorTrackingCorrDB     uint32
+			HighVoltageLevelDb       uint32
+			SectorTrackingCorrDb     uint32
 			EffectiveSignalLengthSec uint32
 			Spare                    [8]byte
 		}
@@ -2824,8 +2824,8 @@ func DecodeKmallSpecific(reader *bytes.Reader) (sensor_data Kmall, err error) {
 	TotalSignalLengthSec := make([]float64, 0, nsectors)
 	PulseShading := make([]uint8, 0, nsectors)
 	SignalWaveForm := make([]uint8, 0, nsectors)
-	HighVoltageLevelDB := make([]float64, 0, nsectors)
-	SectorTrackingCorrDB := make([]float64, 0, nsectors)
+	HighVoltageLevelDb := make([]float64, 0, nsectors)
+	SectorTrackingCorrDb := make([]float64, 0, nsectors)
 	EffectiveSignalLengthSec := make([]float64, 0, nsectors)
 
 	for i := uint16(0); i < ping_buf.NumTxSectors; i++ {
@@ -2847,8 +2847,8 @@ func DecodeKmallSpecific(reader *bytes.Reader) (sensor_data Kmall, err error) {
 		TotalSignalLengthSec = append(TotalSignalLengthSec, float64(int32(sec_buf.TotalSignalLengthSec))/SCALE_6_F64)
 		PulseShading = append(PulseShading, sec_buf.PulseShading)
 		SignalWaveForm = append(SignalWaveForm, sec_buf.SignalWaveForm)
-		HighVoltageLevelDB = append(HighVoltageLevelDB, float64(int32(sec_buf.HighVoltageLevelDB))/SCALE_6_F64)
-		SectorTrackingCorrDB = append(SectorTrackingCorrDB, float64(int32(sec_buf.SectorTrackingCorrDB))/SCALE_6_F64)
+		HighVoltageLevelDb = append(HighVoltageLevelDb, float64(int32(sec_buf.HighVoltageLevelDb))/SCALE_6_F64)
+		SectorTrackingCorrDb = append(SectorTrackingCorrDb, float64(int32(sec_buf.SectorTrackingCorrDb))/SCALE_6_F64)
 		EffectiveSignalLengthSec = append(EffectiveSignalLengthSec, float64(int32(sec_buf.EffectiveSignalLengthSec))/SCALE_6_F64)
 	}
 
@@ -2864,6 +2864,9 @@ func DecodeKmallSpecific(reader *bytes.Reader) (sensor_data Kmall, err error) {
 	sensor_data.TotalSignalLengthSec = [][]float64{TotalSignalLengthSec}
 	sensor_data.PulseShading = [][]uint8{PulseShading}
 	sensor_data.SignalWaveForm = [][]uint8{SignalWaveForm}
+	sensor_data.HighVoltageLevelDb = [][]float64{HighVoltageLevelDb}
+	sensor_data.SectorTrackingCorrDb = [][]float64{SectorTrackingCorrDb}
+	sensor_data.EffectiveSignalLengthSec = [][]float64{EffectiveSignalLengthSec}
 
 	// block five (rx info)
 	err = binary.Read(reader, binary.BigEndian, &rx_buf)
