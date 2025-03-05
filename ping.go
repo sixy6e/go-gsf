@@ -122,6 +122,7 @@ type BeamArray struct {
 	SonarHorzUncertainty []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
 	DetectionWindow      []float64 `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
 	MeanAbsCoef          []float64 `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
+	TvgDb                []float64 `tiledb:"dtype=float64,ftype=attr" filters:"zstd(level=16)"`
 }
 
 // newBeamArray is a helper func for initialising BeamArray where
@@ -928,6 +929,16 @@ func SwathBathymetryPingRec(buffer []byte, rec RecordHdr, pinfo PingInfo, sensor
 			)
 			beam_array.MeanAbsCoef = beam_data
 			ba_read = append(ba_read, pascalCase(SubRecordNames[MEAN_ABS_COEF]))
+		case TVG_DB:
+			beam_data = sub_rec.DecodeSubRecArray(
+				reader,
+				pinfo.Number_Beams,
+				pinfo.scale_factors[sub_rec.Id],
+				bytes_per_beam,
+				false,
+			)
+			beam_array.TvgDb = beam_data
+			ba_read = append(ba_read, pascalCase(SubRecordNames[TVG_DB]))
 
 		// sensor specific subrecords
 		case SEABEAM:
@@ -1509,6 +1520,12 @@ func (pd *PingData) writeBeamData(ctx *tiledb.Context, array *tiledb.Array, ping
 			_, err = query.SetDataBuffer(name, pd.Beam_array.MeanAbsCoef)
 			if err != nil {
 				errn := errors.New("Error setting TileDB data buffer for attribute: MeanAbsCoef")
+				return errors.Join(err, errn)
+			}
+		case TVG_DB:
+			_, err = query.SetDataBuffer(name, pd.Beam_array.TvgDb)
+			if err != nil {
+				errn := errors.New("Error setting TileDB data buffer for attribute: TvgDb")
 				return errors.Join(err, errn)
 			}
 		}
