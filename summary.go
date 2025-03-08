@@ -27,15 +27,15 @@ type SwathBathySummary struct {
 // within the GSF file.
 func DecodeSwathBathySummary(reader *bytes.Reader) SwathBathySummary {
 	var buffer struct {
-		First_ping_sec      int32
-		First_ping_nano_sec int32
-		Last_ping_sec       int32
-		Last_ping_nano_sec  int32
-		Min_lat             int32
-		Min_lon             int32
-		Max_lat             int32
-		Max_lon             int32
-		Min_depth           int32
+		First_ping_sec      uint32
+		First_ping_nano_sec uint32
+		Last_ping_sec       uint32
+		Last_ping_nano_sec  uint32
+		Min_lat             uint32
+		Min_lon             uint32
+		Max_lat             uint32
+		Max_lon             uint32
+		Min_depth           uint32
 		Max_depth           int32
 	}
 
@@ -45,10 +45,10 @@ func DecodeSwathBathySummary(reader *bytes.Reader) SwathBathySummary {
 	summary := SwathBathySummary{
 		Start_datetime: time.Unix(int64(buffer.First_ping_sec), int64(buffer.First_ping_nano_sec)).UTC(),
 		End_datetime:   time.Unix(int64(buffer.Last_ping_sec), int64(buffer.Last_ping_nano_sec)).UTC(),
-		Min_longitude:  float64(buffer.Min_lon) / SCALE_7_F64,
-		Max_longitude:  float64(buffer.Max_lon) / SCALE_7_F64,
-		Min_latitude:   float64(buffer.Min_lat) / SCALE_7_F64,
-		Max_latitude:   float64(buffer.Max_lat) / SCALE_7_F64,
+		Min_longitude:  float64(int32(buffer.Min_lon)) / SCALE_7_F64,
+		Max_longitude:  float64(int32(buffer.Max_lon)) / SCALE_7_F64,
+		Min_latitude:   float64(int32(buffer.Min_lat)) / SCALE_7_F64,
+		Max_latitude:   float64(int32(buffer.Max_lat)) / SCALE_7_F64,
 		Min_depth:      float64(buffer.Min_depth) / SCALE_2_F64,
 		Max_depth:      float64(buffer.Max_depth) / SCALE_2_F64,
 	}
