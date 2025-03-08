@@ -60,9 +60,9 @@ func svp_header(reader *bytes.Reader) (hdr svp_hdr) {
 			Obs_nano_seconds uint32
 			App_seconds      uint32
 			App_nano_seconds uint32
-			Longitude        int32
-			Latitude         int32
-			N_points         int32
+			Longitude        uint32
+			Latitude         uint32
+			N_points         uint32
 		}
 	)
 
@@ -74,8 +74,8 @@ func svp_header(reader *bytes.Reader) (hdr svp_hdr) {
 	hdr.Applied_timestamp = time.Unix(int64(base.App_seconds), int64(base.App_nano_seconds)).UTC()
 
 	// all the provided sample files have 0.0 for the lon and lat; WTH‽
-	hdr.Longitude = float64(base.Longitude) / SCALE_7_F64
-	hdr.Latitude = float64(base.Latitude) / SCALE_7_F64
+	hdr.Longitude = float64(int32(base.Longitude)) / SCALE_7_F64
+	hdr.Latitude = float64(int32(base.Latitude)) / SCALE_7_F64
 
 	hdr.N_points = uint64(base.N_points)
 
@@ -90,7 +90,7 @@ func svp_header(reader *bytes.Reader) (hdr svp_hdr) {
 // ping timestamp (within some acceptable tolerance).
 func DecodeSoundVelocityProfile(buffer []byte) SoundVelocityProfile {
 	var (
-		base      []int32
+		base      []uint32
 		depth_f32 []float32
 		svp_f32   []float32
 		svp       SoundVelocityProfile
@@ -109,7 +109,7 @@ func DecodeSoundVelocityProfile(buffer []byte) SoundVelocityProfile {
 	// are single elements containing an array of data
 	// base.Depth = make([]int32, hdr.N_points)
 	// base.Sound_velocity = make([]int32, hdr.N_points)
-	base = make([]int32, 2*hdr.N_points)
+	base = make([]uint32, 2*hdr.N_points)
 
 	reader = bytes.NewReader(buffer[idx:])
 	err := binary.Read(reader, binary.BigEndian, &base)
