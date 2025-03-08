@@ -333,7 +333,7 @@ func (g *GsfFile) Info() FileInfo {
 			_ = binary.Read(g.Stream, binary.BigEndian, &buffer)
 			reader = bytes.NewReader(buffer)
 			att_hdr := attitude_header(reader)
-			meas_counts[RecordNames[rec.Id]] += att_hdr.Measurements
+			meas_counts[RecordNames[rec.Id]] += uint64(att_hdr.Measurements)
 		case SOUND_VELOCITY_PROFILE:
 			// at this stage, only interested in the total observation count
 			buffer = make([]byte, rec.Datasize)
