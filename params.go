@@ -48,11 +48,11 @@ func DecodeProcessingParameters(buffer []byte) map[string]interface{} {
 		val        string
 		svals      []string
 		base       struct {
-			Seconds      int32
-			Nano_seconds int32
-			N_params     int16
+			Seconds      uint32
+			Nano_seconds uint32
+			N_params     uint16
 		}
-		i int16
+		i uint16
 		j int64
 	)
 
@@ -81,7 +81,7 @@ func DecodeProcessingParameters(buffer []byte) map[string]interface{} {
 	// and the param value containing "=" eg "22APPLIED_ROLL_BIAS=0.03" where 22 is string length
 	// rather than retaining the raw string, parse all values to proper types
 	// with the intent on outputing the data as a JSON doc
-	for i = 0; i < base.N_params; i++ {
+	for i = uint16(0); i < base.N_params; i++ {
 
 		// size of param (length of string)
 		param_size = int16(binary.BigEndian.Uint16(buffer[start_idx:end_idx]))
