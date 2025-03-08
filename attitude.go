@@ -37,7 +37,7 @@ type attitude_hdr struct {
 	Seconds      int64
 	Nano_seconds int64
 	Timestamp    time.Time
-	Measurements uint64
+	Measurements uint16
 }
 
 // attitude_header decodes the header for the ATTITUDE record and constructs the
@@ -45,9 +45,9 @@ type attitude_hdr struct {
 func attitude_header(reader *bytes.Reader) (att_hdr attitude_hdr) {
 	var (
 		base struct {
-			Seconds      int32
-			Nano_seconds int32
-			Measurements int16
+			Seconds      uint32
+			Nano_seconds uint32
+			Measurements uint16
 		}
 	)
 	_ = binary.Read(reader, binary.BigEndian, &base)
@@ -55,7 +55,7 @@ func attitude_header(reader *bytes.Reader) (att_hdr attitude_hdr) {
 	att_hdr.Seconds = int64(base.Seconds)
 	att_hdr.Nano_seconds = int64(base.Nano_seconds)
 	att_hdr.Timestamp = acq_time
-	att_hdr.Measurements = uint64(base.Measurements)
+	att_hdr.Measurements = base.Measurements
 	return att_hdr
 }
 
@@ -67,10 +67,10 @@ func DecodeAttitude(buffer []byte) Attitude {
 	var (
 		idx  int64 = 0
 		base struct {
-			Time_offset int16
-			Pitch       int16
-			Roll        int16
-			Heave       int16
+			Time_offset uint16
+			Pitch       uint16
+			Roll        uint16
+			Heave       uint16
 			Heading     uint16
 		}
 		offset time.Duration
@@ -90,15 +90,15 @@ func DecodeAttitude(buffer []byte) Attitude {
 		Heading:   make([]float32, att_hdr.Measurements),
 	}
 
-	for i := uint64(0); i < att_hdr.Measurements; i++ {
+	for i := uint16(0); i < att_hdr.Measurements; i++ {
 		_ = binary.Read(reader, binary.BigEndian, &base)
 
 		// the offset is scaled by 1000, meaning the scaled units are in milliseconds
 		offset = time.Duration(base.Time_offset)
 		attitude.Timestamp[i] = att_hdr.Timestamp.Add(time.Millisecond * offset)
-		attitude.Pitch[i] = float32(float64(base.Pitch) / SCALE_2_F64)
-		attitude.Roll[i] = float32(float64(base.Roll) / SCALE_2_F64)
-		attitude.Heave[i] = float32(float64(base.Heave) / SCALE_2_F64)
+		attitude.Pitch[i] = float32(float64(int16(base.Pitch)) / SCALE_2_F64)
+		attitude.Roll[i] = float32(float64(int16(base.Roll)) / SCALE_2_F64)
+		attitude.Heave[i] = float32(float64(int16(base.Heave)) / SCALE_2_F64)
 		attitude.Heading[i] = float32(float64(base.Heading) / SCALE_2_F64)
 	}
 
