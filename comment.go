@@ -17,9 +17,9 @@ type Comment struct {
 // is for capturing anything of interest, events etc.
 func DecodeComment(buffer []byte) Comment {
 	var buffer2 struct {
-		Seconds        int32
-		Nano_seconds   int32
-		Comment_length int32
+		Seconds        uint32
+		Nano_seconds   uint32
+		Comment_length uint32
 	}
 
 	reader := bytes.NewReader(buffer)
