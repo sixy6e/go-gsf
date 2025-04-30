@@ -1418,7 +1418,7 @@ func DecodeEm4Specific(reader *bytes.Reader) (sensor_data Em4, err error) {
 	sensor_data.RunTimeDatagramTime = []time.Time{time.Unix(
 		int64(runtime_buffer.RunTimeDatagramTime_sec),
 		int64(runtime_buffer.RunTimeDatagramTime_nsec),
-	)}
+	).UTC()}
 	sensor_data.RunTimePingCounter = []uint16{runtime_buffer.RunTimePingCounter}
 	sensor_data.RunTimeSerialNumber = []uint16{runtime_buffer.RunTimeSerialNumber}
 	sensor_data.RunTimeOperatorStationStatus = []uint8{runtime_buffer.RunTimeOperatorStationStatus}
