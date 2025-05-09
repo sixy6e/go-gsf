@@ -1,6 +1,7 @@
 package gsf
 
 import (
+	"errors"
 	"math"
 
 	"github.com/samber/lo"
@@ -19,10 +20,23 @@ import (
 // differ between pings though.
 // If issues arise later, or a case of inconsistencies in schemas occur for these
 // other fields is found, then something can be done.
-func (pd *PingData) fillNulls(singlePing *PingData) error {
+func (pd *PingData) fillNulls(singlePing *PingData, sensor_id SubRecordID) error {
 	nbeams := singlePing.Ping_headers.Number_beams[0]
 	left, _ := lo.Difference(pd.ba_subrecords, singlePing.ba_subrecords)
 	_ = pd.beamArrayNulls(uint64(nbeams), left)
+
+	intensity := lo.ContainsBy(left, func(name string) bool {
+		return BeamDataName2SubRecordID[name] == INTENSITY_SERIES
+	})
+
+	if intensity == true {
+		// Sensor_imagery_metadata is missing from ping, append nulls
+		simd := nullSensorImagery(sensor_id)
+		err := pd.Sensor_imagery_metadata.appendSensorImageryMetadata(&simd, sensor_id)
+		if err != nil {
+			return errors.Join(err, errors.New("Error appending SensorImageryMetadata"))
+		}
+	}
 	return nil
 }
 
