@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"errors"
+	"math"
 	"time"
 )
 
@@ -18,6 +19,20 @@ type Em3Imagery struct {
 	BackscatterN   []uint8   `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
 	BackscatterO   []uint8   `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
 	MeanAbsorption []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+}
+
+// nullEm3Imagery initialises Em3Imagery with a null/fill value.
+// Used for instances where this data isn't acquired for a given ping.
+func nullEm3Imagery() (imd Em3Imagery) {
+	imd = Em3Imagery{
+		[]uint16{NULL_UINT16_ZERO},
+		[]uint16{NULL_UINT16_ZERO},
+		[]uint16{NULL_UINT16_ZERO},
+		[]uint8{NULL_UINT8_ZERO},
+		[]uint8{NULL_UINT8_ZERO},
+		[]float32{float32(math.NaN())},
+	}
+	return imd
 }
 
 // DecodeEm3Imagery decodes generation 3 EM INTENSITY_SERIES SubRecord and
@@ -79,6 +94,24 @@ type Em4Imagery struct {
 	BackscatterO        []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
 	TransmitBeamWidth   []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
 	TvgCrossOver        []float32 `tiledb:"dtype=float32,ftype=attr" filters:"zstd(level=16)"`
+}
+
+// NullEm4Imagery initialises Em4Imagery with a null/fill value.
+// Used for instances where this data isn't acquired for a given ping.
+func nullEm4Imagery() (imd Em4Imagery) {
+	imd = Em4Imagery{
+		[]float64{math.NaN()},
+		[]float32{float32(math.NaN())},
+		[]float32{float32(math.NaN())},
+		[]uint16{NULL_UINT16_ZERO},
+		[]uint16{NULL_UINT16_ZERO},
+		[]uint16{NULL_UINT16_ZERO},
+		[]float32{float32(math.NaN())},
+		[]float32{float32(math.NaN())},
+		[]float32{float32(math.NaN())},
+		[]float32{float32(math.NaN())},
+	}
+	return imd
 }
 
 // DecodeEm4Imagery decodes generation 4 EM INTENSITY_SERIES SubRecords and constructs the Em4Imagery type.
@@ -145,6 +178,15 @@ type Reson7100Imagery struct {
 	Null []uint8 `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
 }
 
+// nullReson7100Imagery initialises Reson7100Imagery with a null/fill value.
+// Used for instances where this data isn't acquired for a given ping.
+func nullReson7100Imagery() (imd Reson7100Imagery) {
+	imd = Reson7100Imagery{
+		[]uint8{NULL_UINT8_ZERO},
+	}
+	return imd
+}
+
 // DecodeReson7100Imagery decodes Reson7100 INTENSITY_SERIES SubRecords and constructs
 // the Reson7100Imagery type.
 func DecodeReson7100Imagery(reader *bytes.Reader) (img_md Reson7100Imagery, err error) {
@@ -167,6 +209,15 @@ func DecodeReson7100Imagery(reader *bytes.Reader) (img_md Reson7100Imagery, err 
 // Reson7100Imagery caters for the ResonTSeries sensor.
 type ResonTSeriesImagery struct {
 	Null []uint8 `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
+}
+
+// nullResonTSeriesImagery initialises ResonTSeriesImagery with a null/fill value.
+// Used for instances where this data isn't acquired for a given ping.
+func nullResonTSeriesImagery() (imd ResonTSeriesImagery) {
+	imd = ResonTSeriesImagery{
+		[]uint8{NULL_UINT8_ZERO},
+	}
+	return imd
 }
 
 // DecodeResonTSeriesImagery decodes the ResonTSeries INTENSITY_SERIES SubRecord
@@ -194,6 +245,15 @@ type Reson8100Imagery struct {
 	Null []uint8 `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
 }
 
+// nullReson8100Imagery initialises Reson8100Imagery with a null/fill value.
+// Used for instances where this data isn't acquired for a given ping.
+func nullReson8100Imagery() (imd Reson8100Imagery) {
+	imd = Reson8100Imagery{
+		[]uint8{NULL_UINT8_ZERO},
+	}
+	return imd
+}
+
 // DecodeReson8100Imagery decodes Reson8100 INTENSITY_SERIES SubRecord and constructs
 // the Reson8100Imagery type.
 func DecodeReson8100Imagery(reader *bytes.Reader) (img_md Reson8100Imagery, err error) {
@@ -215,6 +275,15 @@ func DecodeReson8100Imagery(reader *bytes.Reader) (img_md Reson8100Imagery, err 
 // KmallImagery caters for KMALL sensors.
 type KmallImagery struct {
 	Null []uint8 `tiledb:"dtype=uint8,ftype=attr" filters:"zstd(level=16)"`
+}
+
+// nullKmallImagery initialises KmallImagery with a null/fill value.
+// Used for instances where this data isn't acquired for a given ping.
+func nullKmallImagery() (imd KmallImagery) {
+	imd = KmallImagery{
+		[]uint8{NULL_UINT8_ZERO},
+	}
+	return imd
 }
 
 // DecodeKmallImagery decodes KMALL INTENSITY_SERIES SubRecord and constructs the
@@ -240,6 +309,17 @@ type Klein5410BssImagery struct {
 	ResolutionMode []uint16   `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
 	TvgPage        []uint16   `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
 	BeamId         [][]uint16 `tiledb:"dtype=uint16,ftype=attr,var" filters:"zstd(level=16)"`
+}
+
+// nullKlein5410BssImagery initialises Klein5410BssImagery with a null/fill value.
+// Used for instances where this data isn't acquired for a given ping.
+func nullKlein5410BssImagery() (imd Klein5410BssImagery) {
+	imd = Klein5410BssImagery{
+		[]uint16{NULL_UINT16_ZERO},
+		[]uint16{NULL_UINT16_ZERO},
+		[][]uint16{{NULL_UINT16_ZERO}},
+	}
+	return imd
 }
 
 // DecodeKlein5410BssImagery decodes KLEIN_5410_BSS INTENSITY_SERIES SubRecord
@@ -292,6 +372,38 @@ type R2SonicImagery struct {
 	RxMiscInfo       []uint32    `tiledb:"dtype=uint32,ftype=attr" filters:"zstd(level=16)"`
 	NumberBeams      []uint16    `tiledb:"dtype=uint16,ftype=attr" filters:"zstd(level=16)"`
 	MoreInfo         [][]float64 `tiledb:"dtype=float64,ftype=attr,var" filters:"zstd(level=16)"`
+}
+
+// nullR2SonicImagery initialises R2SonicImagery with a null/fill value.
+// Used for instances where this data isn't acquired for a given ping.
+func nullR2SonicImagery() (imd R2SonicImagery) {
+	imd = R2SonicImagery{
+		[]string{"NULL"},
+		[]string{"NULL"},
+		[]time.Time{time.Unix(0, 0).UTC()},
+		[]uint32{NULL_UINT32_ZERO},
+		[]float64{NULL_FLOAT64_ZERO},
+		[]float64{NULL_FLOAT64_ZERO},
+		[]float64{NULL_FLOAT64_ZERO},
+		[]float64{NULL_FLOAT64_ZERO},
+		[]float64{NULL_FLOAT64_ZERO},
+		[]float64{NULL_FLOAT64_ZERO},
+		[]float64{NULL_FLOAT64_ZERO},
+		[]float64{NULL_FLOAT64_ZERO},
+		[]float64{NULL_FLOAT64_ZERO},
+		[]uint32{NULL_UINT32_ZERO},
+		[]float64{NULL_FLOAT64_ZERO},
+		[]float64{NULL_FLOAT64_ZERO},
+		[]float64{NULL_FLOAT64_ZERO},
+		[]float64{NULL_FLOAT64_ZERO},
+		[]float64{NULL_FLOAT64_ZERO},
+		[]float64{NULL_FLOAT64_ZERO},
+		[]float64{NULL_FLOAT64_ZERO},
+		[]uint32{NULL_UINT32_ZERO},
+		[]uint16{NULL_UINT16_ZERO},
+		[][]float64{{NULL_FLOAT64_ZERO}},
+	}
+	return imd
 }
 
 // DecodeR2SonicImagery decodes R2Sonic INTENSITY_SERIES SubRecord and constructs
