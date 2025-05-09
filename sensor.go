@@ -1372,3 +1372,36 @@ func newSensorImageryMetadata(number_pings int, sensor_id SubRecordID) (sen_img_
 
 	return sen_img_md
 }
+
+func nullSensorImagery(sensor_id SubRecordID) (sen_img_md SensorImageryMetadata) {
+	switch sensor_id {
+	case EM710, EM302, EM122, EM2040, ME70BO:
+		em4i := nullEm4Imagery()
+		sen_img_md.Em4_imagery = em4i
+	case EM120, EM120_RAW, EM300, EM300_RAW, EM1002, EM1002_RAW, EM2000, EM2000_RAW, EM3000, EM3000_RAW, EM3002, EM3002_RAW, EM3000D, EM3000D_RAW, EM3002D, EM3002D_RAW, EM121A_SIS, EM121A_SIS_RAW:
+		em3i := nullEm3Imagery()
+		sen_img_md.Em3_imagery = em3i
+	case RESON_7125:
+		r7100 := nullReson7100Imagery()
+		sen_img_md.Reson7100_imagery = r7100
+	case RESON_TSERIES:
+		rtseries := nullResonTSeriesImagery()
+		sen_img_md.ResonTSeries_imagery = rtseries
+	case RESON_8101, RESON_8111, RESON_8124, RESON_8125, RESON_8150, RESON_8160:
+		r8100 := nullReson8100Imagery()
+		sen_img_md.Reson8100_imagery = r8100
+	case KLEIN_5410_BSS:
+		k5410bss := nullKlein5410BssImagery()
+		sen_img_md.Klein5410Bss_imagery = k5410bss
+	case KMALL:
+		kmall := nullKmallImagery()
+		sen_img_md.Kmall_imagery = kmall
+	case R2SONIC_2020, R2SONIC_2022, R2SONIC_2024:
+		r2sonic := nullR2SonicImagery()
+		sen_img_md.R2Sonic_imagery = r2sonic
+	default:
+		// TODO; update return sig to allow return of an err rather than simply panic
+		panic(errors.Join(ErrSensor, errors.New(strconv.Itoa(int(sensor_id)))))
+	}
+	return sen_img_md
+}
