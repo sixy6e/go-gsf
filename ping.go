@@ -1820,7 +1820,7 @@ func (g *GsfFile) SbpToTileDB(fi *FileInfo, ctx *tiledb.Context, grp *tiledb.Gro
 			// appending and null filling
 			_ = ping_beam_ids.appendPingBeam(idx, pinfo.Number_Beams)
 			_ = ping_data_chunk.appendPingData(&ping_data, contains_intensity, sensor_id, sr_schema_c)
-			_ = ping_data_chunk.fillNulls(&ping_data)
+			_ = ping_data_chunk.fillNulls(&ping_data, sensor_id)
 
 			if dense_bd {
 				pad_size := fi.Metadata.Quality_Info.Min_Max_Beams[1] - pinfo.Number_Beams
